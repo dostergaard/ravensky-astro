@@ -31,7 +31,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-astro-metadata = "0.3.0"
+astro-metadata = "0.4.0"
 ```
 
 ## API Reference

@@ -5,6 +5,17 @@ All notable changes to the Astro Core project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-03-23
+
+### Added
+- FITS header-card extraction APIs in `astro-io` so callers can inspect ordered raw cards by HDU
+- `raw_header_cards` support in `astro-metadata` for both FITS and XISF metadata extraction
+- Expanded metadata dump and stats examples for inspecting FITS/XISF raw header content
+
+### Changed
+- `AstroMetadata` now exposes both `raw_header_cards` and `raw_headers` as part of its public metadata model
+- Workspace crate version references across docs now point to `0.4.0`
+
 ## [0.3.0] - 2026-03-05
 
 ### Changed
