@@ -5,6 +5,15 @@ All notable changes to the Astro Core project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Hardened `astro-io` XISF loading to return explicit errors for malformed or unsupported files instead of falling back to hardcoded offsets or placeholder pixel data
+- Removed direct stdout output from the `astro-io` XISF loader and limited diagnostics to library-appropriate logging
+
+### Added
+- Regression tests covering malformed XISF headers, unsupported sample formats, truncated payloads, and loading of a real sample XISF file
+
 ## [0.4.0] - 2026-03-23
 
 ### Added

@@ -14,6 +14,8 @@ RavenSky Astro is actively developed and used in production within my own astrop
 
 The goal is not just experimentation — it is to build a durable, composable foundation for astronomical image tooling in Rust.
 
+The next deliberate cleanup pass should target boundary cleanup, XISF hardening, API surface review, and docs consolidation, because those are the clearest repo-wide needs right now.
+
 ---
 
 ## Architecture Overview

@@ -31,6 +31,7 @@ dependencies = [
  "byteorder",
  "fitsio",
  "flate2",
+ "log",
  "quick-xml",
  "serde",
  "thiserror",

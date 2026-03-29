@@ -80,7 +80,15 @@ pub fn load_xisf(path: &Path) -> Result<(Vec<f32>, usize, usize)>
   - If the file cannot be opened
   - If the XISF signature is invalid
   - If the XML header cannot be parsed
-  - If the image data cannot be read
+  - If required image attributes such as `geometry`, `sampleFormat`, or `location` are missing or invalid
+  - If the file uses an unsupported XISF variant such as compressed, non-`UInt16`, or multi-channel image data
+  - If the image payload is truncated or cannot be read
+
+Current scope:
+
+- Uncompressed attachment-backed image data
+- Single-channel images
+- `UInt16` samples decoded to normalized `f32`
 
 ## Usage Examples
 
