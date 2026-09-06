@@ -109,5 +109,7 @@ Implemented bounds and CLI/library usage are in the [crate README](../astro-benc
 Current limits are 256 frames, 64 MiB decoded/image, 16 workers, 20 repetitions,
 8 GiB maximum scratch quota and a conservative 512 MiB aggregate admission
 estimate. These are initial harness bounds, not release application defaults or
-hard process-memory guarantees. The next validator step is shared reservations
-and streaming, followed by comparison against the recorded recipes.
+hard process-memory guarantees. Shared reservations and streaming are now
+implemented; the [comparison](benchmarks/2026-09-06-m4-max-streaming/README.md)
+records measured memory reductions and throughput. Application calibration,
+native controls and broader workload/platform evidence remain separate work.

@@ -1,6 +1,8 @@
 use crate::{checkpoint, resources::usage, Encoding, FixtureSet, Recipe};
 use anyhow::{ensure, Context, Result};
-use astro_io::validation::{validate_file, FileFormat, ValidationLevel, ValidationOptions};
+use astro_io::validation::{
+    validate_file_with_budget, FileFormat, MemoryBudget, ValidationLevel, ValidationOptions,
+};
 use serde::{Deserialize, Serialize};
 use std::{
     fs::File,
@@ -61,6 +63,10 @@ pub struct FileMeasurement {
 /// Successful sample. Any failure or cancellation returns an error instead.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Sample {
+    /// Actual high-water validator reservations across this sample's workers.
+    /// Includes explicit metadata/codec allowances; zero for raw reads, not RSS.
+    #[serde(default)]
+    pub peak_reserved_bytes: u64,
     /// Chosen operation.
     pub workload: Workload,
     /// Explicit fixed worker count (threads may outnumber frames).
@@ -106,6 +112,7 @@ pub fn run_sample(
     checkpoint(cancel)?;
     let next = AtomicUsize::new(0);
     let stopped = AtomicBool::new(false);
+    let budget = MemoryBudget::new(512 * 1024 * 1024)?;
     let before = usage();
     let start = Instant::now();
     let files = thread::scope(|scope| -> Result<Vec<FileMeasurement>> {
@@ -116,6 +123,7 @@ pub fn run_sample(
             let tx = tx.clone();
             let next = &next;
             let stopped = &stopped;
+            let budget = &budget;
             match thread::Builder::new()
                 .name("astro-bench".into())
                 .spawn_scoped(scope, move || {
@@ -124,7 +132,7 @@ pub fn run_sample(
                         if index >= set.manifest().files.len() {
                             break;
                         }
-                        let result = measure_file(set, index, workload, cancel);
+                        let result = measure_file(set, index, workload, cancel, budget);
                         if result.is_err() {
                             stopped.store(true, Ordering::Relaxed);
                         }
@@ -175,7 +183,12 @@ pub fn run_sample(
     })?;
     let wall_seconds = start.elapsed().as_secs_f64();
     let after = usage();
+    ensure!(
+        budget.used_bytes() == 0,
+        "validator reservations leaked after sample"
+    );
     Ok(Sample {
+        peak_reserved_bytes: budget.peak_bytes(),
         workload,
         workers,
         completed_files: files.len(),
@@ -197,6 +210,7 @@ fn measure_file(
     index: usize,
     workload: Workload,
     cancel: &AtomicBool,
+    budget: &MemoryBudget,
 ) -> Result<FileMeasurement> {
     checkpoint(cancel)?;
     let entry = &set.manifest().files[index];
@@ -222,10 +236,11 @@ fn measure_file(
         } else {
             ValidationLevel::Structural
         };
-        let report = validate_file(
+        let report = validate_file_with_budget(
             &path,
             &ValidationOptions::default().with_level(level),
             Some(cancel),
+            budget,
         )?;
         let encoding = set.manifest().recipe.encoding;
         let format = if encoding == Encoding::Fits {

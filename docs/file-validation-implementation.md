@@ -53,7 +53,11 @@ monitor/config integration and readiness/execution contract tests separately.
 
 ## Resource-aware concurrency follow-up (2026-09-06)
 
-Status: design approved; implementation and performance measurements pending.
+Status: initial shared reservations and zlib/Zstandard streaming implemented and
+locally verified; see [resource implementation](ValidationResourceImplementation.md)
+and the [comparison measurements](benchmarks/2026-09-06-m4-max-streaming/README.md).
+The baseline gaps and approved direction below describe the pre-change state;
+native controls and consumer integration remain follow-up work.
 The functional verification above applies to the first validator implementation;
 it does not establish peak-memory bounds or adaptive scheduling performance.
 
@@ -65,7 +69,7 @@ API and validation guarantees. Product scheduling, OS telemetry/QoS, quiet perio
 and retries stay in AstroMuninn. Serial mode is a baseline/diagnostic option;
 release concurrency is bounded by measured workload and runtime resources.
 
-### Current gaps and proposed design
+### Baseline gaps and approved design
 
 `validation/mod.rs` estimates memory without lifetime-owned reservations;
 `validation/xisf.rs` retains entire decoded subblocks and builds an allocated XML

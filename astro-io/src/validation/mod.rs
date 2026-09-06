@@ -16,7 +16,10 @@
 //! # Ok::<(), astro_io::validation::ValidationError>(())
 //! ```
 mod fits;
+mod resources;
 mod xisf;
+use resources::{Account, Buffer, Reservation};
+pub use resources::{MemoryBudget, MemoryReservation};
 
 use std::{
     fmt,
@@ -57,6 +60,8 @@ pub enum ValidationErrorKind {
     Unsupported,
     /// A configured resource bound would be exceeded.
     ResourceLimit,
+    /// Shared capacity is temporarily occupied; retry outside the validator worker.
+    ResourceBusy,
     /// The source observation or path identity changed during the call.
     ChangedDuringValidation,
     /// The caller requested cancellation.
@@ -133,8 +138,8 @@ fn mul(a: u64, b: u64) -> Result<u64> {
 }
 
 /// Validation resource limits. All builder methods reject zero values.
-/// Working bytes cover validator-managed buffers; native backends have separately
-/// bounded inputs. See the README for backend allocation limitations.
+/// Working bytes cover live buffers plus conservative metadata/backend allowances.
+/// See the README for parser/native allocation limitations and shared admission.
 #[derive(Debug, Clone)]
 pub struct ValidationLimits {
     header: u64,
@@ -293,6 +298,7 @@ impl ChecksumSummary {
 /// Completed checks. A report is returned only on success at the requested level.
 #[derive(Debug, Clone)]
 pub struct ValidationReport {
+    peak_reserved_bytes: u64,
     format: FileFormat,
     level: ValidationLevel,
     stamp: FileStamp,
@@ -303,6 +309,11 @@ pub struct ValidationReport {
     undecoded_codecs: Vec<String>,
 }
 impl ValidationReport {
+    /// Peak per-call reservations, including explicit parser/backend allowances.
+    /// This is accounting telemetry, not a measurement of process RSS.
+    pub fn peak_reserved_bytes(&self) -> u64 {
+        self.peak_reserved_bytes
+    }
     /// Format identified from the file signature.
     pub fn format(&self) -> FileFormat {
         self.format
@@ -319,7 +330,7 @@ impl ValidationReport {
     pub fn image_count(&self) -> u64 {
         self.images
     }
-    /// Count of parsed header cards, XML elements, and descriptors.
+    /// Count of parsed header cards, XML elements, descriptors and decoded Zstandard frames.
     pub fn structure_count(&self) -> u64 {
         self.structures
     }
@@ -346,12 +357,13 @@ struct Context<'a> {
     bytes_read: u64,
     structures: u64,
     header_bytes: u64,
-    reserved: u64,
-    diagnostic_bytes: u64,
+    memory: Account,
+    shared_control: bool,
     undecoded_codecs: Vec<String>,
     decoded: u64,
     images: u64,
     checksums: ChecksumSummary,
+    diagnostics: Reservation,
 }
 impl Context<'_> {
     fn checkpoint(&self) -> Result<()> {
@@ -400,19 +412,13 @@ impl Context<'_> {
             Ok(())
         }
     }
-    fn memory(&self, bytes: u64) -> Result<usize> {
-        if add(add(bytes, self.reserved)?, self.diagnostic_bytes)? > self.options.limits.working {
-            return Err(limit(format!(
-                "working memory limit exceeded ({bytes} bytes)"
-            )));
-        }
-        usize::try_from(bytes).map_err(|_| limit("buffer exceeds address space"))
-    }
     fn undecoded(&mut self, codec: &str) -> Result<()> {
         if !self.undecoded_codecs.iter().any(|s| s == codec) {
-            let bytes = add(codec.len() as u64, 64)?;
-            self.memory(bytes)?;
-            self.diagnostic_bytes = add(self.diagnostic_bytes, bytes)?;
+            let bytes = add(codec.len() as u64, 128)?;
+            self.diagnostics.grow(bytes)?;
+            self.undecoded_codecs
+                .try_reserve(1)
+                .map_err(|_| limit("codec diagnostic allocation failed"))?;
             self.undecoded_codecs.push(codec.to_string());
         }
         Ok(())
@@ -453,13 +459,10 @@ impl Context<'_> {
         }
         Ok(())
     }
-    fn bytes(&mut self, offset: u64, size: u64) -> Result<Vec<u8>> {
+    fn bytes(&mut self, offset: u64, size: u64) -> Result<Buffer> {
         self.extent(offset, size)?;
-        let len = self.memory(size)?;
-        let mut b = Vec::new();
-        b.try_reserve_exact(len)
-            .map_err(|_| limit("buffer allocation failed"))?;
-        b.resize(len, 0);
+        let len = usize::try_from(size).map_err(|_| limit("buffer exceeds address space"))?;
+        let mut b = self.memory.buffer(len)?;
         self.read(offset, &mut b)?;
         Ok(b)
     }
@@ -468,17 +471,12 @@ impl Context<'_> {
         if size == 0 {
             return Ok(());
         }
-        let available = self
-            .options
-            .limits
-            .working
-            .saturating_sub(self.reserved)
-            .saturating_sub(self.diagnostic_bytes);
+        let available = self.memory.remaining();
         if available == 0 {
             return Err(limit("no working memory available for I/O"));
         }
-        let cap = self.memory(size.min(64 * 1024).min(available))?;
-        let mut b = vec![0; cap];
+        let cap = size.min(64 * 1024).min(available) as usize;
+        let mut b = self.memory.buffer(cap)?;
         let mut done = 0;
         while done < size {
             let n = (size - done).min(cap as u64) as usize;
@@ -500,6 +498,44 @@ pub fn validate_file(
     options: &ValidationOptions,
     cancel: Option<&AtomicBool>,
 ) -> Result<ValidationReport> {
+    let budget = MemoryBudget::new(options.limits.working)?;
+    validate_controlled(path, options, cancel, &budget, false)
+}
+/// Validate using a caller-owned shared memory allowance, without waiting.
+///
+/// Share one budget across concurrent calls. `ResourceBusy` is temporary capacity
+/// contention; it is not file corruption. Every failure releases this call's
+/// reservations before returning. Callers own queuing, fairness and cancellation.
+/// Full CFITSIO tile decoding is unsupported on this entry point until its native
+/// allocations and cross-loader exclusivity can be controlled. Structural tiled
+/// FITS checks and all supported XISF codecs remain available.
+/// Returned reports and caller-owned queues are outside the working allowance.
+///
+/// ```no_run
+/// use astro_io::validation::{MemoryBudget, ValidationOptions, validate_file_with_budget};
+/// use std::path::Path;
+/// let budget = MemoryBudget::new(64 * 1024 * 1024)?;
+/// // Clone/share this same budget across concurrent calls; do not make one per file.
+/// let report = validate_file_with_budget(Path::new("image.xisf"),
+///     &ValidationOptions::default(), None, &budget)?;
+/// assert_eq!(budget.used_bytes(), 0);
+/// # Ok::<(), astro_io::validation::ValidationError>(())
+/// ```
+pub fn validate_file_with_budget(
+    path: &Path,
+    options: &ValidationOptions,
+    cancel: Option<&AtomicBool>,
+    budget: &MemoryBudget,
+) -> Result<ValidationReport> {
+    validate_controlled(path, options, cancel, budget, true)
+}
+fn validate_controlled(
+    path: &Path,
+    options: &ValidationOptions,
+    cancel: Option<&AtomicBool>,
+    budget: &MemoryBudget,
+    shared_control: bool,
+) -> Result<ValidationReport> {
     if cancel.is_some_and(|c| c.load(Ordering::Relaxed)) {
         return Err(ValidationError::new(
             ValidationErrorKind::Cancelled,
@@ -512,6 +548,8 @@ pub fn validate_file(
         return Err(unsupported("validation requires a regular file"));
     }
     let stamp = FileStamp::from_metadata(&metadata);
+    let memory = Account::new(options.limits.working, budget)?;
+    let diagnostics = memory.reserve(0)?;
     let mut c = Context {
         file,
         path,
@@ -521,8 +559,9 @@ pub fn validate_file(
         bytes_read: 0,
         structures: 0,
         header_bytes: 0,
-        reserved: 0,
-        diagnostic_bytes: 0,
+        memory,
+        shared_control,
+        diagnostics,
         undecoded_codecs: Vec::new(),
         decoded: 0,
         images: 0,
@@ -555,6 +594,7 @@ pub fn validate_file(
     }
     let format = result.map_err(|e| e.context(path.display()))?;
     Ok(ValidationReport {
+        peak_reserved_bytes: c.memory.peak(),
         format,
         level: options.level,
         stamp: c.stamp,
@@ -583,6 +623,9 @@ mod tests {
         let stamp = FileStamp::from_metadata(&file.metadata().unwrap());
         let options = ValidationOptions::default();
         let cancel = AtomicBool::new(false);
+        let budget = MemoryBudget::new(options.limits.working).unwrap();
+        let memory = Account::new(options.limits.working, &budget).unwrap();
+        let diagnostics = memory.reserve(0).unwrap();
         let mut c = Context {
             file,
             path: &path,
@@ -592,8 +635,9 @@ mod tests {
             bytes_read: 0,
             structures: 0,
             header_bytes: 0,
-            reserved: 0,
-            diagnostic_bytes: 0,
+            memory,
+            shared_control: false,
+            diagnostics,
             undecoded_codecs: Vec::new(),
             decoded: 0,
             images: 0,
@@ -601,6 +645,7 @@ mod tests {
         };
         test(&mut c, &cancel);
         drop(c);
+        assert_eq!(budget.used_bytes(), 0);
         let _ = std::fs::remove_file(path);
     }
     #[test]
@@ -611,6 +656,7 @@ mod tests {
                 .unwrap_err();
             assert_eq!(error.kind(), ValidationErrorKind::Cancelled);
             assert_eq!(c.bytes_read, 65536);
+            assert_eq!(c.memory.remaining(), c.options.limits.working);
         });
     }
     #[test]

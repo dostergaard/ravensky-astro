@@ -36,6 +36,7 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
     while offset < c.stamp.size {
         c.checkpoint()?;
         let start = offset;
+        let mut header_memory = c.memory.reserve(0)?;
         let mut h = BTreeMap::new();
         let mut cards = 0u64;
         loop {
@@ -106,10 +107,10 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
                 if &card[8..10] != b"= " {
                     return Err(invalid(format!("invalid {key} card")));
                 }
+                header_memory.grow(1024)?;
                 if h.insert(key.to_string(), value(&card)?).is_some() {
                     return Err(invalid(format!("duplicate structural keyword {key}")));
                 }
-                c.memory(mul(h.len() as u64, 256)?)?;
             }
         }
         let header_size = padded(mul(cards, 80)?)?;
@@ -174,7 +175,7 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
         }
         let size = mul(add(elements, pcount)?, bitpix.unsigned_abs() / 8)?;
         c.extent(data, padded(size)?)?;
-        c.reserved = mul(h.len() as u64, 256)?;
+
         if kind == "BINTABLE" {
             binary_table(c, &h, data, size)?;
         }
@@ -226,7 +227,6 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
         }
         offset = add(data, padded(size)?)?;
         index += 1;
-        c.reserved = 0;
     }
     Ok(())
 }
@@ -467,13 +467,18 @@ fn validate_tiles(c: &mut Context<'_>, h: &BTreeMap<String, String>, index: usiz
     {
         return Err(unsupported(format!("FITS compression codec {codec}")));
     }
+    if c.shared_control {
+        return Err(unsupported("full CFITSIO decoding lacks enforced shared allocation/exclusivity controls; use structural validation or the standalone estimated path"));
+    }
     // Bound indivisible CFITSIO tile inputs conservatively. Native allocations
     // are not an exact process-wide memory quota.
     let stored = add(
         mul(number(h, "NAXIS1")?, number(h, "NAXIS2")?)?,
         number(h, "PCOUNT")?,
     )?;
-    c.memory(add(mul(tile, 64)?, mul(stored, 2)?)?)?;
+    let _native = c
+        .memory
+        .reserve(add(add(mul(tile, 64)?, mul(stored, 2)?)?, 1024 * 1024)?)?;
     if c.path.as_os_str().to_string_lossy().contains(['[', ']']) {
         return Err(unsupported(
             "compressed FITS path contains backend filter syntax",

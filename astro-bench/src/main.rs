@@ -328,6 +328,7 @@ fn run(options: Options, cancel: &AtomicBool) -> Result<()> {
             "max_structures": limits.max_structures(),
             "max_decoded_bytes": limits.max_decoded_bytes(),
             "runner_max_estimated_working_bytes": 512 * 1024 * 1024,
+            "shared_validator_memory_bytes": 512 * 1024 * 1024,
         }),
     }};
     ensure!(!cancel.load(Ordering::Relaxed), "benchmark cancelled");

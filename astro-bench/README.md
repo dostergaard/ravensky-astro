@@ -75,8 +75,8 @@ CLI isolates each sample's memory high-water mark from prior samples/generation.
 
 - Generation streams 64 KiB pixel chunks and codec output; no whole-image generator
   buffer or sparse file. Each frame is synced, fully validated and hashed before
-  timing. The existing validator still allocates complete compressed subblocks and
-  decoded output in full mode. Streaming those reads is the next implementation.
+  timing. Zlib/Zstandard validation now streams decoded output; LZ4 remains a
+  bounded whole-block path (not part of the initial benchmark matrix).
 - Bounds: 1–256 frames, 64 MiB decoded/image, 1–16 workers, 1–20 repetitions,
   scratch quota default 512 MiB/maximum 8 GiB. Generation checks a conservative
   expansion allowance before creating files and enforces its quota on writes.
@@ -84,7 +84,10 @@ CLI isolates each sample's memory high-water mark from prior samples/generation.
   expansion for compressed full validation, or a 64 KiB buffer otherwise. Samples
   exceeding 512 MiB estimated aggregate working memory are rejected. This estimate
   is specific to these generated fixtures, **not a hard RSS cap or an adaptive
-  scheduler**. It is deliberately separate from future shared validator reservations.
+  scheduler**. The original conservative preflight is retained for comparable
+  workloads. Validation workers now additionally share one 512 MiB `MemoryBudget`;
+  samples record `peak_reserved_bytes` separately from measured RSS and verify
+  all reservations are released. Capacity failures invalidate the sample.
 - Work distribution uses an atomic index and a bounded results channel (twice the
   worker count). Measurements contain at most one entry per generated frame. Codec
   generation is single-threaded; workers each run one validation/read at a time.
@@ -112,3 +115,6 @@ hardware/storage and real captures before setting application recommendations.
 
 The CLI adds `ctrlc` for portable interrupts and a small isolated `libc::getrusage`
 wrapper for Unix telemetry; generators reuse the existing codec/hash/serde stack.
+
+Recorded evidence: [initial baseline](../docs/benchmarks/2026-09-06-m4-max/README.md)
+and [shared-reservation/streaming comparison](../docs/benchmarks/2026-09-06-m4-max-streaming/README.md).

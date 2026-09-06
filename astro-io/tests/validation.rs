@@ -1,5 +1,6 @@
 use astro_io::validation::{
-    validate_file, ValidationErrorKind, ValidationLevel, ValidationOptions,
+    validate_file, validate_file_with_budget, MemoryBudget, ValidationErrorKind, ValidationLevel,
+    ValidationLimits, ValidationOptions,
 };
 use std::{
     fs,
@@ -18,6 +19,163 @@ impl Fixture {
         fs::write(&path, bytes).unwrap();
         Self(path)
     }
+}
+
+fn compressed_frame(codec: &str, data: &[u8]) -> Vec<u8> {
+    use std::io::Write;
+    match codec {
+        "zlib" => {
+            let mut encoder =
+                flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::fast());
+            encoder.write_all(data).unwrap();
+            encoder.finish().unwrap()
+        }
+        "zstd" => {
+            let mut encoder = zstd::stream::write::Encoder::new(Vec::new(), 1).unwrap();
+            encoder.window_log(17).unwrap();
+            encoder.write_all(data).unwrap();
+            encoder.finish().unwrap()
+        }
+        _ => lz4_flex::block::compress(data),
+    }
+}
+fn compressed_fixture(codec: &str, bytes: &[u8], decoded: usize) -> Fixture {
+    let xml = format!(
+        r#"<xisf version="1.0"><Image geometry="{decoded}:1:1" sampleFormat="UInt8" location="attachment:4096:{}" compression="{codec}:{decoded}"/></xisf>"#,
+        bytes.len()
+    );
+    Fixture::new(&xisf(&xml, bytes))
+}
+#[test]
+fn large_streamed_payloads_fit_small_shared_budgets_and_release_on_every_exit() {
+    let budget = MemoryBudget::new(2 * 1024 * 1024).unwrap();
+    let options = ValidationOptions::default()
+        .with_level(ValidationLevel::Full)
+        .with_limits(
+            ValidationLimits::default()
+                .with_max_working_bytes(2 * 1024 * 1024)
+                .unwrap(),
+        );
+    let data = vec![42; 8 * 1024 * 1024];
+    for codec in ["zlib", "zstd"] {
+        let compressed = compressed_frame(codec, &data);
+        let file = compressed_fixture(codec, &compressed, data.len());
+        let report = validate_file_with_budget(&file.0, &options, None, &budget).unwrap();
+        assert!(report.peak_reserved_bytes() < 2 * 1024 * 1024);
+        assert_eq!(budget.used_bytes(), 0);
+        let occupied = budget.try_reserve(1024 * 1024).unwrap();
+        assert_eq!(
+            validate_file_with_budget(&file.0, &options, None, &budget)
+                .unwrap_err()
+                .kind(),
+            ValidationErrorKind::ResourceBusy
+        );
+        assert_eq!(budget.used_bytes(), occupied.bytes());
+        drop(occupied);
+        let cancel = std::sync::atomic::AtomicBool::new(true);
+        assert_eq!(
+            validate_file_with_budget(&file.0, &options, Some(&cancel), &budget)
+                .unwrap_err()
+                .kind(),
+            ValidationErrorKind::Cancelled
+        );
+        assert_eq!(budget.used_bytes(), 0);
+        for expected in [data.len() - 1, data.len() + 1] {
+            let bad = compressed_fixture(codec, &compressed, expected);
+            assert_eq!(
+                validate_file_with_budget(&bad.0, &options, None, &budget)
+                    .unwrap_err()
+                    .kind(),
+                ValidationErrorKind::IntegrityMismatch
+            );
+            assert_eq!(budget.used_bytes(), 0);
+        }
+    }
+    let compressed = compressed_frame("lz4", &data);
+    let file = compressed_fixture("lz4", &compressed, data.len());
+    assert_eq!(
+        validate_file_with_budget(&file.0, &options, None, &budget)
+            .unwrap_err()
+            .kind(),
+        ValidationErrorKind::ResourceLimit
+    );
+    assert_eq!(budget.used_bytes(), 0);
+}
+#[test]
+fn streaming_rejects_truncated_footers_and_trailing_bytes() {
+    let budget = MemoryBudget::new(4 * 1024 * 1024).unwrap();
+    let options = ValidationOptions::default().with_level(ValidationLevel::Full);
+    let data = vec![23; 128 * 1024];
+    for codec in ["zlib", "zstd"] {
+        let original = compressed_frame(codec, &data);
+        for cut in 1..=4 {
+            let file = compressed_fixture(codec, &original[..original.len() - cut], data.len());
+            assert_eq!(
+                validate_file_with_budget(&file.0, &options, None, &budget)
+                    .unwrap_err()
+                    .kind(),
+                ValidationErrorKind::IntegrityMismatch,
+                "{codec} cut {cut}"
+            );
+            assert_eq!(budget.used_bytes(), 0);
+        }
+        let mut trailing = original;
+        trailing.extend([1, 2, 3, 4]);
+        let file = compressed_fixture(codec, &trailing, data.len());
+        assert_eq!(
+            validate_file_with_budget(&file.0, &options, None, &budget)
+                .unwrap_err()
+                .kind(),
+            ValidationErrorKind::IntegrityMismatch
+        );
+        assert_eq!(budget.used_bytes(), 0);
+    }
+}
+#[test]
+fn zstd_concatenated_and_skippable_frames_are_accounted_independently() {
+    let data = vec![23; 128 * 1024];
+    let frame = compressed_frame("zstd", &data);
+    let mut payload = frame.clone();
+    payload.extend(0x184d2a50u32.to_le_bytes());
+    payload.extend(3u32.to_le_bytes());
+    payload.extend([1, 2, 3]);
+    payload.extend(frame);
+    let file = compressed_fixture("zstd", &payload, data.len() * 2);
+    let budget = MemoryBudget::new(2 * 1024 * 1024).unwrap();
+    let options = ValidationOptions::default().with_level(ValidationLevel::Full);
+    validate_file_with_budget(&file.0, &options, None, &budget).unwrap();
+    assert_eq!(budget.used_bytes(), 0);
+    // Valid magic with an excessive declared window: refuse before native decode.
+    let file = compressed_fixture("zstd", &[0x28, 0xb5, 0x2f, 0xfd, 0, 0xf8, 1, 0, 0], 1);
+    assert_eq!(
+        validate_file_with_budget(&file.0, &options, None, &budget)
+            .unwrap_err()
+            .kind(),
+        ValidationErrorKind::ResourceLimit
+    );
+    assert_eq!(budget.used_bytes(), 0);
+}
+#[test]
+fn concurrent_validations_share_one_budget_and_leave_no_reservations() {
+    let data = vec![19; 1024 * 1024];
+    let file = compressed_fixture("zlib", &compressed_frame("zlib", &data), data.len());
+    let budget = MemoryBudget::new(8 * 1024 * 1024).unwrap();
+    let options = ValidationOptions::default().with_level(ValidationLevel::Full);
+    let barrier = std::sync::Barrier::new(4);
+    std::thread::scope(|scope| {
+        for _ in 0..4 {
+            let file = &file;
+            let budget = &budget;
+            let options = &options;
+            let barrier = &barrier;
+            scope.spawn(move || {
+                barrier.wait();
+                validate_file_with_budget(&file.0, options, None, budget).unwrap();
+            });
+        }
+    });
+    assert_eq!(budget.used_bytes(), 0);
+    assert!(budget.peak_bytes() <= budget.capacity_bytes());
 }
 impl Drop for Fixture {
     fn drop(&mut self) {
@@ -383,6 +541,22 @@ fn tiled_fits_is_checked_through_the_native_backend() {
             )
             .unwrap();
             assert_eq!(report.image_count(), 1);
+            let budget = MemoryBudget::new(8 * 1024 * 1024).unwrap();
+            let controlled = validate_file_with_budget(
+                &target.0,
+                &ValidationOptions::default().with_level(level),
+                None,
+                &budget,
+            );
+            if level == ValidationLevel::Full {
+                assert_eq!(
+                    controlled.unwrap_err().kind(),
+                    ValidationErrorKind::Unsupported
+                );
+            } else {
+                controlled.unwrap();
+            }
+            assert_eq!(budget.used_bytes(), 0);
         }
         let mut bytes = fs::read(&target.0).unwrap();
         let tile = bytes.windows(8).position(|b| b == b"ZTILE1  ").unwrap();

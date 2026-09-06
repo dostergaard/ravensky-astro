@@ -173,28 +173,58 @@ and I/O errors. Applications own quiet periods, retries, and presentation.
 
 ### Bounds and limitations
 
-Defaults: 64 MiB combined header bytes, 256 MiB working buffers, 100,000
-structures, and 64 GiB combined declared decoded data. `ValidationLimits`
-builders expose each nonzero limit. Checked arithmetic and allocation budgets
-reject oversized inputs before decoding. Inline/XML parsing uses a conservative
-memory estimate; compression subblocks must fit the configured working budget.
-Uncompressed payloads and whole-file reads use chunks of at most 64 KiB.
-Zstandard's decoder window is bounded; CFITSIO's indivisible tiles and stored
-inputs are conservatively bounded before native decoding. These are validation
-budgets, not a hard process-wide memory quota for native allocator overhead.
-The 64 GiB value limits cumulative declared decoded data, not RAM allocation or
-exact physical file size. The 256 MiB budget applies independently to each current
-validation call; there is no shared admission controller in this API yet.
+Defaults: 64 MiB combined header bytes, 256 MiB working allowance per call,
+100,000 structures, and 64 GiB combined declared decoded data. The decoded limit
+is total data checked, not a RAM allocation or physical-file-size limit.
+`ValidationLimits` exposes each nonzero limit. Working limits now include retained
+buffers and conservative parser/backend allowances, so a header/native stage can
+be rejected earlier than under the previous estimates.
 
-The current XISF decoder retains each complete compressed subblock and its decoded
-output, even for zlib/Zstandard. Header memory accounting is estimated, and some
-parser/collection/native allocations remain infallible or outside exact tracking.
-Thus the current implementation cannot guarantee graceful recovery from every
-out-of-memory condition. Streaming output, explicit caller-coordinated reservations
-and allocation/native-memory measurements are planned before monitor rollout.
-Serial execution is a benchmark/diagnostic mode, not the intended release-wide
-policy; consumers must coordinate concurrency and shared resource use. See the
-[resource implementation plan](../docs/file-validation-implementation.md).
+Use `validate_file_with_budget(path, options, cancel, &budget)` with one cloneable
+`MemoryBudget` shared across concurrent calls. `validate_file` remains available
+and creates a private allowance for that call. Reservations are acquired before
+buffer/stage allocation and released automatically on success, failure, cancellation
+and unwinding. `ResourceBusy` means another reservation temporarily prevents
+admission; queue/retry outside workers. `ResourceLimit` means this call's retained
+memory plus the next requirement cannot fit its per-call or total shared capacity.
+No validator call waits while holding a partial reservation. The application owns
+fairness, pressure adaptation, worker counts and its returned reports/queue memory.
+
+```rust,no_run
+use astro_io::validation::{MemoryBudget, ValidationOptions, validate_file_with_budget};
+use std::path::Path;
+let budget = MemoryBudget::new(64 * 1024 * 1024)?;
+let report = validate_file_with_budget(Path::new("image.xisf"),
+    &ValidationOptions::default(), None, &budget)?;
+assert_eq!(budget.used_bytes(), 0);
+println!("Peak call reservations: {}", report.peak_reserved_bytes());
+# Ok::<(), astro_io::validation::ValidationError>(())
+```
+
+| Stage | Memory behavior |
+|---|---|
+| File reads/checksums | Fallible, reserved buffers of at most 64 KiB; final whole-file read preserves gap/padding coverage |
+| XISF XML | Reserve 32× XML length for parser/string scratch and growth overlap, plus 1 KiB per node/attribute before insertion; retain metadata allowance through traversal |
+| Inline XISF | Reserved packed-text and decoded-byte buffers; LZ4 subblocks borrow inline slices instead of cloning them |
+| Zlib | 64 KiB input/output buffers, 1 MiB inflater-state allowance; decoded bytes are counted and discarded; require explicit stream end, exact output and no trailing bytes |
+| Zstandard | 64 KiB input/output, rounded declared frame history plus 1 MiB context/block allowance; admit each concatenated/skippable frame independently and enforce native window limit |
+| LZ4/LZ4HC | Complete attached input and decoded output blocks must fit live reservations; no streaming claim for the raw-block decoder |
+| FITS header/tables | 1 KiB per retained structural keyword covers map/string/table bookkeeping before insertion |
+| CFITSIO tiles | **Shared-budget full decoding returns `Unsupported`** until native allocation/exclusivity controls cover other loaders. Structural checks work; standalone full calls retain a conservative tile/stored-data/native allowance |
+
+`MemoryBudget::used_bytes()` and `peak_bytes()` report reservation accounting;
+`ValidationReport::peak_reserved_bytes()` reports the call high-water mark. These
+are not RSS measurements or OS memory reservations. Exact buffer allocations use
+`try_reserve_exact`; XML/BTreeMap/codec internals and small bookkeeping allocations
+can still allocate infallibly. Metadata/backend allowances are conservative,
+not native allocator interception. Allocator overhead, thread stacks, OS cache and
+returned reports are outside the working allowance, so arbitrary OOM recovery or
+a hard process-memory ceiling is not promised.
+
+The [resource implementation design](../docs/ValidationResourceImplementation.md)
+records scope, backend evidence and performance targets. Consumers still need
+scheduler/readiness integration, real-capture/platform verification and measured
+foreground responsiveness before enabling this as a monitoring release gate.
 
 The cancellation flag is checked between parser steps, reads and decode chunks.
 A blocked OS read or an individual native/codec call cannot be interrupted.
@@ -227,7 +257,7 @@ release monitoring gate. Existing loading APIs are unchanged.
 The optional [`astro-bench` runner](../astro-bench/README.md) generates bounded
 synthetic validator/I/O workloads with serial/fixed-concurrency measurements.
 See the [initial baseline](../docs/benchmarks/2026-09-06-m4-max/README.md) before
-the planned managed-reservation and streaming changes. These measurements do
+the managed-reservation and streaming changes. These measurements do
 not establish release defaults or a hard process-memory ceiling.
 
 Format references: [FITS 4.0](https://fits.gsfc.nasa.gov/standard40/fits_standard40aa.pdf),

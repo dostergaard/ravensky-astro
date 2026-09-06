@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Caller-owned `MemoryBudget` and nonblocking `validate_file_with_budget`, with
+  automatic reservation release, distinct `ResourceBusy` outcomes and peak
+  reservation telemetry. Shared full CFITSIO decoding explicitly remains unsupported.
 - Optional `astro-bench` library/CLI with bounded deterministic FITS/XISF fixtures,
   read/structural/full workloads, fixed concurrency, cancellation, isolated repeated
   samples, peak-memory/CPU telemetry and versioned JSON reports. Application
@@ -21,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generated regression fixtures for truncation, corruption, supported variants,
   limits, source mutation and cancellation. Documented support boundaries and
   remaining real-capture/platform rollout checks in the `astro-io` README.
+
+### Changed
+- Stream XISF zlib/Zstandard input and discard decoded chunks, preserving checksum,
+  frame, trailing-data and exact-output checks. Reserve parser/inline/LZ4/FITS
+  working data before allocation. Truncated zlib trailers now fail explicitly.
 
 ## [0.5.0] - 2026-08-25
 

@@ -2,7 +2,8 @@ use super::*;
 use base64::Engine;
 use quick_xml::{events::Event, name::ResolveResult, reader::NsReader};
 use sha2::Digest;
-use std::{collections::BTreeMap, io::Cursor};
+use std::{collections::BTreeMap, io::BufRead};
+mod streaming;
 
 #[derive(Default)]
 struct Node {
@@ -22,7 +23,7 @@ fn attr<'a>(n: &'a Node, key: &str) -> Result<&'a str> {
         .map(String::as_str)
         .ok_or_else(|| invalid(format!("{} missing {key}", n.name)))
 }
-fn parse(c: &mut Context<'_>, xml: &[u8]) -> Result<Vec<Node>> {
+fn parse(c: &mut Context<'_>, xml: &[u8], metadata: &mut Reservation) -> Result<Vec<Node>> {
     let mut reader = NsReader::from_reader(xml);
     let mut nodes: Vec<Node> = Vec::new();
     let mut stack = Vec::new();
@@ -35,6 +36,7 @@ fn parse(c: &mut Context<'_>, xml: &[u8]) -> Result<Vec<Node>> {
         match event {
             Event::Start(ref e) | Event::Empty(ref e) => {
                 c.structure()?;
+                metadata.grow(1024)?;
                 // Namespace-less headers are accepted for compatibility with
                 // common producers and existing fixtures. Other namespaces are
                 // not interpreted as XISF layout elements.
@@ -61,6 +63,7 @@ fn parse(c: &mut Context<'_>, xml: &[u8]) -> Result<Vec<Node>> {
                     ..Node::default()
                 };
                 for a in e.attributes() {
+                    metadata.grow(1024)?;
                     let a = a.map_err(|e| invalid(format!("invalid XML attribute: {e}")))?;
                     let key = std::str::from_utf8(a.key.as_ref())
                         .map_err(|_| invalid("invalid attribute name"))?
@@ -76,14 +79,19 @@ fn parse(c: &mut Context<'_>, xml: &[u8]) -> Result<Vec<Node>> {
                 let idx = nodes.len();
                 if let Some(&parent) = stack.last() {
                     let p: &mut Node = &mut nodes[parent];
+                    p.children
+                        .try_reserve(1)
+                        .map_err(|_| limit("XML children allocation failed"))?;
                     p.children.push(idx);
                 }
+                nodes
+                    .try_reserve(1)
+                    .map_err(|_| limit("XML node allocation failed"))?;
                 nodes.push(node);
-                c.memory(add(
-                    mul(xml.len() as u64, 8)?,
-                    mul(nodes.len() as u64, 256)?,
-                )?)?;
                 if matches!(event, Event::Start(_)) {
+                    stack
+                        .try_reserve(1)
+                        .map_err(|_| limit("XML depth allocation failed"))?;
                     stack.push(idx);
                 }
             }
@@ -97,6 +105,10 @@ fn parse(c: &mut Context<'_>, xml: &[u8]) -> Result<Vec<Node>> {
                     .unescape()
                     .map_err(|e| invalid(format!("invalid XML text: {e}")))?;
                 if let Some(&idx) = stack.last() {
+                    nodes[idx]
+                        .text
+                        .try_reserve(text.len())
+                        .map_err(|_| limit("XML text allocation failed"))?;
                     nodes[idx].text.push_str(&text);
                 } else if !text.trim().is_empty() {
                     return Err(invalid("text outside XML root"));
@@ -106,6 +118,10 @@ fn parse(c: &mut Context<'_>, xml: &[u8]) -> Result<Vec<Node>> {
                 let text =
                     std::str::from_utf8(e.as_ref()).map_err(|_| invalid("invalid XML UTF-8"))?;
                 if let Some(&idx) = stack.last() {
+                    nodes[idx]
+                        .text
+                        .try_reserve(text.len())
+                        .map_err(|_| limit("XML text allocation failed"))?;
                     nodes[idx].text.push_str(text);
                 } else {
                     return Err(invalid("CDATA outside XML root"));
@@ -139,8 +155,8 @@ fn sample_size(value: &str) -> Result<u64> {
 fn expected(n: &Node) -> Result<Option<u64>> {
     if n.name == "Image" || n.name == "Thumbnail" {
         let geometry = attr(n, "geometry")?;
-        let dims: Vec<_> = geometry.split(':').collect();
-        if dims.len() < 2 {
+        let dims = geometry.split(':');
+        if dims.clone().count() < 2 {
             return Err(invalid(
                 "image geometry needs spatial dimensions and channels",
             ));
@@ -222,6 +238,9 @@ fn compression(c: &mut Context<'_>, n: &Node, stored: u64) -> Result<Option<Comp
             if a == 0 || b == 0 {
                 return Err(invalid("empty compression subblock"));
             }
+            parts
+                .try_reserve(1)
+                .map_err(|_| limit("subblock descriptor allocation failed"))?;
             parts.push((a, b));
         }
     } else {
@@ -249,7 +268,7 @@ fn compression(c: &mut Context<'_>, n: &Node, stored: u64) -> Result<Option<Comp
 }
 enum Storage {
     Attached(u64, u64),
-    Inline(Vec<u8>),
+    Inline(Buffer),
 }
 impl Storage {
     fn len(&self) -> u64 {
@@ -271,38 +290,75 @@ impl Storage {
             }
         }
     }
-    fn part(&self, c: &mut Context<'_>, offset: u64, size: u64) -> Result<Vec<u8>> {
+    fn part<'a>(&'a self, c: &mut Context<'_>, offset: u64, size: u64) -> Result<Block<'a>> {
         match self {
-            Self::Attached(o, _) => c.bytes(add(*o, offset)?, size),
+            Self::Attached(o, _) => c.bytes(add(*o, offset)?, size).map(Block::Owned),
             Self::Inline(b) => {
                 let start =
                     usize::try_from(offset).map_err(|_| limit("offset exceeds address space"))?;
                 let end = usize::try_from(add(offset, size)?)
                     .map_err(|_| limit("offset exceeds address space"))?;
-                Ok(b.get(start..end)
-                    .ok_or_else(|| invalid("subblock exceeds inline payload"))?
-                    .to_vec())
+                Ok(Block::Borrowed(b.get(start..end).ok_or_else(|| {
+                    invalid("subblock exceeds inline payload")
+                })?))
             }
         }
     }
 }
-fn inline(c: &Context<'_>, node: &Node, encoding: &str) -> Result<Vec<u8>> {
+enum Block<'a> {
+    Owned(Buffer),
+    Borrowed(&'a [u8]),
+}
+impl std::ops::Deref for Block<'_> {
+    type Target = [u8];
+    fn deref(&self) -> &[u8] {
+        match self {
+            Self::Owned(b) => b,
+            Self::Borrowed(b) => b,
+        }
+    }
+}
+fn inline(c: &Context<'_>, node: &Node, encoding: &str) -> Result<Buffer> {
     if !node.children.is_empty() {
         return Err(invalid("inline Data has child elements"));
     }
-    c.memory(mul(node.text.len() as u64, 2)?)?;
-    let text: Vec<u8> = node
-        .text
-        .bytes()
-        .filter(|b| !b.is_ascii_whitespace())
-        .collect();
+    let mut packed = c.memory.buffer(node.text.len())?;
+    let mut length = 0;
+    for b in node.text.bytes().filter(|b| !b.is_ascii_whitespace()) {
+        packed[length] = b;
+        length += 1;
+    }
+    let text = &packed[..length];
     match encoding {
-        "base64" => base64::engine::general_purpose::STANDARD
-            .decode(text)
-            .map_err(|_| invalid("invalid Base64 block")),
-        "hex" => hex(&text),
+        "base64" => {
+            let mut output = c.memory.buffer((length / 4 + 1) * 3)?;
+            let n = base64::engine::general_purpose::STANDARD
+                .decode_slice(text, &mut output)
+                .map_err(|_| invalid("invalid Base64 block"))?;
+            output.truncate(n);
+            Ok(output)
+        }
+        "hex" => {
+            if !length.is_multiple_of(2) {
+                return Err(invalid("odd hexadecimal length"));
+            }
+            let mut output = c.memory.buffer(length / 2)?;
+            for (out, pair) in output.iter_mut().zip(text.chunks_exact(2)) {
+                *out = hex_pair(pair)?;
+            }
+            Ok(output)
+        }
         _ => Err(unsupported(format!("inline encoding {encoding}"))),
     }
+}
+fn hex_pair(p: &[u8]) -> Result<u8> {
+    let a = (p[0] as char)
+        .to_digit(16)
+        .ok_or_else(|| invalid("invalid hexadecimal digit"))?;
+    let b = (p[1] as char)
+        .to_digit(16)
+        .ok_or_else(|| invalid("invalid hexadecimal digit"))?;
+    Ok((a * 16 + b) as u8)
 }
 fn hex(bytes: &[u8]) -> Result<Vec<u8>> {
     if !bytes.len().is_multiple_of(2) {
@@ -367,13 +423,12 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
             .map_err(|_| invalid("XISF header length"))?,
     ) as u64;
     c.header(size)?;
-    c.memory(mul(size, 8)?)?;
+    // Account parser scratch, namespace strings, owned text and reallocation
+    // overlap before parsing; per-node/attribute metadata is admitted separately.
+    let mut metadata = c.memory.reserve(mul(size, 32)?)?;
     let xml = c.bytes(16, size)?;
-    let nodes = parse(c, &xml)?;
+    let nodes = parse(c, &xml, &mut metadata)?;
     drop(xml);
-    let reserved = add(mul(size, 8)?, mul(nodes.len() as u64, 256)?)?;
-    c.memory(reserved)?;
-    c.reserved = reserved;
     let mut identifiers = BTreeMap::new();
     for (index, node) in nodes.iter().enumerate() {
         if let Some(uid) = node.attrs.get("uid") {
@@ -494,105 +549,41 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
     if blocks == 0 && c.images > 0 {
         return Err(invalid("image container has no data blocks"));
     }
-    c.reserved = 0;
     Ok(())
 }
-fn decode(c: &mut Context<'_>, s: &Storage, p: &Compression) -> Result<()> {
-    if !["zlib", "lz4", "lz4hc", "zstd"].contains(&p.codec.as_str()) {
-        return Err(unsupported(format!("compression codec {}", p.codec)));
+fn decode(c: &mut Context<'_>, storage: &Storage, compression: &Compression) -> Result<()> {
+    if !["zlib", "lz4", "lz4hc", "zstd"].contains(&compression.codec.as_str()) {
+        return Err(unsupported(format!(
+            "compression codec {}",
+            compression.codec
+        )));
     }
     let mut offset = 0;
-    for &(input, output) in &p.parts {
+    for &(input, output) in &compression.parts {
         c.checkpoint()?;
-        // Each codec subblock is indivisible. Reject oversized declarations
-        // before allocation; stored inline bytes remain live as well.
-        let inline = if matches!(s, Storage::Inline(_)) {
-            s.len()
-        } else {
-            0
-        };
-        c.memory(add(add(input, mul(output, 2)?)?, add(inline, 1 << 20)?)?)?;
-        let bytes = s.part(c, offset, input)?;
-        let out_len =
-            usize::try_from(output).map_err(|_| limit("decoded block exceeds address space"))?;
-        let mut decoded = Vec::new();
-        decoded
-            .try_reserve_exact(out_len)
-            .map_err(|_| limit("decoded buffer allocation failed"))?;
-        match p.codec.as_str() {
-            "lz4" | "lz4hc" => {
-                decoded.resize(out_len, 0);
-                let n = lz4_flex::block::decompress_into(&bytes, &mut decoded)
+        match compression.codec.as_str() {
+            "zlib" => streaming::zlib(c, storage, offset, input, output)?,
+            "zstd" => streaming::zstd(c, storage, offset, input, output)?,
+            _ => {
+                // Raw LZ4 needs complete input and output blocks. Inline input is
+                // borrowed; attached input and decoded output own reservations.
+                let bytes = storage.part(c, offset, input)?;
+                let size = usize::try_from(output)
+                    .map_err(|_| limit("LZ4 output exceeds address space"))?;
+                let mut decoded = c.memory.buffer(size)?;
+                let count = lz4_flex::block::decompress_into(&bytes, &mut decoded)
                     .map_err(|e| integrity(format!("LZ4 decode: {e}")))?;
-                if n != out_len {
+                if count as u64 != output {
                     return Err(integrity("LZ4 decoded size mismatch"));
                 }
             }
-            "zlib" => {
-                let mut decoder = flate2::bufread::ZlibDecoder::new(Cursor::new(&bytes));
-                drain(c, &mut decoder, &mut decoded, output)?;
-                if decoder.total_in() != input {
-                    return Err(integrity("trailing or unused zlib bytes"));
-                }
-            }
-            "zstd" => {
-                let mut decoder = zstd::stream::read::Decoder::with_buffer(Cursor::new(&bytes))
-                    .map_err(|e| integrity(format!("Zstandard: {e}")))?;
-                // Restrict the native decoder window to the remaining budget.
-                let remaining = c
-                    .options
-                    .limits
-                    .working
-                    .saturating_sub(c.reserved)
-                    .saturating_sub(c.diagnostic_bytes)
-                    .saturating_sub(input)
-                    .saturating_sub(output * 2)
-                    .saturating_sub(inline)
-                    .saturating_sub(1 << 20);
-                if remaining < 1024 {
-                    return Err(limit("insufficient Zstandard window budget"));
-                }
-                decoder
-                    .window_log_max(remaining.ilog2().min(30))
-                    .map_err(|e| limit(format!("Zstandard window limit: {e}")))?;
-                drain(c, &mut decoder, &mut decoded, output)?;
-            }
-            _ => return Err(unsupported("compression codec")),
         }
-        // Unshuffling is a byte permutation, not a numeric conversion. Check
-        // its parameters without allocating a second full output image.
-        if let Some(item) = p.shuffle {
-            if item == 0 {
-                return Err(invalid("zero shuffle item size"));
-            }
+        // Shuffling is a byte permutation; validation need not allocate or
+        // reconstruct numeric pixels. Descriptor validity was checked earlier.
+        if compression.shuffle == Some(0) {
+            return Err(invalid("zero shuffle item size"));
         }
         offset = add(offset, input)?;
-    }
-    Ok(())
-}
-fn drain(
-    c: &Context<'_>,
-    reader: &mut impl Read,
-    output: &mut Vec<u8>,
-    expected: u64,
-) -> Result<()> {
-    let mut chunk = [0; 65536];
-    loop {
-        c.checkpoint()?;
-        let remaining = expected.saturating_sub(output.len() as u64);
-        let n = reader
-            .read(&mut chunk[..(remaining.saturating_add(1)).min(65536) as usize])
-            .map_err(|e| integrity(format!("payload decode: {e}")))?;
-        if n == 0 {
-            break;
-        }
-        if output.len() as u64 + n as u64 > expected {
-            return Err(integrity("decoded payload exceeds declared size"));
-        }
-        output.extend_from_slice(&chunk[..n]);
-    }
-    if output.len() as u64 != expected {
-        return Err(integrity("decoded payload shorter than declared size"));
     }
     Ok(())
 }
