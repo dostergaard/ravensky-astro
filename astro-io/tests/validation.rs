@@ -342,27 +342,29 @@ fn fits_ascii_and_binary_extensions_are_validated() {
 }
 #[test]
 fn checksum_validation_distinguishes_same_length_corruption() {
-    let file = Fixture::new(&fits());
-    {
-        let mut f = fitsio::FitsFile::edit(&file.0).unwrap();
-        let mut status = 0;
-        // SAFETY: f owns a live writable handle and status is a valid out-pointer.
-        unsafe {
-            fitsio::sys::ffpcks(f.as_raw(), &mut status);
+    astro_io::fits::backend::with_cfitsio(|| {
+        let file = Fixture::new(&fits());
+        {
+            let mut f = fitsio::FitsFile::edit(&file.0).unwrap();
+            let mut status = 0;
+            // SAFETY: f owns a live writable handle and status is a valid out-pointer.
+            unsafe {
+                fitsio::sys::ffpcks(f.as_raw(), &mut status);
+            }
+            assert_eq!(status, 0);
         }
-        assert_eq!(status, 0);
-    }
-    let options = ValidationOptions::default().with_level(ValidationLevel::Full);
-    let report = validate_file(&file.0, &options, None).unwrap();
-    assert_eq!(report.checksums().verified(), 2);
-    let mut bytes = fs::read(&file.0).unwrap();
-    bytes[2881] ^= 1;
-    fs::write(&file.0, bytes).unwrap();
-    validate_file(&file.0, &ValidationOptions::default(), None).unwrap();
-    assert_eq!(
-        validate_file(&file.0, &options, None).unwrap_err().kind(),
-        ValidationErrorKind::IntegrityMismatch
-    );
+        let options = ValidationOptions::default().with_level(ValidationLevel::Full);
+        let report = validate_file(&file.0, &options, None).unwrap();
+        assert_eq!(report.checksums().verified(), 2);
+        let mut bytes = fs::read(&file.0).unwrap();
+        bytes[2881] ^= 1;
+        fs::write(&file.0, bytes).unwrap();
+        validate_file(&file.0, &ValidationOptions::default(), None).unwrap();
+        assert_eq!(
+            validate_file(&file.0, &options, None).unwrap_err().kind(),
+            ValidationErrorKind::IntegrityMismatch
+        );
+    })
 }
 #[test]
 fn all_xisf_capture_codecs_and_shuffling_validate() {
@@ -508,67 +510,73 @@ fn malformed_xml_reserved_bytes_and_external_blocks_do_not_pass() {
 }
 #[test]
 fn tiled_fits_is_checked_through_the_native_backend() {
-    use fitsio::sys::{GZIP_1, GZIP_2, HCOMPRESS_1, PLIO_1, RICE_1};
-    let source = Fixture::new(&hdu(
-        &[
-            ("SIMPLE", "T"),
-            ("BITPIX", "16"),
-            ("NAXIS", "2"),
-            ("NAXIS1", "16"),
-            ("NAXIS2", "16"),
-        ],
-        &[0; 512],
-    ));
-    for codec in [RICE_1, GZIP_1, GZIP_2, PLIO_1, HCOMPRESS_1] {
-        let target = Fixture::new(&[]);
-        fs::remove_file(&target.0).unwrap();
-        {
-            let mut input = fitsio::FitsFile::open(&source.0).unwrap();
-            let mut output = fitsio::FitsFile::create(&target.0).open().unwrap();
-            let mut status = 0;
-            // SAFETY: independent live handles are owned for the full call, status is writable.
-            unsafe {
-                fitsio::sys::fits_set_compression_type(output.as_raw(), codec as i32, &mut status);
-                fitsio::sys::fits_img_compress(input.as_raw(), output.as_raw(), &mut status);
+    astro_io::fits::backend::with_cfitsio(|| {
+        use fitsio::sys::{GZIP_1, GZIP_2, HCOMPRESS_1, PLIO_1, RICE_1};
+        let source = Fixture::new(&hdu(
+            &[
+                ("SIMPLE", "T"),
+                ("BITPIX", "16"),
+                ("NAXIS", "2"),
+                ("NAXIS1", "16"),
+                ("NAXIS2", "16"),
+            ],
+            &[0; 512],
+        ));
+        for codec in [RICE_1, GZIP_1, GZIP_2, PLIO_1, HCOMPRESS_1] {
+            let target = Fixture::new(&[]);
+            fs::remove_file(&target.0).unwrap();
+            {
+                let mut input = fitsio::FitsFile::open(&source.0).unwrap();
+                let mut output = fitsio::FitsFile::create(&target.0).open().unwrap();
+                let mut status = 0;
+                // SAFETY: independent live handles are owned for the full call, status is writable.
+                unsafe {
+                    fitsio::sys::fits_set_compression_type(
+                        output.as_raw(),
+                        codec as i32,
+                        &mut status,
+                    );
+                    fitsio::sys::fits_img_compress(input.as_raw(), output.as_raw(), &mut status);
+                }
+                assert_eq!(status, 0, "encoding codec {codec}");
             }
-            assert_eq!(status, 0, "encoding codec {codec}");
-        }
-        for level in [ValidationLevel::Structural, ValidationLevel::Full] {
-            let report = validate_file(
-                &target.0,
-                &ValidationOptions::default().with_level(level),
-                None,
-            )
-            .unwrap();
-            assert_eq!(report.image_count(), 1);
-            let budget = MemoryBudget::new(8 * 1024 * 1024).unwrap();
-            let controlled = validate_file_with_budget(
-                &target.0,
-                &ValidationOptions::default().with_level(level),
-                None,
-                &budget,
-            );
-            if level == ValidationLevel::Full {
-                assert_eq!(
-                    controlled.unwrap_err().kind(),
-                    ValidationErrorKind::Unsupported
+            for level in [ValidationLevel::Structural, ValidationLevel::Full] {
+                let report = validate_file(
+                    &target.0,
+                    &ValidationOptions::default().with_level(level),
+                    None,
+                )
+                .unwrap();
+                assert_eq!(report.image_count(), 1);
+                let budget = MemoryBudget::new(8 * 1024 * 1024).unwrap();
+                let controlled = validate_file_with_budget(
+                    &target.0,
+                    &ValidationOptions::default().with_level(level),
+                    None,
+                    &budget,
                 );
-            } else {
-                controlled.unwrap();
+                if level == ValidationLevel::Full {
+                    assert_eq!(
+                        controlled.unwrap_err().kind(),
+                        ValidationErrorKind::Unsupported
+                    );
+                } else {
+                    controlled.unwrap();
+                }
+                assert_eq!(budget.used_bytes(), 0);
             }
-            assert_eq!(budget.used_bytes(), 0);
+            let mut bytes = fs::read(&target.0).unwrap();
+            let tile = bytes.windows(8).position(|b| b == b"ZTILE1  ").unwrap();
+            bytes[tile..tile + 80].copy_from_slice(card("ZTILE1", "0").as_bytes());
+            fs::write(&target.0, bytes).unwrap();
+            assert_eq!(
+                validate_file(&target.0, &ValidationOptions::default(), None)
+                    .unwrap_err()
+                    .kind(),
+                ValidationErrorKind::InvalidStructure
+            );
         }
-        let mut bytes = fs::read(&target.0).unwrap();
-        let tile = bytes.windows(8).position(|b| b == b"ZTILE1  ").unwrap();
-        bytes[tile..tile + 80].copy_from_slice(card("ZTILE1", "0").as_bytes());
-        fs::write(&target.0, bytes).unwrap();
-        assert_eq!(
-            validate_file(&target.0, &ValidationOptions::default(), None)
-                .unwrap_err()
-                .kind(),
-            ValidationErrorKind::InvalidStructure
-        );
-    }
+    })
 }
 #[test]
 fn embedded_hex_and_multiple_compression_subblocks_are_supported() {

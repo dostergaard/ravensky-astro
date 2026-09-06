@@ -468,50 +468,55 @@ fn validate_tiles(c: &mut Context<'_>, h: &BTreeMap<String, String>, index: usiz
         return Err(unsupported(format!("FITS compression codec {codec}")));
     }
     if c.shared_control {
-        return Err(unsupported("full CFITSIO decoding lacks enforced shared allocation/exclusivity controls; use structural validation or the standalone estimated path"));
+        return Err(unsupported("full CFITSIO decoding lacks enforced native allocation limits; use structural validation or the standalone estimated path"));
     }
-    // Bound indivisible CFITSIO tile inputs conservatively. Native allocations
-    // are not an exact process-wide memory quota.
-    let stored = add(
-        mul(number(h, "NAXIS1")?, number(h, "NAXIS2")?)?,
-        number(h, "PCOUNT")?,
-    )?;
-    let _native = c
-        .memory
-        .reserve(add(add(mul(tile, 64)?, mul(stored, 2)?)?, 1024 * 1024)?)?;
-    if c.path.as_os_str().to_string_lossy().contains(['[', ']']) {
-        return Err(unsupported(
-            "compressed FITS path contains backend filter syntax",
-        ));
-    }
-    c.consistent()?;
-    let local_path = std::fs::canonicalize(c.path).map_err(ValidationError::io)?;
-    if local_path
-        .as_os_str()
-        .to_string_lossy()
-        .contains(['[', ']'])
-    {
-        return Err(unsupported(
-            "compressed FITS resolved path contains backend filter syntax",
-        ));
-    }
-    let mut f =
-        fitsio::FitsFile::open(&local_path).map_err(|e| integrity(format!("CFITSIO open: {e}")))?;
-    c.consistent()?;
-    let hdu = f
-        .hdu(index)
-        .map_err(|e| integrity(format!("CFITSIO HDU: {e}")))?;
-    let chunk = (c.options.limits.working / 64).clamp(1, 8192);
-    let mut start = 0;
-    while start < pixels {
+    crate::fits::backend::try_with_cfitsio(|| {
         c.checkpoint()?;
-        let end = add(start, chunk)?.min(pixels);
-        let a = usize::try_from(start).map_err(|_| limit("image exceeds address space"))?;
-        let b = usize::try_from(end).map_err(|_| limit("image exceeds address space"))?;
-        let _: Vec<f64> = hdu
-            .read_section(&mut f, a, b)
-            .map_err(|e| integrity(format!("compressed HDU {index}: {e}")))?;
-        start = end;
-    }
-    Ok(())
+        // Reserve a standalone estimate, not an allocation ceiling. Native tile
+        // caches and malformed GZIP expansion can exceed this allowance; this
+        // path remains unavailable through the shared-budget API.
+        let stored = add(
+            mul(number(h, "NAXIS1")?, number(h, "NAXIS2")?)?,
+            number(h, "PCOUNT")?,
+        )?;
+        let _native = c
+            .memory
+            .reserve(add(add(mul(tile, 64)?, mul(stored, 2)?)?, 1024 * 1024)?)?;
+        if c.path.as_os_str().to_string_lossy().contains(['[', ']']) {
+            return Err(unsupported(
+                "compressed FITS path contains backend filter syntax",
+            ));
+        }
+        c.consistent()?;
+        let local_path = std::fs::canonicalize(c.path).map_err(ValidationError::io)?;
+        if local_path
+            .as_os_str()
+            .to_string_lossy()
+            .contains(['[', ']'])
+        {
+            return Err(unsupported(
+                "compressed FITS resolved path contains backend filter syntax",
+            ));
+        }
+        let mut f = fitsio::FitsFile::open(&local_path)
+            .map_err(|e| integrity(format!("CFITSIO open: {e}")))?;
+        c.consistent()?;
+        let hdu = f
+            .hdu(index)
+            .map_err(|e| integrity(format!("CFITSIO HDU: {e}")))?;
+        let chunk = (c.options.limits.working / 64).clamp(1, 8192);
+        let mut start = 0;
+        while start < pixels {
+            c.checkpoint()?;
+            let end = add(start, chunk)?.min(pixels);
+            let a = usize::try_from(start).map_err(|_| limit("image exceeds address space"))?;
+            let b = usize::try_from(end).map_err(|_| limit("image exceeds address space"))?;
+            let _: Vec<f64> = hdu
+                .read_section(&mut f, a, b)
+                .map_err(|e| integrity(format!("compressed HDU {index}: {e}")))?;
+            start = end;
+        }
+        Ok(())
+    })
+    .map_err(|e| ValidationError::new(ValidationErrorKind::ResourceBusy, e.to_string()))?
 }

@@ -60,7 +60,8 @@ pub enum ValidationErrorKind {
     Unsupported,
     /// A configured resource bound would be exceeded.
     ResourceLimit,
-    /// Shared capacity is temporarily occupied; retry outside the validator worker.
+    /// Memory or native backend admission is temporarily occupied; retry outside
+    /// the validator worker. Standalone native validation can also return this.
     ResourceBusy,
     /// The source observation or path identity changed during the call.
     ChangedDuringValidation,

@@ -17,6 +17,15 @@ Metadata extraction and handling for astronomical images.
 - Environmental data
 - Coordinate and timing utilities
 
+## FITS concurrency
+
+FITS metadata extraction shares astro-io's CFITSIO admission gate with image loading
+and validation. Reentrant builds retain concurrent access using independent handles;
+other builds serialize native work. Path-based extraction includes open and close.
+When passing a caller-owned `FitsFile`, enclose its complete lifetime in
+`astro_io::fits::backend::with_cfitsio`, including direct fitsio calls and drop.
+See [astro-io's concurrency contract](../astro-io/README.md#cfitsio-concurrency).
+
 ## Windows FITS Path-Length Note
 
 On Windows, FITS file access in AstroMuninn and the ravensky-astro FITS APIs depends on CFITSIO (via `fitsio` / `fitsio-sys`). CFITSIO currently opens disk files using its `fopen`-based path handling (`file_openfile`), which in this environment follows the classic Windows path-length boundary.

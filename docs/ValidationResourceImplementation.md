@@ -5,6 +5,10 @@ The [216-sample comparison](benchmarks/2026-09-06-m4-max-streaming/README.md)
 passes the initial memory/throughput targets. Consumer/native integration remains
 separate; no release defaults are selected by this result.
 
+Follow-up: [CFITSIO controls](CfitsioControlImplementation.md) now coordinate
+native concurrency across loaders and metadata helpers. The historical scope below
+describes the streaming checkpoint; native allocation limits remain unresolved.
+
 ## Objective and scope
 Add caller-owned nonblocking memory admission to the existing validator, and
 stream XISF zlib/Zstandard payloads without retaining decoded images. Preserve

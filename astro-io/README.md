@@ -13,6 +13,23 @@ I/O operations for astronomical image formats.
 - Efficient image data handling
 - Support for various data types (8-bit, 16-bit, 32-bit float)
 
+## CFITSIO concurrency
+
+FITS loading, header access, metadata extraction and standalone compressed-image
+validation share `astro_io::fits::backend`. The linked backend's
+`is_reentrant()` capability controls admission: independent handles run concurrently
+on reentrant builds; other builds admit one thread with nested calls supported.
+Loaders wait for admission. The validator uses nonblocking admission and can return
+`ResourceBusy`, including from standalone `validate_file`; retry outside the worker.
+Structural FITS and XISF validation do not acquire this native gate.
+
+Callers using `fitsio` directly must enclose open, operations, error handling and
+close/drop in `with_cfitsio` or `try_with_cfitsio`. Do not let live handles escape
+the closure. Borrowed-handle helpers protect their own operations, but cannot cover
+the caller's separate opens/closes. Uncoordinated direct calls and independently
+linked copies remain outside the gate. See the
+[control design and native allocation audit](../docs/CfitsioControlImplementation.md).
+
 ## Windows FITS Path-Length Note
 
 On Windows, FITS file access in AstroMuninn and the ravensky-astro FITS APIs depends on CFITSIO (via `fitsio` / `fitsio-sys`). CFITSIO currently opens disk files using its `fopen`-based path handling (`file_openfile`), which in this environment follows the classic Windows path-length boundary.
@@ -210,7 +227,7 @@ println!("Peak call reservations: {}", report.peak_reserved_bytes());
 | Zstandard | 64 KiB input/output, rounded declared frame history plus 1 MiB context/block allowance; admit each concatenated/skippable frame independently and enforce native window limit |
 | LZ4/LZ4HC | Complete attached input and decoded output blocks must fit live reservations; no streaming claim for the raw-block decoder |
 | FITS header/tables | 1 KiB per retained structural keyword covers map/string/table bookkeeping before insertion |
-| CFITSIO tiles | **Shared-budget full decoding returns `Unsupported`** until native allocation/exclusivity controls cover other loaders. Structural checks work; standalone full calls retain a conservative tile/stored-data/native allowance |
+| CFITSIO tiles | **Shared-budget full decoding returns `Unsupported`** until native allocation limits are enforceable. Native concurrency is coordinated across loaders. Structural checks work; standalone full calls retain an estimated tile/stored-data/native allowance that does not bound tile caches or malformed GZIP expansion |
 
 `MemoryBudget::used_bytes()` and `peak_bytes()` report reservation accounting;
 `ValidationReport::peak_reserved_bytes()` reports the call high-water mark. These
@@ -245,8 +262,8 @@ as whole-file gzip) return `Unsupported`. Full compressed FITS paths containing
 `[` or `]` are rejected to avoid CFITSIO filter interpretation. XISF external
 block locations, foreign XML element namespaces, DTDs, and external entities
 are unsupported; the validator does not fetch external resources. Namespace-less
-XISF headers are accepted for producer compatibility. On Windows, serialize
-CFITSIO use when linked against a non-reentrant build; the FITS path-length
+XISF headers are accepted for producer compatibility. Native access is serialized
+when the linked CFITSIO reports a non-reentrant build; the Windows FITS path-length
 restriction above also applies to the native compressed-image path.
 
 Tests generate temporary containers, exercise native CFITSIO compression and

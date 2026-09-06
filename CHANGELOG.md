@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Shared CFITSIO admission across FITS loaders, metadata helpers and native
+  validation, with runtime reentrancy detection and public wrappers for direct
+  native callers. Reentrant builds retain parallelism; non-reentrant builds
+  serialize participating callers. Native validation returns `ResourceBusy` on
+  contention. Shared full compressed FITS remains gated on native allocation work.
 - Caller-owned `MemoryBudget` and nonblocking `validate_file_with_budget`, with
   automatic reservation release, distinct `ResourceBusy` outcomes and peak
   reservation telemetry. Shared full CFITSIO decoding explicitly remains unsupported.
