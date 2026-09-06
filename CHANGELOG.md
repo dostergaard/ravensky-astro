@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Optional `astro-bench` library/CLI with bounded deterministic FITS/XISF fixtures,
+  read/structural/full workloads, fixed concurrency, cancellation, isolated repeated
+  samples, peak-memory/CPU telemetry and versioned JSON reports. Application
+  calibration and adaptive scheduling remain separate follow-up work.
+- Read-only `astro_io::validation` API for structural and full FITS/XISF checks,
+  with typed failures, configurable resource limits, cooperative cancellation,
+  source observations and checksum/decode coverage reports.
+- Complete supported HDU/block traversal, FITS heap and tiled-image validation,
+  and XISF local blocks/references, zlib/LZ4/LZ4HC/Zstandard decompression and
+  SHA-1/SHA-2/SHA-3 verification. Existing image-loader contracts are unchanged.
+- Generated regression fixtures for truncation, corruption, supported variants,
+  limits, source mutation and cancellation. Documented support boundaries and
+  remaining real-capture/platform rollout checks in the `astro-io` README.
+
 ## [0.5.0] - 2026-08-25
 
 ### Added

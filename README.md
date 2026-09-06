@@ -25,10 +25,17 @@ RavenSky Astro is intentionally modular. Each crate has a focused responsibility
 * **astro-io** → image file loading and saving
 * **astro-metadata** → structured metadata extraction
 * **astro-metrics** → statistical and quality analysis
+* **astro-bench** → optional synthetic workloads and repeatable performance measurements
 
 These crates are designed to be used independently or together, depending on your application’s needs.
 
 Planned format-layer refactoring and migration details are documented in the [Format Architecture Plan](docs/FormatArchitecturePlan.md).
+
+The [benchmark runner](astro-bench/README.md) provides generated FITS/XISF validator
+and raw-I/O workloads, explicit concurrency, and JSON reports. It is separate from
+production dependencies and does not change application defaults. See the
+[benchmark and calibration design](docs/BenchmarkAndCalibrationDesign.md) for scope
+and the path toward application-driven calibration.
 
 ---
 

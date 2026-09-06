@@ -22,6 +22,8 @@ Current workspace crates:
 - `astro-metadata`: structured metadata extraction, parsing, and normalization
 - `astro-metrics`: quantitative image-analysis and quality metrics
 - `ravensky-astro`: umbrella crate and facade over the subcrates
+- `astro-bench`: unpublished opt-in synthetic workload library and measurement CLI;
+  application calibration/settings policy stays with consumers
 
 This repository is not the place for end-user workflow orchestration, GUI behavior, CLI interaction design, packaging logic, or product-tier behavior unless explicitly required.
 
@@ -371,11 +373,28 @@ Good reasons to optimize include:
 
 Prefer measured or well-reasoned improvements over speculative tuning.
 
+Efficient bounded primitives are part of the shared-library contract. For large
+input/decoding paths, document live allocations, native backend overhead,
+fallible allocation behavior, resource limits and cancellation boundaries.
+Support caller-coordinated reservations without embedding product schedulers,
+monitor timers, hidden global pools or independent whole-machine budgets.
+Count codec-internal threads when describing concurrency capabilities.
+
+Follow the workspace Performance and Resource Design policy when present; keep
+library guarantees and standalone usage documented in this repository. Compare
+serial and concurrent workloads, peak memory and end-to-end throughput where
+relevant. Evaluate existing SIMD/hardware support before adding dependencies;
+retain portable fallbacks and identical validation semantics.
+
 ---
 
 ## Concurrency guidance
 
-Use concurrency only when it materially improves design or performance.
+Evaluate both concurrency and serialization against workload and backend evidence.
+Serial execution is a measurement baseline or a justified restriction, not a
+universal release design. Require resource bounds and deterministic results for
+concurrent use; document verified backend capabilities and isolate necessary
+serialization across all affected callers.
 
 Do not introduce async, threads, channels, locks, or parallel processing casually.
 

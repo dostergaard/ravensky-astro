@@ -5,6 +5,7 @@ members = [
     "astro-io",
     "astro-metadata",
     "astro-metrics",
+    "astro-bench",
 ]
 
 [workspace.package]
