@@ -13,6 +13,11 @@ the adjacent workspace validator sources.
 
 ## Run a benchmark
 
+New users: follow the [standalone benchmark guide](../docs/BenchmarkGuide.md) for
+prerequisites, a small first run, worker comparisons, JSON interpretation, existing
+captures and a complete separate-project Rust example. This README is the compact
+tool and resource-contract reference.
+
 From the workspace root:
 
 ```sh

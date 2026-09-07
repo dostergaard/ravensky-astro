@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Standalone benchmark guide covering setup, runnable CLI and external-project
+  Rust examples, real captures, report interpretation and investigation suites.
 - Extended benchmark investigation: worker-order/tile/size matrices, sampled
   profiles, bounded contention and cancellation checks, plus read-only real-capture
   measurements with preserved source hashes and explicit rejected-sample records.

@@ -4,6 +4,10 @@
 //! selected concurrency. The CLI isolates samples in fresh processes for peak RSS.
 //! All workloads are read-only. Errors/cancellation never yield successful samples.
 //!
+//! For setup, CLI commands, report interpretation and a separate-project example,
+//! see `docs/BenchmarkGuide.md` in the complete repository checkout. The crate's
+//! `README.md` describes CLI options and measurement/resource contracts.
+//!
 //! ```no_run
 //! use astro_bench::{FixtureSet, Recipe, Workload, run_sample};
 //! use std::sync::atomic::AtomicBool;

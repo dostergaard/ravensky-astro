@@ -31,6 +31,10 @@ These crates are designed to be used independently or together, depending on you
 
 Planned format-layer refactoring and migration details are documented in the [Format Architecture Plan](docs/FormatArchitecturePlan.md).
 
+Start with the [standalone benchmark guide](docs/BenchmarkGuide.md) for setup,
+commands, report interpretation, real captures and use from a separate Rust project.
+No RavenSky application is required.
+
 The [benchmark runner](astro-bench/README.md) provides generated FITS/XISF validator
 and raw-I/O workloads, explicit concurrency, and JSON reports. It is separate from
 production dependencies and does not change application defaults. See the
