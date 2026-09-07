@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "mode": "profile",
+  "note": "Apple M4 Max, 36 GiB RAM, macOS 26.6.2; release all-feature workspace build. Isolated sampling investigation; exclude instrumented timing from comparisons. AC power, desktop load uncontrolled, warm cache.",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "python": "3.12.14 (main, Aug 12 2026, 13:57:54) [Clang 21.0.0 (clang-2100.1.1.101)]",
+  "script_sha256": "1d9cc9be132832b2b8e51f48135fdb5fa8d8277efb9256996844e96ade46a439",
+  "binary_sha256": "2bd11fd0ddd1b2e084e3fb09844d5cc02e3cace0b44242e6fd539a4f227f5d0d",
+  "started_unix_seconds": 1788794725.047565,
+  "cache_state": "uncontrolled / likely warm"
+}

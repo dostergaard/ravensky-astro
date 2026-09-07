@@ -121,3 +121,8 @@ preexisting SEP test remains ignored. Git whitespace checks passed in both repos
 AstroMuninn changes only record integration requirements; its runtime dependency
 and monitoring behavior have not changed. Native allocation/RSS bounds, actual
 Windows/Linux execution and performance under foreground contention are unverified.
+
+Subsequent [benchmark completion work](BenchmarkCompletion.md) records bounded
+GZIP scaling/profiles, real captures on three volumes, CLI cancellation and an
+automated responsiveness proxy under bounded contention. It does not establish
+native allocation ceilings, Windows/Linux behavior or actual GUI/pressure response.

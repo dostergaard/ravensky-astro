@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "note": "Apple M4 Max, 36 GiB RAM, 14 cores, macOS 26.6.2; release all-feature example build. AC power, low-power mode off; desktop load uncontrolled, no concurrent builds/tests. First-observed and repeated read-plus-SHA-256 precede likely-warm validation. User-supplied mechanical HDD, /dev/disk10s1; up to three FITS and three XISF captures, sorted selection.",
+  "started_unix_seconds": 1788799715.3386712,
+  "script_sha256": "82837db660ff6eda04d0d340a9a5a47e74e4fa96ee9f8f66ee25e63ecdda8780",
+  "cache_state": "uncontrolled / likely warm; hashes before and after each sample",
+  "groups": {
+    "fits": 3,
+    "xisf": 3,
+    "mixed": 6
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "kind": "sequential_read_plus_sha256",
+  "samples": [
+    {
+      "repeat": 0,
+      "index": 0,
+      "stored_bytes": 93628800,
+      "sha256": "20752e1c2581c80185982048f9fcd966226843975275e02c53514c3173b9d70e",
+      "wall_seconds": 6.646043082990218,
+      "cpu_seconds": 0.045936000000000005
+    },
+    {
+      "repeat": 0,
+      "index": 1,
+      "stored_bytes": 93645824,
+      "sha256": "be28569863e7136cfb2e6044c96e71bc8b24573d2af651320197c34dad1cbcf3",
+      "wall_seconds": 1.1061430419795215,
+      "cpu_seconds": 0.04549
+    },
+    {
+      "repeat": 0,
+      "index": 2,
+      "stored_bytes": 93628800,
+      "sha256": "cf8a7a8fdaf51219a129afc418300c7192f0da038bf3571cb69fb0d4c8681a5d",
+      "wall_seconds": 1.088823957979912,
+      "cpu_seconds": 0.04599399999999999
+    },
+    {
+      "repeat": 0,
+      "index": 3,
+      "stored_bytes": 93645824,
+      "sha256": "13c2a49cc82aa85782c1b94a0a5fa59fde88e07d4594ea7ec8aff6a7845a0c88",
+      "wall_seconds": 1.046471042005578,
+      "cpu_seconds": 0.045956
+    },
+    {
+      "repeat": 0,
+      "index": 4,
+      "stored_bytes": 93628800,
+      "sha256": "ba1e21a70217bca3698a7377c310227d79da7594ac450df91ea1adc56089625a",
+      "wall_seconds": 1.0322249169985298,
+      "cpu_seconds": 0.04669999999999999
+    },
+    {
+      "repeat": 0,
+      "index": 5,
+      "stored_bytes": 93645824,
+      "sha256": "568f4310c1d73ddf38da2f94f86963dcf72ec009396df460ee83b25f9a8604df",
+      "wall_seconds": 1.017091874993639,
+      "cpu_seconds": 0.04570099999999999
+    },
+    {
+      "repeat": 1,
+      "index": 0,
+      "stored_bytes": 93628800,
+      "sha256": "20752e1c2581c80185982048f9fcd966226843975275e02c53514c3173b9d70e",
+      "wall_seconds": 0.0475037090072874,
+      "cpu_seconds": 0.03233600000000003
+    },
+    {
+      "repeat": 1,
+      "index": 1,
+      "stored_bytes": 93645824,
+      "sha256": "be28569863e7136cfb2e6044c96e71bc8b24573d2af651320197c34dad1cbcf3",
+      "wall_seconds": 0.04766091599594802,
+      "cpu_seconds": 0.03193700000000005
+    },
+    {
+      "repeat": 1,
+      "index": 2,
+      "stored_bytes": 93628800,
+      "sha256": "cf8a7a8fdaf51219a129afc418300c7192f0da038bf3571cb69fb0d4c8681a5d",
+      "wall_seconds": 0.033825374994194135,
+      "cpu_seconds": 0.03378399999999998
+    },
+    {
+      "repeat": 1,
+      "index": 3,
+      "stored_bytes": 93645824,
+      "sha256": "13c2a49cc82aa85782c1b94a0a5fa59fde88e07d4594ea7ec8aff6a7845a0c88",
+      "wall_seconds": 0.032570999988820404,
+      "cpu_seconds": 0.03229599999999999
+    },
+    {
+      "repeat": 1,
+      "index": 4,
+      "stored_bytes": 93628800,
+      "sha256": "ba1e21a70217bca3698a7377c310227d79da7594ac450df91ea1adc56089625a",
+      "wall_seconds": 0.03271549998316914,
+      "cpu_seconds": 0.03271200000000002
+    },
+    {
+      "repeat": 1,
+      "index": 5,
+      "stored_bytes": 93645824,
+      "sha256": "568f4310c1d73ddf38da2f94f86963dcf72ec009396df460ee83b25f9a8604df",
+      "wall_seconds": 0.03214737499365583,
+      "cpu_seconds": 0.03214800000000001
+    }
+  ],
+  "cache_state": "first observed read and immediate repeat; OS cache uncontrolled, no eviction"
+}

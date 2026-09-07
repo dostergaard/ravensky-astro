@@ -1,5 +1,9 @@
 # Validator benchmark completion
 
+Status: available-machine investigation complete and verified. The
+[results and raw evidence](benchmarks/2026-09-07-m4-max-completion/README.md) are
+ready for user review. No merge or production/defaults change is included.
+
 ## Objective
 
 Finish the remaining measurement work for the current bounded validator: explain
@@ -120,3 +124,32 @@ the validation matrices; cache state remains uncontrolled, not guaranteed cold.
 These larger capture observations are exploratory: the 64 MiB RSS target above
 applies to the synthetic GZIP matrix, not an invented universal bound for every
 XISF codec/window or capture layout.
+
+## Verification outcome and review boundary
+
+Passed: 123 workspace all-target tests, four doctests, nine Python tests,
+formatting, Clippy/documentation with warnings denied and release workspace/example
+builds. The existing SEP ignore is unchanged. Capture tests first failed for
+unimplemented measurement/diagnostic behavior, then passed. Existing supplied
+fixtures extend compatibility tests without changing validator behavior.
+
+All 960 scaling and 40 contention samples passed. Three real-capture matrices
+record 240 successful and 30 rejected samples; both external-volume matrices
+passed all 90 samples each. The rejected local FITS HDU checksums were independently
+confirmed with CFITSIO, while their data checksums remain valid. Fifteen additional
+samples on three 714.29 MiB FITS files passed. Every accepted capture report
+confirms byte preservation and released reservations. The 14 committed small
+fixtures match their mechanical-drive copies exactly.
+
+Peak unprofiled process RSS stayed below 9.54 MiB. All local cancellation/proxy
+targets passed. Profiles and tile-height comparisons identify decoder setup,
+small seek/read calls and scratch clearing as optimization candidates; they do
+not isolate one cause or select a universal worker count. Initial failed attempts
+and known rejections remain in the evidence, outside successful timing summaries.
+
+The remaining gates are broader release qualification: unavailable Windows/Linux
+and network storage, controlled cold-cache and low-memory tests, real foreground
+application switching, additional producers/codecs and maximum-size inputs.
+Automatic-mode comparisons depend on the future scheduler; excluded native
+compressed-FITS allocation controls remain separate implementation work.
+The user will review changes before any merge or subsequent release action.

@@ -99,3 +99,8 @@ now records synthetic GZIP_1/GZIP_2 row/image-tile RSS and worker scaling; it do
 not compare against the historical native decoder. Real-capture measurements
 remain outstanding.
 AstroMuninn changes only update its design documents; runtime integration is pending.
+
+The [benchmark completion results](benchmarks/2026-09-07-m4-max-completion/README.md)
+subsequently add 960 scaling samples, sampled row-tile profiles, cancellation,
+contention-proxy and real-file measurements on internal SSD, HDD and external SSD.
+They do not extend native codec coverage or establish automatic release defaults.

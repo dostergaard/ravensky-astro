@@ -118,6 +118,9 @@ FITS-only, XISF-only and mixed groups at structural/full levels, 1/2/4 workers,
 16 passes and five fresh-process repetitions (90 samples). Selection and file
 hashes are stable across samples. Read-plus-hash timing includes checksum CPU;
 first-observed reads are not guaranteed cold. Files are never copied or modified.
+Passes use one atomic operation sequence and may overlap, including concurrent
+reads of the same file. This measures sustained cached work; it does not emulate
+an arrival stream of unique captures.
 
 For explicit files or a diagnostic that may fail:
 
@@ -229,3 +232,6 @@ wrapper for Unix telemetry; generators reuse the existing codec/hash/serde stack
 Recorded evidence: [initial baseline](../docs/benchmarks/2026-09-06-m4-max/README.md)
 and [shared-reservation/streaming comparison](../docs/benchmarks/2026-09-06-m4-max-streaming/README.md),
 plus the [bounded FITS GZIP baseline](../docs/benchmarks/2026-09-06-m4-max-fits-gzip/README.md).
+The [completion investigation](../docs/benchmarks/2026-09-07-m4-max-completion/README.md)
+adds larger/tiled/worker-order comparisons, sampled profiles, a responsiveness
+proxy, cancellation and real captures on three supplied volumes.

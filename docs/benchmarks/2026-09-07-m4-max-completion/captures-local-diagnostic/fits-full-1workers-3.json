@@ -1,0 +1,381 @@
+{
+  "architecture": "aarch64",
+  "build_profile": "release",
+  "cache_state": "uncontrolled / likely warm: fingerprints touch inputs before timing",
+  "complete": false,
+  "cpu_seconds": 0.525241,
+  "inputs": [
+    {
+      "index": 0,
+      "sha256": "9a7f983da028459e33d9558934b2175fdd2060afe5e9850e617e770c0490e6c9",
+      "stored_bytes": 16819200
+    },
+    {
+      "index": 1,
+      "sha256": "e9f64b9b00836609b4dc9485dd0778b3747a7988b74ea2029df06b0d74c51b03",
+      "stored_bytes": 16819200
+    },
+    {
+      "index": 2,
+      "sha256": "e0df6e95a7b2cf0998d66ae1f61c36c49052bcbbe1c2c6ed3f5180fc6f799c3b",
+      "stored_bytes": 16819200
+    }
+  ],
+  "kind": "capture_probe",
+  "level": "Full",
+  "operations": [
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 0,
+      "seconds": 0.010968833,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 0,
+      "seconds": 0.010943458,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 0,
+      "seconds": 0.011079583,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 1,
+      "seconds": 0.01102875,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 1,
+      "seconds": 0.010998,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 1,
+      "seconds": 0.011037834,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 2,
+      "seconds": 0.011173708,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 2,
+      "seconds": 0.010765291,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 2,
+      "seconds": 0.010962417,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 3,
+      "seconds": 0.011029875,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 3,
+      "seconds": 0.010968042,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 3,
+      "seconds": 0.010764416,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 4,
+      "seconds": 0.01068275,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 4,
+      "seconds": 0.0107565,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 4,
+      "seconds": 0.010974542,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 5,
+      "seconds": 0.010959125,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 5,
+      "seconds": 0.0108545,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 5,
+      "seconds": 0.010948833,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 6,
+      "seconds": 0.011082667,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 6,
+      "seconds": 0.010947792,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 6,
+      "seconds": 0.01076675,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 7,
+      "seconds": 0.010837875,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 7,
+      "seconds": 0.010777667,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 7,
+      "seconds": 0.010730167,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 8,
+      "seconds": 0.01066925,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 8,
+      "seconds": 0.010606458,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 8,
+      "seconds": 0.010865083,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 9,
+      "seconds": 0.010649791,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 9,
+      "seconds": 0.010786916,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 9,
+      "seconds": 0.01114425,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 10,
+      "seconds": 0.010989,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 10,
+      "seconds": 0.011059708,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 10,
+      "seconds": 0.011056791,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 11,
+      "seconds": 0.011000291,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 11,
+      "seconds": 0.011152083,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 11,
+      "seconds": 0.011224709,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 12,
+      "seconds": 0.011169875,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 12,
+      "seconds": 0.011204042,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 12,
+      "seconds": 0.011201916,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 13,
+      "seconds": 0.0106335,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 13,
+      "seconds": 0.010695666,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 13,
+      "seconds": 0.010800041,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 14,
+      "seconds": 0.010951875,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 14,
+      "seconds": 0.010978916,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 14,
+      "seconds": 0.010972166,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 0,
+      "pass": 15,
+      "seconds": 0.011000916,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 1,
+      "pass": 15,
+      "seconds": 0.011182083,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 2,
+      "pass": 15,
+      "seconds": 0.011157667,
+      "success": false
+    }
+  ],
+  "os": "macos",
+  "passes": 16,
+  "peak_reserved_bytes": 72704,
+  "peak_rss_bytes": 6602752,
+  "per_call_working_bytes": 268435456,
+  "preparation_seconds": 0.080618208,
+  "probe_source_sha256": "944d8de7f775b9e3c9ccb3b279508112e888f2e299872ff6979552d61de5ec60",
+  "reserved_bytes_after": 0,
+  "rss_source": "process-lifetime getrusage: macOS bytes, Linux KiB converted; null elsewhere",
+  "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "schema_version": 1,
+  "shared_memory_bytes": 536870912,
+  "source_revision": "da8927cb9d3cb736e75008cc578476c6c35e885f",
+  "source_sha256": "1b0a1b651e6c3a84b4a204268dfe9aa3eebf5556e0f754d5f268c16c3e7e4c1d",
+  "sources_unchanged": true,
+  "wall_seconds": 0.525316084,
+  "workers": 1
+}

@@ -1,0 +1,15 @@
+{
+  "kind": "large_fits",
+  "selection": "First three sorted FITS files in supplied external SSD NGC7000/app directory",
+  "files": 3,
+  "stored_bytes_per_file": 748984320,
+  "workers": [
+    1,
+    2,
+    4
+  ],
+  "passes": 1,
+  "repeats": 5,
+  "note": "Apple M4 Max, 36 GiB RAM, macOS 26.6.2; external SSD /dev/disk7s1; AC power; desktop load and cache uncontrolled; no concurrent agent builds/tests. Read-only capture_probe release all-feature build.",
+  "script_sha256": "82837db660ff6eda04d0d340a9a5a47e74e4fa96ee9f8f66ee25e63ecdda8780"
+}

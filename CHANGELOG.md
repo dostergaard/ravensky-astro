@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Extended benchmark investigation: worker-order/tile/size matrices, sampled
+  profiles, bounded contention and cancellation checks, plus read-only real-capture
+  measurements with preserved source hashes and explicit rejected-sample records.
+  Recorded local SSD/HDD/external-SSD evidence and supplied format regression fixtures.
 - Compressed FITS benchmark recipes for GZIP_1/GZIP_2 with configurable tile rows,
   bounded generation, quota checks, native pixel-parity tests and a repeatable
   isolated measurement matrix. Original fixture versions and bytes are preserved.

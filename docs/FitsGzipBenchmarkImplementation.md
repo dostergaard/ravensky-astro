@@ -2,6 +2,9 @@
 
 Status: implemented and locally verified; the
 [216-sample baseline](benchmarks/2026-09-06-m4-max-fits-gzip/README.md) is recorded.
+The subsequent [completion investigation](BenchmarkCompletion.md) now records
+row-tile profiles, a larger worker/size matrix, contention/cancellation and real
+captures on the three available volumes. Broader release gates remain explicit.
 
 ## Objective and scope
 

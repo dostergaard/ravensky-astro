@@ -279,15 +279,18 @@ when the linked CFITSIO reports a non-reentrant build; the Windows FITS path-len
 restriction above also applies to the native compressed-image path.
 
 Tests generate temporary containers, exercise native CFITSIO compression and
-checksums, and use published SHA test vectors. Real capture compatibility and
+checksums, and use published SHA test vectors. Broader capture compatibility and
 Windows/Linux execution remain required before enabling this validator as a
 release monitoring gate. Existing loading APIs are unchanged.
 
 The optional [`astro-bench` runner](../astro-bench/README.md) generates bounded
 synthetic validator/I/O workloads with serial/fixed-concurrency measurements.
 See the [initial baseline](../docs/benchmarks/2026-09-06-m4-max/README.md) before
-the managed-reservation and streaming changes. These measurements do
-not establish release defaults or a hard process-memory ceiling.
+the managed-reservation and streaming changes. The subsequent
+[completion investigation](../docs/benchmarks/2026-09-07-m4-max-completion/README.md)
+records extended GZIP scaling, profiles, cancellation, a responsiveness proxy and
+real captures on three supplied volumes, including 714 MiB ordinary FITS files.
+These measurements do not establish release defaults or a hard process-memory ceiling.
 
 Format references: [FITS 4.0](https://fits.gsfc.nasa.gov/standard40/fits_standard40aa.pdf),
 [XISF 1.0](https://www.pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html),

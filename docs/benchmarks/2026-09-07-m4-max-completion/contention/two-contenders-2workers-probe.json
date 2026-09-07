@@ -1,0 +1,4909 @@
+{
+  "ticks": [
+    {
+      "at_seconds": 0.02469337501679547,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00469337502727285,
+      "task_seconds": 3.733299672603607e-05
+    },
+    {
+      "at_seconds": 0.04972370801260695,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499300000956282,
+      "task_seconds": 2.433298504911363e-05
+    },
+    {
+      "at_seconds": 0.07474466599524021,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996625008061528,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 0.09646416601026431,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0016962080262601376,
+      "task_seconds": 2.8292008209973574e-05
+    },
+    {
+      "at_seconds": 0.1214987910061609,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005006332998163998,
+      "task_seconds": 2.370899892412126e-05
+    },
+    {
+      "at_seconds": 0.1465198330115527,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997333016945049,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 0.17154470799141563,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001707992050797,
+      "task_seconds": 2.3042026441544294e-05
+    },
+    {
+      "at_seconds": 0.1965650000202004,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049972500128205866,
+      "task_seconds": 2.737497561611235e-05
+    },
+    {
+      "at_seconds": 0.22159600001759827,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003625032259151,
+      "task_seconds": 2.7082976885139942e-05
+    },
+    {
+      "at_seconds": 0.24662070799968205,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997625015676022,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 0.271645750006428,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001917015761137,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 0.2966665410203859,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997791023924947,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 0.32169599999906495,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005006416991818696,
+      "task_seconds": 2.3958011297509074e-05
+    },
+    {
+      "at_seconds": 0.3445214999956079,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0028015419957228005,
+      "task_seconds": 2.3666012566536665e-05
+    },
+    {
+      "at_seconds": 0.36954583300394006,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500066700624302,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 0.3945706660160795,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050015830202028155,
+      "task_seconds": 2.4249980924651027e-05
+    },
+    {
+      "at_seconds": 0.4195957079937216,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000792007194832,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 0.44461999999475665,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000542005291209,
+      "task_seconds": 2.3541011614724994e-05
+    },
+    {
+      "at_seconds": 0.4696424159919843,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998874996090308,
+      "task_seconds": 2.3209024220705032e-05
+    },
+    {
+      "at_seconds": 0.49466254099388607,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996915988158435,
+      "task_seconds": 2.441700780764222e-05
+    },
+    {
+      "at_seconds": 0.5196837080002297,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499675000901334,
+      "task_seconds": 2.3542001144960523e-05
+    },
+    {
+      "at_seconds": 0.5447171250125393,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005009875021642074,
+      "task_seconds": 3.10409814119339e-05
+    },
+    {
+      "at_seconds": 0.5697403750091325,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004992209025658667,
+      "task_seconds": 2.5165994884446263e-05
+    },
+    {
+      "at_seconds": 0.5947667080035899,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001167010050267,
+      "task_seconds": 2.3708009393885732e-05
+    },
+    {
+      "at_seconds": 0.6178020829975139,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0030116669950075448,
+      "task_seconds": 2.616702113300562e-05
+    },
+    {
+      "at_seconds": 0.6428252079931553,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996957984985784,
+      "task_seconds": 2.4792010663077235e-05
+    },
+    {
+      "at_seconds": 0.6678492909995839,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999291006242856,
+      "task_seconds": 2.341700019314885e-05
+    },
+    {
+      "at_seconds": 0.6928781660099048,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005005458020605147,
+      "task_seconds": 2.3500004317611456e-05
+    },
+    {
+      "at_seconds": 0.7179057500034105,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005004083999665454,
+      "task_seconds": 2.387500717304647e-05
+    },
+    {
+      "at_seconds": 0.7429304580145981,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050008330144919455,
+      "task_seconds": 2.333297743462026e-05
+    },
+    {
+      "at_seconds": 0.7650938750011846,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0021400840196292847,
+      "task_seconds": 2.479099202901125e-05
+    },
+    {
+      "at_seconds": 0.7901230830175336,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050044170347973704,
+      "task_seconds": 2.5707995519042015e-05
+    },
+    {
+      "at_seconds": 0.8151412500010338,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499245899845846,
+      "task_seconds": 2.3916014470160007e-05
+    },
+    {
+      "at_seconds": 0.8401649160077795,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049997500027529895,
+      "task_seconds": 2.3959000827744603e-05
+    },
+    {
+      "at_seconds": 0.8651892080088146,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000333010684699,
+      "task_seconds": 2.3500004317611456e-05
+    },
+    {
+      "at_seconds": 0.8902149159985129,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002207995858043,
+      "task_seconds": 2.4084001779556274e-05
+    },
+    {
+      "at_seconds": 0.9152403750049416,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001375015126541,
+      "task_seconds": 2.400000812485814e-05
+    },
+    {
+      "at_seconds": 0.9402654580189846,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001083016395569,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 0.9652860409987625,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499745798879303,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 0.9903136659995653,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005004333012038842,
+      "task_seconds": 2.4459004634991288e-05
+    },
+    {
+      "at_seconds": 1.0153345830040053,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049964580102823675,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 1.0403561659913976,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998332995455712,
+      "task_seconds": 2.750000567175448e-05
+    },
+    {
+      "at_seconds": 1.0653859160083812,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002250021789223,
+      "task_seconds": 2.3208995116874576e-05
+    },
+    {
+      "at_seconds": 1.090407291019801,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998166026780382,
+      "task_seconds": 2.3083994165062904e-05
+    },
+    {
+      "at_seconds": 1.1154289160040207,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998541000531986,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 1.1404510409920476,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999083001166582,
+      "task_seconds": 2.3209024220705032e-05
+    },
+    {
+      "at_seconds": 1.1654753750190139,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001125013222918,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 1.1905005410080776,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002165999030694,
+      "task_seconds": 2.3458997020497918e-05
+    },
+    {
+      "at_seconds": 1.2155228329938836,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998832999262959,
+      "task_seconds": 2.3208005586639047e-05
+    },
+    {
+      "at_seconds": 1.2405471660022158,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001125013222918,
+      "task_seconds": 2.2958993213251233e-05
+    },
+    {
+      "at_seconds": 1.2655680000025313,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997875017579645,
+      "task_seconds": 2.733300789259374e-05
+    },
+    {
+      "at_seconds": 1.2905949580017477,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999625001801178,
+      "task_seconds": 2.3083004634827375e-05
+    },
+    {
+      "at_seconds": 1.315615458006505,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997417010599747,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 1.3406402500113472,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001750017981976,
+      "task_seconds": 2.358300844207406e-05
+    },
+    {
+      "at_seconds": 1.365666333003901,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002499994589016,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 1.3906915000115987,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002042016712949,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 1.4157137500005774,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999249998945743,
+      "task_seconds": 2.720800694078207e-05
+    },
+    {
+      "at_seconds": 1.4407444579992443,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003500002203509,
+      "task_seconds": 2.70830059889704e-05
+    },
+    {
+      "at_seconds": 1.4657747080200352,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003167025279254,
+      "task_seconds": 2.7082976885139942e-05
+    },
+    {
+      "at_seconds": 1.490803416003473,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001625017030165,
+      "task_seconds": 2.2833992261439562e-05
+    },
+    {
+      "at_seconds": 1.5158246660139412,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998416028684005,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 1.540850000019418,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002292018616572,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 1.5658747910056263,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001790996175259,
+      "task_seconds": 2.341700019314885e-05
+    },
+    {
+      "at_seconds": 1.5909006250149105,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002417019568384,
+      "task_seconds": 2.3040978703647852e-05
+    },
+    {
+      "at_seconds": 1.6159227910102345,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999125027097762,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 1.6409475000109524,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001834011636674,
+      "task_seconds": 2.3333006538450718e-05
+    },
+    {
+      "at_seconds": 1.665972040995257,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500120798824355,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 1.6910012080043089,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005006125022191554,
+      "task_seconds": 2.416700590401888e-05
+    },
+    {
+      "at_seconds": 1.716024749999633,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049993749998975545,
+      "task_seconds": 2.7583009796217084e-05
+    },
+    {
+      "at_seconds": 1.741051791002974,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999458004022017,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 1.766074250015663,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999167023925111,
+      "task_seconds": 2.3165979655459523e-05
+    },
+    {
+      "at_seconds": 1.7910984159971122,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001000012271106,
+      "task_seconds": 2.308402326889336e-05
+    },
+    {
+      "at_seconds": 1.8161202080082148,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998707998311147,
+      "task_seconds": 2.3083004634827375e-05
+    },
+    {
+      "at_seconds": 1.841146332997596,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003041995223612,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 1.8661746660072822,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005005291022825986,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 1.889132000011159,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.002934334013843909,
+      "task_seconds": 3.704099799506366e-05
+    },
+    {
+      "at_seconds": 1.914147875009803,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00497883401112631,
+      "task_seconds": 2.379098441451788e-05
+    },
+    {
+      "at_seconds": 1.9391674580110703,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004995792027330026,
+      "task_seconds": 2.358300844207406e-05
+    },
+    {
+      "at_seconds": 1.964187583012972,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996542003937066,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 1.9892112080124207,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050005000084638596,
+      "task_seconds": 2.5874993298202753e-05
+    },
+    {
+      "at_seconds": 2.014238875010051,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001792014809325,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 2.0392680410004687,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005006291001336649,
+      "task_seconds": 2.5334011297672987e-05
+    },
+    {
+      "at_seconds": 2.0642920829996,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998707998311147,
+      "task_seconds": 2.341700019314885e-05
+    },
+    {
+      "at_seconds": 2.0893141660199035,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049986660305876285,
+      "task_seconds": 2.3333996068686247e-05
+    },
+    {
+      "at_seconds": 2.114339124993421,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001624987926334,
+      "task_seconds": 2.4625012883916497e-05
+    },
+    {
+      "at_seconds": 2.1393612080137245,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997458017896861,
+      "task_seconds": 2.3667002096772194e-05
+    },
+    {
+      "at_seconds": 2.164384333009366,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999458004022017,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 2.18940925001516,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001750017981976,
+      "task_seconds": 2.3290980607271194e-05
+    },
+    {
+      "at_seconds": 2.2144318750069942,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049993340217042714,
+      "task_seconds": 2.2791005903854966e-05
+    },
+    {
+      "at_seconds": 2.239455208007712,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000542005291209,
+      "task_seconds": 2.3083004634827375e-05
+    },
+    {
+      "at_seconds": 2.2644769579928834,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049986669910140336,
+      "task_seconds": 2.2917025489732623e-05
+    },
+    {
+      "at_seconds": 2.2894975829985924,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997707990696654,
+      "task_seconds": 2.2916996385902166e-05
+    },
+    {
+      "at_seconds": 2.314526875008596,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005006375024095178,
+      "task_seconds": 2.7915986720472574e-05
+    },
+    {
+      "at_seconds": 2.339538750005886,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004983959021046758,
+      "task_seconds": 2.3666012566536665e-05
+    },
+    {
+      "at_seconds": 2.3645568749925587,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004994458984583616,
+      "task_seconds": 2.329100971110165e-05
+    },
+    {
+      "at_seconds": 2.3895814580027945,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001292011002079,
+      "task_seconds": 2.3792003048583865e-05
+    },
+    {
+      "at_seconds": 2.4146008329989854,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004995583003619686,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 2.4396263330127113,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002125020837411,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 2.4646480829978827,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998499993234873,
+      "task_seconds": 2.7250003768131137e-05
+    },
+    {
+      "at_seconds": 2.4896753749926575,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000042001483962,
+      "task_seconds": 2.720800694078207e-05
+    },
+    {
+      "at_seconds": 2.514701750013046,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999167023925111,
+      "task_seconds": 2.7290981961414218e-05
+    },
+    {
+      "at_seconds": 2.5352757910150103,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0005467500304803252,
+      "task_seconds": 2.5083980290219188e-05
+    },
+    {
+      "at_seconds": 2.5602936659997795,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499279101495631,
+      "task_seconds": 2.5667017325758934e-05
+    },
+    {
+      "at_seconds": 2.585316665994469,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997332987841219,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 2.610342791012954,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003000027500093,
+      "task_seconds": 2.2958993213251233e-05
+    },
+    {
+      "at_seconds": 2.6353671250108164,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001375015126541,
+      "task_seconds": 2.3083004634827375e-05
+    },
+    {
+      "at_seconds": 2.660388290998526,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998082993552089,
+      "task_seconds": 2.5334011297672987e-05
+    },
+    {
+      "at_seconds": 2.680577874998562,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0001642499992158264,
+      "task_seconds": 2.5040993932634592e-05
+    },
+    {
+      "at_seconds": 2.7056055830034893,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002667021472007,
+      "task_seconds": 2.7125002816319466e-05
+    },
+    {
+      "at_seconds": 2.7306323329976294,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999625001801178,
+      "task_seconds": 2.5707995519042015e-05
+    },
+    {
+      "at_seconds": 2.755656291003106,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499825002043508,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 2.7806830829940736,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003541999030858,
+      "task_seconds": 2.5083019863814116e-05
+    },
+    {
+      "at_seconds": 2.805706832994474,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049986669910140336,
+      "task_seconds": 2.7667003450915217e-05
+    },
+    {
+      "at_seconds": 2.8307295000122394,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004995000024791807,
+      "task_seconds": 2.3957982193678617e-05
+    },
+    {
+      "at_seconds": 2.8557510410028044,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049975830188486725,
+      "task_seconds": 2.3458997020497918e-05
+    },
+    {
+      "at_seconds": 2.880775124998763,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000625009415671,
+      "task_seconds": 2.304100780747831e-05
+    },
+    {
+      "at_seconds": 2.905797540995991,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049993749998975545,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 2.930822583002737,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050020000198856,
+      "task_seconds": 2.2916996385902166e-05
+    },
+    {
+      "at_seconds": 2.955846458004089,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000958015443757,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 2.9808672910148744,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997791023924947,
+      "task_seconds": 2.2958993213251233e-05
+    },
+    {
+      "at_seconds": 3.005892707995372,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002457997761667,
+      "task_seconds": 2.545802271924913e-05
+    },
+    {
+      "at_seconds": 3.0309164579957724,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049982919881585985,
+      "task_seconds": 2.2916996385902166e-05
+    },
+    {
+      "at_seconds": 3.055945250001969,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005005875020287931,
+      "task_seconds": 2.3791013518348336e-05
+    },
+    {
+      "at_seconds": 3.0809665830165613,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997542011551559,
+      "task_seconds": 2.2833002731204033e-05
+    },
+    {
+      "at_seconds": 3.105990333016962,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000917008146644,
+      "task_seconds": 2.308297553099692e-05
+    },
+    {
+      "at_seconds": 3.1267367910186294,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0007233750366140157,
+      "task_seconds": 2.5083980290219188e-05
+    },
+    {
+      "at_seconds": 3.1517613329924643,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999458004022017,
+      "task_seconds": 2.5083019863814116e-05
+    },
+    {
+      "at_seconds": 3.1767888750182465,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002459016395733,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 3.2018105830065906,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998582997359335,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 3.226831750012934,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998292017262429,
+      "task_seconds": 2.2958003683015704e-05
+    },
+    {
+      "at_seconds": 3.2518534999981057,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998791991965845,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 3.2768779160105623,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050015410233754665,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 3.301900291000493,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999249998945743,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 3.3269225410185754,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999208031222224,
+      "task_seconds": 2.2833992261439562e-05
+    },
+    {
+      "at_seconds": 3.351945708011044,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000333010684699,
+      "task_seconds": 2.7292000595480204e-05
+    },
+    {
+      "at_seconds": 3.376975124992896,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002124991733581,
+      "task_seconds": 2.304100780747831e-05
+    },
+    {
+      "at_seconds": 3.402000208006939,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002042016712949,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 3.4270255409937818,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002457997761667,
+      "task_seconds": 2.7709000278264284e-05
+    },
+    {
+      "at_seconds": 3.4520555830094963,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050023330259136856,
+      "task_seconds": 2.4707987904548645e-05
+    },
+    {
+      "at_seconds": 3.4770753330085427,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004995042021619156,
+      "task_seconds": 2.3333006538450718e-05
+    },
+    {
+      "at_seconds": 3.502099541015923,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000875011319295,
+      "task_seconds": 2.3208995116874576e-05
+    },
+    {
+      "at_seconds": 3.5271220410068054,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999291006242856,
+      "task_seconds": 2.750000567175448e-05
+    },
+    {
+      "at_seconds": 3.552149041002849,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999500000849366,
+      "task_seconds": 2.7542002499103546e-05
+    },
+    {
+      "at_seconds": 3.577178500010632,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001917015761137,
+      "task_seconds": 2.316600875928998e-05
+    },
+    {
+      "at_seconds": 3.602204333001282,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002666992368177,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 3.6272285000013653,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001000012271106,
+      "task_seconds": 2.2958003683015704e-05
+    },
+    {
+      "at_seconds": 3.6522509579954203,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999500000849366,
+      "task_seconds": 2.3083004634827375e-05
+    },
+    {
+      "at_seconds": 3.677271833003033,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997792013455182,
+      "task_seconds": 2.274999860674143e-05
+    },
+    {
+      "at_seconds": 3.702297957992414,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050033750012516975,
+      "task_seconds": 2.5500019546598196e-05
+    },
+    {
+      "at_seconds": 3.727323208004236,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049997500027529895,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 3.7523458749928977,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999791999580339,
+      "task_seconds": 2.7416012017056346e-05
+    },
+    {
+      "at_seconds": 3.7773727909952868,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999500000849366,
+      "task_seconds": 2.72089964710176e-05
+    },
+    {
+      "at_seconds": 3.802399583015358,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999583034077659,
+      "task_seconds": 2.2833002731204033e-05
+    },
+    {
+      "at_seconds": 3.827407000004314,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004984583996701986,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 3.852429165999638,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999166005291045,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 3.877453583001625,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500141701195389,
+      "task_seconds": 2.2833002731204033e-05
+    },
+    {
+      "at_seconds": 3.902479625015985,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003209022106603,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 3.9275018330081366,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999208002118394,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 3.95252370799426,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049989999970421195,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 3.9775482080003712,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001500016078353,
+      "task_seconds": 2.2958003683015704e-05
+    },
+    {
+      "at_seconds": 4.002568958007032,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997792013455182,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 4.027591416001087,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999166005291045,
+      "task_seconds": 2.3083994165062904e-05
+    },
+    {
+      "at_seconds": 4.0526133330131415,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998833028366789,
+      "task_seconds": 2.2791995434090495e-05
+    },
+    {
+      "at_seconds": 4.077639208000619,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003083002520725,
+      "task_seconds": 2.6958005037158728e-05
+    },
+    {
+      "at_seconds": 4.102666124992538,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999958997359499,
+      "task_seconds": 2.733300789259374e-05
+    },
+    {
+      "at_seconds": 4.127692208014196,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998750024242327,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 4.152714500000002,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999416996724904,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 4.177740832994459,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003208003472537,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 4.20277991599869,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005016083014197648,
+      "task_seconds": 2.745899837464094e-05
+    },
+    {
+      "at_seconds": 4.2277960409992374,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004988666012650356,
+      "task_seconds": 2.400000812485814e-05
+    },
+    {
+      "at_seconds": 4.2528145410178695,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499450002098456,
+      "task_seconds": 2.341700019314885e-05
+    },
+    {
+      "at_seconds": 4.277839415997732,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001457990147173,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 4.302860583004076,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998000018531457,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 4.3278802080021705,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049964580102823675,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 4.352905541018117,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002208024961874,
+      "task_seconds": 2.5416986318305135e-05
+    },
+    {
+      "at_seconds": 4.377927166002337,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996208008378744,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 4.402947541006142,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996625008061528,
+      "task_seconds": 2.3333996068686247e-05
+    },
+    {
+      "at_seconds": 4.4279699579929,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999083001166582,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 4.452995666011702,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050023330259136856,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 4.478016958018998,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499825002043508,
+      "task_seconds": 2.2791995434090495e-05
+    },
+    {
+      "at_seconds": 4.503038208000362,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998457996407524,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 4.528059125004802,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998042015358806,
+      "task_seconds": 2.2958003683015704e-05
+    },
+    {
+      "at_seconds": 4.553081291000126,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999208002118394,
+      "task_seconds": 2.3083994165062904e-05
+    },
+    {
+      "at_seconds": 4.578106166009093,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500179102527909,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 4.603130500006955,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001292011002079,
+      "task_seconds": 2.3541011614724994e-05
+    },
+    {
+      "at_seconds": 4.628155875019729,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001834011636674,
+      "task_seconds": 2.3040978703647852e-05
+    },
+    {
+      "at_seconds": 4.653176916006487,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998000018531457,
+      "task_seconds": 2.2916996385902166e-05
+    },
+    {
+      "at_seconds": 4.678202166018309,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050023330259136856,
+      "task_seconds": 2.54589831456542e-05
+    },
+    {
+      "at_seconds": 4.703227916004835,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500029101385735,
+      "task_seconds": 3.024999750778079e-05
+    },
+    {
+      "at_seconds": 4.728255708003417,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997542011551559,
+      "task_seconds": 2.3208005586639047e-05
+    },
+    {
+      "at_seconds": 4.753277166018961,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499825002043508,
+      "task_seconds": 2.341700019314885e-05
+    },
+    {
+      "at_seconds": 4.778303375001997,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002791993319988,
+      "task_seconds": 2.487501478753984e-05
+    },
+    {
+      "at_seconds": 4.803326583001763,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998332995455712,
+      "task_seconds": 2.8708018362522125e-05
+    },
+    {
+      "at_seconds": 4.828357040998526,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001749988878146,
+      "task_seconds": 2.5500019546598196e-05
+    },
+    {
+      "at_seconds": 4.853374708007323,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049921669997274876,
+      "task_seconds": 2.4125009076669812e-05
+    },
+    {
+      "at_seconds": 4.87839804100804,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999208002118394,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 4.9034235830185935,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002250021789223,
+      "task_seconds": 2.5832996470853686e-05
+    },
+    {
+      "at_seconds": 4.928454500011867,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005005084007279947,
+      "task_seconds": 2.379098441451788e-05
+    },
+    {
+      "at_seconds": 4.953476333001163,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998042015358806,
+      "task_seconds": 2.7542002499103546e-05
+    },
+    {
+      "at_seconds": 4.9785027079924475,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998832999262959,
+      "task_seconds": 2.3833010345697403e-05
+    },
+    {
+      "at_seconds": 5.00352358300006,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997042007744312,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 5.028547833004268,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001125013222918,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 5.053569125011563,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499825002043508,
+      "task_seconds": 2.316600875928998e-05
+    },
+    {
+      "at_seconds": 5.078594332997454,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002041987609118,
+      "task_seconds": 2.4375010980293155e-05
+    },
+    {
+      "at_seconds": 5.103616125008557,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997417010599747,
+      "task_seconds": 2.358300844207406e-05
+    },
+    {
+      "at_seconds": 5.12864191600238,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002207995858043,
+      "task_seconds": 2.3333996068686247e-05
+    },
+    {
+      "at_seconds": 5.1536638750112616,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998625023290515,
+      "task_seconds": 2.4040986318141222e-05
+    },
+    {
+      "at_seconds": 5.178689708001912,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001792014809325,
+      "task_seconds": 2.429200685583055e-05
+    },
+    {
+      "at_seconds": 5.203718041011598,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050040410133078694,
+      "task_seconds": 2.3542001144960523e-05
+    },
+    {
+      "at_seconds": 5.2287395000166725,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997917014406994,
+      "task_seconds": 2.3040978703647852e-05
+    },
+    {
+      "at_seconds": 5.253761541011045,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499900002614595,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 5.278787791001378,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003208003472537,
+      "task_seconds": 2.779200440272689e-05
+    },
+    {
+      "at_seconds": 5.303812833008124,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049972500128205866,
+      "task_seconds": 2.441700780764222e-05
+    },
+    {
+      "at_seconds": 5.32884324999759,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005005999992135912,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 5.3538678330078255,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050008330144919455,
+      "task_seconds": 2.3833010345697403e-05
+    },
+    {
+      "at_seconds": 5.378888791019563,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997125011868775,
+      "task_seconds": 2.341700019314885e-05
+    },
+    {
+      "at_seconds": 5.403911708010128,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999500000849366,
+      "task_seconds": 2.3083004634827375e-05
+    },
+    {
+      "at_seconds": 5.428933624993078,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998833988793194,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 5.453958666010294,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002041027182713,
+      "task_seconds": 2.7083995519205928e-05
+    },
+    {
+      "at_seconds": 5.478985249996185,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999500000849366,
+      "task_seconds": 2.7041009161621332e-05
+    },
+    {
+      "at_seconds": 5.504010750009911,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499845901504159,
+      "task_seconds": 2.720800694078207e-05
+    },
+    {
+      "at_seconds": 5.529039332992397,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001374986022711,
+      "task_seconds": 2.3333006538450718e-05
+    },
+    {
+      "at_seconds": 5.549585375003517,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0005227090150583535,
+      "task_seconds": 2.6041001547127962e-05
+    },
+    {
+      "at_seconds": 5.574598666018574,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004987250023987144,
+      "task_seconds": 2.379197394475341e-05
+    },
+    {
+      "at_seconds": 5.599623082991457,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000625009415671,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 5.624643375020241,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996917035896331,
+      "task_seconds": 2.3249973310157657e-05
+    },
+    {
+      "at_seconds": 5.649666750017786,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000125034712255,
+      "task_seconds": 2.754098386503756e-05
+    },
+    {
+      "at_seconds": 5.6746928750071675,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998584015993401,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 5.697233957995195,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.002518207998946309,
+      "task_seconds": 2.7000001864507794e-05
+    },
+    {
+      "at_seconds": 5.722266958007822,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005006000021239743,
+      "task_seconds": 2.3917004000395536e-05
+    },
+    {
+      "at_seconds": 5.747292332991492,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001457990147173,
+      "task_seconds": 2.3292028345167637e-05
+    },
+    {
+      "at_seconds": 5.772316916001728,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001290992368013,
+      "task_seconds": 2.3625005269423127e-05
+    },
+    {
+      "at_seconds": 5.7973405410011765,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000000004656613,
+      "task_seconds": 2.4334003683179617e-05
+    },
+    {
+      "at_seconds": 5.822362500010058,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997625015676022,
+      "task_seconds": 2.3833010345697403e-05
+    },
+    {
+      "at_seconds": 5.847386790992459,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500045798253268,
+      "task_seconds": 2.3542001144960523e-05
+    },
+    {
+      "at_seconds": 5.87241054099286,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000208009732887,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 5.89743566600373,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001750017981976,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 5.922457291017054,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049983330245595425,
+      "task_seconds": 2.3499975213781e-05
+    },
+    {
+      "at_seconds": 5.947479750000639,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998959018848836,
+      "task_seconds": 2.329100971110165e-05
+    },
+    {
+      "at_seconds": 5.972503208002308,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000167002435774,
+      "task_seconds": 2.3500004317611456e-05
+    },
+    {
+      "at_seconds": 5.997527083003661,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000375007512048,
+      "task_seconds": 2.345800749026239e-05
+    },
+    {
+      "at_seconds": 6.0225577499950305,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005007208994356915,
+      "task_seconds": 2.458301605656743e-05
+    },
+    {
+      "at_seconds": 6.0475852499948815,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050029169942718,
+      "task_seconds": 2.3416010662913322e-05
+    },
+    {
+      "at_seconds": 6.072611000010511,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002334015443921,
+      "task_seconds": 2.304100780747831e-05
+    },
+    {
+      "at_seconds": 6.0976367499970365,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002708989195526,
+      "task_seconds": 2.316600875928998e-05
+    },
+    {
+      "at_seconds": 6.122666083014337,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005006167019018903,
+      "task_seconds": 2.420798409730196e-05
+    },
+    {
+      "at_seconds": 6.1476890000049025,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998709016945213,
+      "task_seconds": 2.7375004719942808e-05
+    },
+    {
+      "at_seconds": 6.17271954100579,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003166006645188,
+      "task_seconds": 2.341700019314885e-05
+    },
+    {
+      "at_seconds": 6.197741665993817,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998707998311147,
+      "task_seconds": 2.3334025172516704e-05
+    },
+    {
+      "at_seconds": 6.222767916013254,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002916004741564,
+      "task_seconds": 2.3208995116874576e-05
+    },
+    {
+      "at_seconds": 6.247794791008346,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003666010452434,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 6.272819666017313,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001750017981976,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 6.297849166003289,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050062499940395355,
+      "task_seconds": 2.3333996068686247e-05
+    },
+    {
+      "at_seconds": 6.322874500008766,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050020000198856,
+      "task_seconds": 2.566599869169295e-05
+    },
+    {
+      "at_seconds": 6.347902875015279,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002709018299356,
+      "task_seconds": 2.6915979105979204e-05
+    },
+    {
+      "at_seconds": 6.37293291601236,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003125028451905,
+      "task_seconds": 2.3208995116874576e-05
+    },
+    {
+      "at_seconds": 6.397954665997531,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998541000531986,
+      "task_seconds": 2.3083994165062904e-05
+    },
+    {
+      "at_seconds": 6.422980750008719,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003000027500093,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 6.448005875019589,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050020000198856,
+      "task_seconds": 2.308297553099692e-05
+    },
+    {
+      "at_seconds": 6.4730338329973165,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005004875012673438,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 6.494732207997004,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0016751250077504665,
+      "task_seconds": 8.175001130439341e-05
+    },
+    {
+      "at_seconds": 6.51979558300809,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049816250102594495,
+      "task_seconds": 2.3667002096772194e-05
+    },
+    {
+      "at_seconds": 6.544815291010309,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996041010599583,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 6.569836375012528,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997959011234343,
+      "task_seconds": 2.3540982510894537e-05
+    },
+    {
+      "at_seconds": 6.594859083008487,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999167023925111,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 6.6198804159939755,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499804099672474,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 6.644907583016902,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005004292033845559,
+      "task_seconds": 2.4541979655623436e-05
+    },
+    {
+      "at_seconds": 6.669924207992153,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004992083006072789,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 6.69494862499414,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001042009098455,
+      "task_seconds": 2.4708017008379102e-05
+    },
+    {
+      "at_seconds": 6.719967832992552,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499449999188073,
+      "task_seconds": 2.3667002096772194e-05
+    },
+    {
+      "at_seconds": 6.744990750012221,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999250028049573,
+      "task_seconds": 2.5874993298202753e-05
+    },
+    {
+      "at_seconds": 6.77001375000691,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997125011868775,
+      "task_seconds": 2.4250010028481483e-05
+    },
+    {
+      "at_seconds": 6.7950344160199165,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996416013455018,
+      "task_seconds": 2.5374989490956068e-05
+    },
+    {
+      "at_seconds": 6.818717749993084,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.003657958994153887,
+      "task_seconds": 3.479100996628404e-05
+    },
+    {
+      "at_seconds": 6.843750041007297,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499750001472421,
+      "task_seconds": 2.429200685583055e-05
+    },
+    {
+      "at_seconds": 6.868772749992786,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499841698911041,
+      "task_seconds": 2.345800749026239e-05
+    },
+    {
+      "at_seconds": 6.893794000003254,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997792013455182,
+      "task_seconds": 2.3333006538450718e-05
+    },
+    {
+      "at_seconds": 6.918818750011269,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500141701195389,
+      "task_seconds": 2.387500717304647e-05
+    },
+    {
+      "at_seconds": 6.943840124993585,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049974999856203794,
+      "task_seconds": 2.329100971110165e-05
+    },
+    {
+      "at_seconds": 6.968868124997243,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005004709004424512,
+      "task_seconds": 2.62079993262887e-05
+    },
+    {
+      "at_seconds": 6.9938828330195975,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004988500033505261,
+      "task_seconds": 2.3541972041130066e-05
+    },
+    {
+      "at_seconds": 7.018907416000729,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500104101956822,
+      "task_seconds": 2.516701351851225e-05
+    },
+    {
+      "at_seconds": 7.043925833015237,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049932500114664435,
+      "task_seconds": 2.3457978386431932e-05
+    },
+    {
+      "at_seconds": 7.068950790999224,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001500016078353,
+      "task_seconds": 2.441700780764222e-05
+    },
+    {
+      "at_seconds": 7.0939747910015285,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999583004973829,
+      "task_seconds": 2.3500004317611456e-05
+    },
+    {
+      "at_seconds": 7.118996083008824,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997792013455182,
+      "task_seconds": 2.3542001144960523e-05
+    },
+    {
+      "at_seconds": 7.144022291002329,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002666002837941,
+      "task_seconds": 2.9874994652345777e-05
+    },
+    {
+      "at_seconds": 7.169051875011064,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049997090245597064,
+      "task_seconds": 2.7582980692386627e-05
+    },
+    {
+      "at_seconds": 7.194079083012184,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999625030905008,
+      "task_seconds": 2.7542002499103546e-05
+    },
+    {
+      "at_seconds": 7.2191035830182955,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996958014089614,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 7.24412391599617,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997207986889407,
+      "task_seconds": 2.6374997105449438e-05
+    },
+    {
+      "at_seconds": 7.2691527499991935,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002459016395733,
+      "task_seconds": 2.3625005269423127e-05
+    },
+    {
+      "at_seconds": 7.294177916017361,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050015410233754665,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 7.319201291014906,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050000830087810755,
+      "task_seconds": 2.4334003683179617e-05
+    },
+    {
+      "at_seconds": 7.344223249994684,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997624986572191,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 7.369242832995951,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996208008378744,
+      "task_seconds": 2.7458008844405413e-05
+    },
+    {
+      "at_seconds": 7.394268916017609,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998625023290515,
+      "task_seconds": 2.3083994165062904e-05
+    },
+    {
+      "at_seconds": 7.419290749996435,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998749995138496,
+      "task_seconds": 2.316600875928998e-05
+    },
+    {
+      "at_seconds": 7.44431412499398,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000208999263123,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 7.4693379160016775,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000916018616408,
+      "task_seconds": 2.4334003683179617e-05
+    },
+    {
+      "at_seconds": 7.494360583019443,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049983330245595425,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 7.519383333012229,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999458004022017,
+      "task_seconds": 2.2916996385902166e-05
+    },
+    {
+      "at_seconds": 7.544408957997803,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500270799966529,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 7.569433791009942,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001666024327278,
+      "task_seconds": 2.458400558680296e-05
+    },
+    {
+      "at_seconds": 7.594454958016286,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996583011234179,
+      "task_seconds": 2.3707980290055275e-05
+    },
+    {
+      "at_seconds": 7.619477208005264,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998542019166052,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 7.644499540998368,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999041004339233,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 7.669521916017402,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999208031222224,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 7.694543791003525,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998582997359335,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 7.719565333012724,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998292017262429,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 7.74458716600202,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998832999262959,
+      "task_seconds": 2.2916996385902166e-05
+    },
+    {
+      "at_seconds": 7.769609291019151,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999208031222224,
+      "task_seconds": 2.3249973310157657e-05
+    },
+    {
+      "at_seconds": 7.794634165999014,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001625017030165,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 7.819655250001233,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499770900933072,
+      "task_seconds": 2.3916014470160007e-05
+    },
+    {
+      "at_seconds": 7.844682374998229,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003208993002772,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 7.869704166019801,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049986660305876285,
+      "task_seconds": 2.3083994165062904e-05
+    },
+    {
+      "at_seconds": 7.894726583006559,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049993330030702055,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 7.919749207998393,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999500000849366,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 7.944777791009983,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500570802250877,
+      "task_seconds": 2.4542008759453893e-05
+    },
+    {
+      "at_seconds": 7.969795750017511,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004993417009245604,
+      "task_seconds": 2.3999979021027684e-05
+    },
+    {
+      "at_seconds": 7.994817333004903,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049975830188486725,
+      "task_seconds": 2.3500004317611456e-05
+    },
+    {
+      "at_seconds": 8.019841500004986,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500066700624302,
+      "task_seconds": 2.3500004317611456e-05
+    },
+    {
+      "at_seconds": 8.044867791002616,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002791003789753,
+      "task_seconds": 2.2833992261439562e-05
+    },
+    {
+      "at_seconds": 8.06988925000769,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998625023290515,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 8.094911749998573,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999625001801178,
+      "task_seconds": 2.3416010662913322e-05
+    },
+    {
+      "at_seconds": 8.11993479100056,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999625001801178,
+      "task_seconds": 2.7250003768131137e-05
+    },
+    {
+      "at_seconds": 8.144965165993199,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003124999348074,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 8.169989457994234,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500141701195389,
+      "task_seconds": 2.3667002096772194e-05
+    },
+    {
+      "at_seconds": 8.195011458010413,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049983330245595425,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 8.220033541001612,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999083001166582,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 8.245058500004234,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001959012588486,
+      "task_seconds": 2.274999860674143e-05
+    },
+    {
+      "at_seconds": 8.270079583016923,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049983330245595425,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 8.295101374998922,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049986669910140336,
+      "task_seconds": 2.2958003683015704e-05
+    },
+    {
+      "at_seconds": 8.318580499995733,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0034561670036055148,
+      "task_seconds": 2.7000001864507794e-05
+    },
+    {
+      "at_seconds": 8.343608916009543,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001416022423655,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 8.365686416014796,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0020545000152196735,
+      "task_seconds": 2.5666988221928477e-05
+    },
+    {
+      "at_seconds": 8.390713666012743,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050015830202028155,
+      "task_seconds": 2.604199107736349e-05
+    },
+    {
+      "at_seconds": 8.415739832998952,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050001250056084245,
+      "task_seconds": 2.3333006538450718e-05
+    },
+    {
+      "at_seconds": 8.440765583014581,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002417019568384,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 8.465787666005781,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998707998311147,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 8.490808541013394,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499750001472421,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 8.5158325000084,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000792007194832,
+      "task_seconds": 2.3416010662913322e-05
+    },
+    {
+      "at_seconds": 8.540859083004761,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003166996175423,
+      "task_seconds": 2.70830059889704e-05
+    },
+    {
+      "at_seconds": 8.565887958015082,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001792014809325,
+      "task_seconds": 2.7375004719942808e-05
+    },
+    {
+      "at_seconds": 8.590915375010809,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000042001483962,
+      "task_seconds": 2.316600875928998e-05
+    },
+    {
+      "at_seconds": 8.615936540998518,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997999989427626,
+      "task_seconds": 2.274999860674143e-05
+    },
+    {
+      "at_seconds": 8.640958791016601,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999500029953197,
+      "task_seconds": 2.2791995434090495e-05
+    },
+    {
+      "at_seconds": 8.665980707999552,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999124997993931,
+      "task_seconds": 2.2791995434090495e-05
+    },
+    {
+      "at_seconds": 8.691003540996462,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000041011953726,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 8.716028958006063,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002542020520195,
+      "task_seconds": 2.358300844207406e-05
+    },
+    {
+      "at_seconds": 8.741050957993139,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499841698911041,
+      "task_seconds": 2.2833002731204033e-05
+    },
+    {
+      "at_seconds": 8.766077000007499,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003209022106603,
+      "task_seconds": 2.3625005269423127e-05
+    },
+    {
+      "at_seconds": 8.791102791001322,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002165999030694,
+      "task_seconds": 2.3333996068686247e-05
+    },
+    {
+      "at_seconds": 8.816132125008153,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005006000021239743,
+      "task_seconds": 2.8125010430812836e-05
+    },
+    {
+      "at_seconds": 8.841146457998548,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004986207990441471,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 8.86616641600267,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996208008378744,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 8.891188291017897,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998500022338703,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 8.916214208002202,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050026249955408275,
+      "task_seconds": 2.2916996385902166e-05
+    },
+    {
+      "at_seconds": 8.94124075002037,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003625032259151,
+      "task_seconds": 2.2957974579185247e-05
+    },
+    {
+      "at_seconds": 8.96627095801523,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005007250030757859,
+      "task_seconds": 2.479198155924678e-05
+    },
+    {
+      "at_seconds": 8.991288541001268,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499279101495631,
+      "task_seconds": 2.4250010028481483e-05
+    },
+    {
+      "at_seconds": 9.016313916014042,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001125013222918,
+      "task_seconds": 2.449998282827437e-05
+    },
+    {
+      "at_seconds": 9.036383583006682,
+      "phase": "preparation",
+      "wake_delay_seconds": 4.5167020289227366e-05,
+      "task_seconds": 2.7166999643668532e-05
+    },
+    {
+      "at_seconds": 9.057823875016766,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.001413125020917505,
+      "task_seconds": 2.4874985683709383e-05
+    },
+    {
+      "at_seconds": 9.082847790996311,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999041004339233,
+      "task_seconds": 2.516701351851225e-05
+    },
+    {
+      "at_seconds": 9.103074875019956,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0002019170206040144,
+      "task_seconds": 2.4415989173576236e-05
+    },
+    {
+      "at_seconds": 9.128103750001173,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005004459002520889,
+      "task_seconds": 2.400000812485814e-05
+    },
+    {
+      "at_seconds": 9.153121583018219,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004993833019398153,
+      "task_seconds": 2.333297743462026e-05
+    },
+    {
+      "at_seconds": 9.178145832993323,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000917008146644,
+      "task_seconds": 2.4083012249320745e-05
+    },
+    {
+      "at_seconds": 9.203168125008233,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998209013137966,
+      "task_seconds": 2.3416010662913322e-05
+    },
+    {
+      "at_seconds": 9.228190666006412,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999124997993931,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 9.253212875017198,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499920902075246,
+      "task_seconds": 2.291597775183618e-05
+    },
+    {
+      "at_seconds": 9.278242916014278,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005007125029806048,
+      "task_seconds": 2.4084001779556274e-05
+    },
+    {
+      "at_seconds": 9.303267125011189,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050001250056084245,
+      "task_seconds": 2.3707980290055275e-05
+    },
+    {
+      "at_seconds": 9.328292499994859,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001667013857514,
+      "task_seconds": 2.3625005269423127e-05
+    },
+    {
+      "at_seconds": 9.35331533299177,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999208002118394,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 9.378343415999552,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005004708014894277,
+      "task_seconds": 2.6124995201826096e-05
+    },
+    {
+      "at_seconds": 9.40336841600947,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998875025194138,
+      "task_seconds": 2.745899837464094e-05
+    },
+    {
+      "at_seconds": 9.42839549999917,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999625001801178,
+      "task_seconds": 2.7291011065244675e-05
+    },
+    {
+      "at_seconds": 9.45342091601924,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998125019483268,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 9.478447041008621,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003124999348074,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 9.50347158301156,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001500016078353,
+      "task_seconds": 2.2958003683015704e-05
+    },
+    {
+      "at_seconds": 9.528496290993644,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001749988878146,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 9.553517332999036,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998042015358806,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 9.578540375019656,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999875032808632,
+      "task_seconds": 2.2957974579185247e-05
+    },
+    {
+      "at_seconds": 9.603562833013711,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999500029953197,
+      "task_seconds": 2.7250003768131137e-05
+    },
+    {
+      "at_seconds": 9.628589041007217,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049989580002147704,
+      "task_seconds": 2.3083994165062904e-05
+    },
+    {
+      "at_seconds": 9.653612124995561,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000000004656613,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 9.677201707992936,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0035663330054376274,
+      "task_seconds": 2.516701351851225e-05
+    },
+    {
+      "at_seconds": 9.70222616600222,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999291006242856,
+      "task_seconds": 2.745899837464094e-05
+    },
+    {
+      "at_seconds": 9.727254833007464,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050012080173473805,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 9.752275708015077,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997625015676022,
+      "task_seconds": 2.3083004634827375e-05
+    },
+    {
+      "at_seconds": 9.773808958008885,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0015101669996511191,
+      "task_seconds": 2.679199678823352e-05
+    },
+    {
+      "at_seconds": 9.797947957995348,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0041122080001514405,
+      "task_seconds": 2.9750022804364562e-05
+    },
+    {
+      "at_seconds": 9.822978125012014,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005000417004339397,
+      "task_seconds": 2.4040986318141222e-05
+    },
+    {
+      "at_seconds": 9.848002125014318,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499995902646333,
+      "task_seconds": 2.3457978386431932e-05
+    },
+    {
+      "at_seconds": 9.873029915994266,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005004333012038842,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 9.89805575000355,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002542020520195,
+      "task_seconds": 2.304100780747831e-05
+    },
+    {
+      "at_seconds": 9.923081083019497,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002292018616572,
+      "task_seconds": 2.3582979338243604e-05
+    },
+    {
+      "at_seconds": 9.9481031250034,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499845901504159,
+      "task_seconds": 2.3208005586639047e-05
+    },
+    {
+      "at_seconds": 9.973129040998174,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500270799966529,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 9.998154416010948,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002125020837411,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 10.023179250012618,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001542012905702,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 10.048207208019448,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050048330158460885,
+      "task_seconds": 2.341700019314885e-05
+    },
+    {
+      "at_seconds": 10.073232958005974,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002332996809855,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 10.098254333017394,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049983330245595425,
+      "task_seconds": 2.308297553099692e-05
+    },
+    {
+      "at_seconds": 10.123280916013755,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500350003130734,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 10.148305957991397,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001999990781769,
+      "task_seconds": 2.2833002731204033e-05
+    },
+    {
+      "at_seconds": 10.173332041013055,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003250029403716,
+      "task_seconds": 2.3333996068686247e-05
+    },
+    {
+      "at_seconds": 10.198357540997677,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002165999030694,
+      "task_seconds": 2.7417001547291875e-05
+    },
+    {
+      "at_seconds": 10.22338700000546,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002042016712949,
+      "task_seconds": 2.7250003768131137e-05
+    },
+    {
+      "at_seconds": 10.248417166003492,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002916004741564,
+      "task_seconds": 2.7125002816319466e-05
+    },
+    {
+      "at_seconds": 10.273443750018487,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999459022656083,
+      "task_seconds": 2.7457979740574956e-05
+    },
+    {
+      "at_seconds": 10.29847283300478,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001625017030165,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 10.3234942080162,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049983330245595425,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 10.348519416002091,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002207995858043,
+      "task_seconds": 2.5667017325758934e-05
+    },
+    {
+      "at_seconds": 10.3735472499975,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500216698856093,
+      "task_seconds": 2.304100780747831e-05
+    },
+    {
+      "at_seconds": 10.39856979099568,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999500000849366,
+      "task_seconds": 2.575002145022154e-05
+    },
+    {
+      "at_seconds": 10.423598041001242,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002499994589016,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 10.448624708020361,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500350003130734,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 10.473650041007204,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002165999030694,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 10.498674250004115,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001167010050267,
+      "task_seconds": 2.2916006855666637e-05
+    },
+    {
+      "at_seconds": 10.5236950830149,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997917014406994,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 10.548720874998253,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002666992368177,
+      "task_seconds": 2.2916006855666637e-05
+    },
+    {
+      "at_seconds": 10.57374650001293,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002709018299356,
+      "task_seconds": 2.7125002816319466e-05
+    },
+    {
+      "at_seconds": 10.59877279101056,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999166005291045,
+      "task_seconds": 2.72089964710176e-05
+    },
+    {
+      "at_seconds": 10.623801125009777,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001125013222918,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 10.648829458019463,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005005333019653335,
+      "task_seconds": 2.320797648280859e-05
+    },
+    {
+      "at_seconds": 10.673853999993298,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001334007829428,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 10.698879333009245,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002208024961874,
+      "task_seconds": 2.316699828952551e-05
+    },
+    {
+      "at_seconds": 10.723904500016943,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050020000198856,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 10.748928500019247,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001000012271106,
+      "task_seconds": 2.320797648280859e-05
+    },
+    {
+      "at_seconds": 10.773953541007359,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001833022106439,
+      "task_seconds": 2.7125002816319466e-05
+    },
+    {
+      "at_seconds": 10.798978083010297,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997417010599747,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 10.824000541004352,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999416007194668,
+      "task_seconds": 2.416700590401888e-05
+    },
+    {
+      "at_seconds": 10.849026208015857,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001500016078353,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 10.874055791005958,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050065830000676215,
+      "task_seconds": 2.3542001144960523e-05
+    },
+    {
+      "at_seconds": 10.89907712501008,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997792013455182,
+      "task_seconds": 2.3208005586639047e-05
+    },
+    {
+      "at_seconds": 10.92410312499851,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002791993319988,
+      "task_seconds": 2.3208005586639047e-05
+    },
+    {
+      "at_seconds": 10.949128625012236,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002292018616572,
+      "task_seconds": 2.274999860674143e-05
+    },
+    {
+      "at_seconds": 10.974149957997724,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998582997359335,
+      "task_seconds": 2.2916996385902166e-05
+    },
+    {
+      "at_seconds": 10.999177332996624,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050044580129906535,
+      "task_seconds": 2.3708009393885732e-05
+    },
+    {
+      "at_seconds": 11.024202916014474,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001875018933788,
+      "task_seconds": 2.833400503732264e-05
+    },
+    {
+      "at_seconds": 11.049227957992116,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499670798308216,
+      "task_seconds": 2.3333006538450718e-05
+    },
+    {
+      "at_seconds": 11.074249625002267,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998334014089778,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 11.099275540997041,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002666002837941,
+      "task_seconds": 2.3250002413988113e-05
+    },
+    {
+      "at_seconds": 11.120668916002614,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0013701250136364251,
+      "task_seconds": 2.779200440272689e-05
+    },
+    {
+      "at_seconds": 11.145681041001808,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004984333005268127,
+      "task_seconds": 2.3542001144960523e-05
+    },
+    {
+      "at_seconds": 11.17069833300775,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00499375001527369,
+      "task_seconds": 2.3500004317611456e-05
+    },
+    {
+      "at_seconds": 11.195717624999816,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004995791998226196,
+      "task_seconds": 2.329100971110165e-05
+    },
+    {
+      "at_seconds": 11.220738041010918,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997125011868775,
+      "task_seconds": 2.2833992261439562e-05
+    },
+    {
+      "at_seconds": 11.245759832992917,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049989580002147704,
+      "task_seconds": 2.274999860674143e-05
+    },
+    {
+      "at_seconds": 11.270792833005544,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005010250024497509,
+      "task_seconds": 2.6833004085347056e-05
+    },
+    {
+      "at_seconds": 11.295814083016012,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004994417016860098,
+      "task_seconds": 2.7207977836951613e-05
+    },
+    {
+      "at_seconds": 11.320835082995472,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004993792012101039,
+      "task_seconds": 2.3500004317611456e-05
+    },
+    {
+      "at_seconds": 11.345858040993335,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999458004022017,
+      "task_seconds": 2.3792003048583865e-05
+    },
+    {
+      "at_seconds": 11.37087949999841,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997667012503371,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 11.395904416014673,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050019160262309015,
+      "task_seconds": 2.5291985366493464e-05
+    },
+    {
+      "at_seconds": 11.420924333011499,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004994625021936372,
+      "task_seconds": 2.3542001144960523e-05
+    },
+    {
+      "at_seconds": 11.445944833016256,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004996958014089614,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 11.470966499997303,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998374992283061,
+      "task_seconds": 2.3208005586639047e-05
+    },
+    {
+      "at_seconds": 11.495991458010394,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001750017981976,
+      "task_seconds": 2.3125001462176442e-05
+    },
+    {
+      "at_seconds": 11.521016540995333,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500195799395442,
+      "task_seconds": 2.4959008442237973e-05
+    },
+    {
+      "at_seconds": 11.546040000015637,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998500022338703,
+      "task_seconds": 2.362497616559267e-05
+    },
+    {
+      "at_seconds": 11.571066458011046,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002833029720932,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 11.596089124999708,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999291995773092,
+      "task_seconds": 2.345800749026239e-05
+    },
+    {
+      "at_seconds": 11.62111108301906,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998500022338703,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 11.646135916002095,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.00500195799395442,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 11.671160166006302,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001375015126541,
+      "task_seconds": 2.341700019314885e-05
+    },
+    {
+      "at_seconds": 11.69618258299306,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049989999970421195,
+      "task_seconds": 2.3208005586639047e-05
+    },
+    {
+      "at_seconds": 11.72120533301495,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999542026780546,
+      "task_seconds": 2.3041997337713838e-05
+    },
+    {
+      "at_seconds": 11.746227750001708,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049993749998975545,
+      "task_seconds": 2.3083004634827375e-05
+    },
+    {
+      "at_seconds": 11.771253125014482,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002292018616572,
+      "task_seconds": 2.2958003683015704e-05
+    },
+    {
+      "at_seconds": 11.79627554101171,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999458004022017,
+      "task_seconds": 2.358399797230959e-05
+    },
+    {
+      "at_seconds": 11.821296833019005,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004997708019800484,
+      "task_seconds": 2.3124972358345985e-05
+    },
+    {
+      "at_seconds": 11.8463222910068,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0050023330259136856,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 11.871344040991971,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998749995138496,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 11.896370666014263,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005003625032259151,
+      "task_seconds": 2.7000001864507794e-05
+    },
+    {
+      "at_seconds": 11.921396749996347,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999083990696818,
+      "task_seconds": 2.2624997654929757e-05
+    },
+    {
+      "at_seconds": 11.946424791007303,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005005416023777798,
+      "task_seconds": 2.3208995116874576e-05
+    },
+    {
+      "at_seconds": 11.971445958013646,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049979580217041075,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 11.996470915997634,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005001665995223448,
+      "task_seconds": 2.5500019546598196e-05
+    },
+    {
+      "at_seconds": 12.021495708002476,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999291995773092,
+      "task_seconds": 2.2916996385902166e-05
+    },
+    {
+      "at_seconds": 12.046517000009771,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998375021386892,
+      "task_seconds": 2.3333006538450718e-05
+    },
+    {
+      "at_seconds": 12.071539333002875,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049989999970421195,
+      "task_seconds": 2.329199924133718e-05
+    },
+    {
+      "at_seconds": 12.09656179099693,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999166005291045,
+      "task_seconds": 2.295902231708169e-05
+    },
+    {
+      "at_seconds": 12.1215869160078,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002165999030694,
+      "task_seconds": 2.833400503732264e-05
+    },
+    {
+      "at_seconds": 12.146614500001306,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999249998945743,
+      "task_seconds": 2.3541011614724994e-05
+    },
+    {
+      "at_seconds": 12.171637624996947,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004999583994504064,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 12.19665925001027,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998750024242327,
+      "task_seconds": 2.28749995585531e-05
+    },
+    {
+      "at_seconds": 12.221681124996394,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.0049989999970421195,
+      "task_seconds": 2.300000051036477e-05
+    },
+    {
+      "at_seconds": 12.246702583011938,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.004998458025511354,
+      "task_seconds": 2.2791995434090495e-05
+    },
+    {
+      "at_seconds": 12.271728166000685,
+      "phase": "preparation",
+      "wake_delay_seconds": 0.005002791003789753,
+      "task_seconds": 2.5459012249484658e-05
+    },
+    {
+      "at_seconds": 12.296756124997046,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002499994589016,
+      "task_seconds": 2.62079993262887e-05
+    },
+    {
+      "at_seconds": 12.321778415993322,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049960830074269325,
+      "task_seconds": 2.5084009394049644e-05
+    },
+    {
+      "at_seconds": 12.34681033299421,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005006833001971245,
+      "task_seconds": 2.6583002181723714e-05
+    },
+    {
+      "at_seconds": 12.371829708019504,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004992792033590376,
+      "task_seconds": 2.4874985683709383e-05
+    },
+    {
+      "at_seconds": 12.39685545800603,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000875011319295,
+      "task_seconds": 2.4542008759453893e-05
+    },
+    {
+      "at_seconds": 12.421879083005479,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999083001166582,
+      "task_seconds": 2.4542008759453893e-05
+    },
+    {
+      "at_seconds": 12.445226875017397,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.003323250013636425,
+      "task_seconds": 2.4582986952736974e-05
+    },
+    {
+      "at_seconds": 12.470250208018115,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998750024242327,
+      "task_seconds": 2.3499975213781e-05
+    },
+    {
+      "at_seconds": 12.495271332998527,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997625015676022,
+      "task_seconds": 2.4042004952207208e-05
+    },
+    {
+      "at_seconds": 12.517945041006897,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0026496660138946027,
+      "task_seconds": 2.4500011932104826e-05
+    },
+    {
+      "at_seconds": 12.542967707995558,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998166987206787,
+      "task_seconds": 2.4333014152944088e-05
+    },
+    {
+      "at_seconds": 12.56799129099818,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999249998945743,
+      "task_seconds": 2.7750007575377822e-05
+    },
+    {
+      "at_seconds": 12.59301808301825,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999042022973299,
+      "task_seconds": 2.837498323060572e-05
+    },
+    {
+      "at_seconds": 12.618051791010657,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005333019653335,
+      "task_seconds": 2.6083987904712558e-05
+    },
+    {
+      "at_seconds": 12.643073083017953,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004995208029868081,
+      "task_seconds": 2.4374981876462698e-05
+    },
+    {
+      "at_seconds": 12.66800679100561,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004909333016257733,
+      "task_seconds": 2.400000812485814e-05
+    },
+    {
+      "at_seconds": 12.693029500020202,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998709016945213,
+      "task_seconds": 2.3582979338243604e-05
+    },
+    {
+      "at_seconds": 12.718052125012036,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999042022973299,
+      "task_seconds": 2.387500717304647e-05
+    },
+    {
+      "at_seconds": 12.743078041006811,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002040998078883,
+      "task_seconds": 2.5374989490956068e-05
+    },
+    {
+      "at_seconds": 12.768100999994203,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997584008378908,
+      "task_seconds": 2.3958011297509074e-05
+    },
+    {
+      "at_seconds": 12.790079250000417,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.001954292005393654,
+      "task_seconds": 7.249999907799065e-05
+    },
+    {
+      "at_seconds": 12.815124916000059,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00497316601104103,
+      "task_seconds": 2.6666995836421847e-05
+    },
+    {
+      "at_seconds": 12.840151458018227,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999875032808632,
+      "task_seconds": 2.5291985366493464e-05
+    },
+    {
+      "at_seconds": 12.86517725000158,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050005000084638596,
+      "task_seconds": 2.8458016458898783e-05
+    },
+    {
+      "at_seconds": 12.890204416005872,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998707998311147,
+      "task_seconds": 2.750000567175448e-05
+    },
+    {
+      "at_seconds": 12.915231874998426,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999958997359499,
+      "task_seconds": 2.3958011297509074e-05
+    },
+    {
+      "at_seconds": 12.940253833017778,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998000018531457,
+      "task_seconds": 2.4416978703811765e-05
+    },
+    {
+      "at_seconds": 12.965275833004853,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049975830188486725,
+      "task_seconds": 2.520799171179533e-05
+    },
+    {
+      "at_seconds": 12.990231000003405,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004929959017317742,
+      "task_seconds": 6.650001159869134e-05
+    },
+    {
+      "at_seconds": 13.015303457999835,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005957995308563,
+      "task_seconds": 2.62079993262887e-05
+    },
+    {
+      "at_seconds": 13.040332000004128,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002334015443921,
+      "task_seconds": 2.895799116231501e-05
+    },
+    {
+      "at_seconds": 13.065366041002562,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005083017749712,
+      "task_seconds": 2.429200685583055e-05
+    },
+    {
+      "at_seconds": 13.090390875004232,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000542005291209,
+      "task_seconds": 2.4375010980293155e-05
+    },
+    {
+      "at_seconds": 13.115415790991392,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000540986657143,
+      "task_seconds": 2.6375026209279895e-05
+    },
+    {
+      "at_seconds": 13.140294000011636,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004851834004512057,
+      "task_seconds": 2.408298314549029e-05
+    },
+    {
+      "at_seconds": 13.165315541002201,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997458017896861,
+      "task_seconds": 2.3792003048583865e-05
+    },
+    {
+      "at_seconds": 13.190344250004273,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004917009500787,
+      "task_seconds": 2.4707987904548645e-05
+    },
+    {
+      "at_seconds": 13.215374541003257,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050055830215569586,
+      "task_seconds": 2.804200630635023e-05
+    },
+    {
+      "at_seconds": 13.240402291005012,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049997080059256405,
+      "task_seconds": 2.400000812485814e-05
+    },
+    {
+      "at_seconds": 13.265425958001288,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999666998628527,
+      "task_seconds": 2.3375003365799785e-05
+    },
+    {
+      "at_seconds": 13.290454166010022,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050048330158460885,
+      "task_seconds": 2.533398219384253e-05
+    },
+    {
+      "at_seconds": 13.314949457999319,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004469958017580211,
+      "task_seconds": 2.4250010028481483e-05
+    },
+    {
+      "at_seconds": 13.33996795801795,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004994250019080937,
+      "task_seconds": 2.662499900907278e-05
+    },
+    {
+      "at_seconds": 13.36499979099608,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005207989597693,
+      "task_seconds": 2.516701351851225e-05
+    },
+    {
+      "at_seconds": 13.390029041009257,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050040830101352185,
+      "task_seconds": 2.3458997020497918e-05
+    },
+    {
+      "at_seconds": 13.415052833006484,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000333010684699,
+      "task_seconds": 2.9457994969561696e-05
+    },
+    {
+      "at_seconds": 13.435443291004049,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00036100001307204366,
+      "task_seconds": 7.599999662488699e-05
+    },
+    {
+      "at_seconds": 13.460534750018269,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005015459028072655,
+      "task_seconds": 2.983299782499671e-05
+    },
+    {
+      "at_seconds": 13.485549583012471,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004985000006854534,
+      "task_seconds": 2.791700535453856e-05
+    },
+    {
+      "at_seconds": 13.510576083004707,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998582997359335,
+      "task_seconds": 2.649999805726111e-05
+    },
+    {
+      "at_seconds": 13.53560324999853,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500066700624302,
+      "task_seconds": 2.7250003768131137e-05
+    },
+    {
+      "at_seconds": 13.560636790993158,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005006291001336649,
+      "task_seconds": 2.587502240203321e-05
+    },
+    {
+      "at_seconds": 13.583699083013926,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.003036417008843273,
+      "task_seconds": 7.145799463614821e-05
+    },
+    {
+      "at_seconds": 13.608782666007755,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005012125009670854,
+      "task_seconds": 2.6583991711959243e-05
+    },
+    {
+      "at_seconds": 13.633803916018223,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049946660292334855,
+      "task_seconds": 2.4583976482972503e-05
+    },
+    {
+      "at_seconds": 13.65882487501949,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004996375035261735,
+      "task_seconds": 2.4999986635521054e-05
+    },
+    {
+      "at_seconds": 13.683850166009506,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500029101385735,
+      "task_seconds": 2.912498894147575e-05
+    },
+    {
+      "at_seconds": 13.708880999998655,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001709010684863,
+      "task_seconds": 2.400000812485814e-05
+    },
+    {
+      "at_seconds": 13.733759333001217,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004854333004914224,
+      "task_seconds": 7.054200978018343e-05
+    },
+    {
+      "at_seconds": 13.758837916015182,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050080410146620125,
+      "task_seconds": 2.6833993615582585e-05
+    },
+    {
+      "at_seconds": 13.783858915994642,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004994165996322408,
+      "task_seconds": 2.4250010028481483e-05
+    },
+    {
+      "at_seconds": 13.808884375001071,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001209006877616,
+      "task_seconds": 2.7583009796217084e-05
+    },
+    {
+      "at_seconds": 13.833919208002044,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005007250001654029,
+      "task_seconds": 2.762500662356615e-05
+    },
+    {
+      "at_seconds": 13.8589433330053,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049965000071097165,
+      "task_seconds": 2.7750007575377822e-05
+    },
+    {
+      "at_seconds": 13.883973290998256,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002207995858043,
+      "task_seconds": 2.6334018912166357e-05
+    },
+    {
+      "at_seconds": 13.909000707993982,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001082987291738,
+      "task_seconds": 2.429200685583055e-05
+    },
+    {
+      "at_seconds": 13.934026250004536,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500125001417473,
+      "task_seconds": 2.4415989173576236e-05
+    },
+    {
+      "at_seconds": 13.959049458004301,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998792021069676,
+      "task_seconds": 2.4667009711265564e-05
+    },
+    {
+      "at_seconds": 13.984074500011047,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000375007512048,
+      "task_seconds": 2.400000812485814e-05
+    },
+    {
+      "at_seconds": 14.00909683300415,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998332995455712,
+      "task_seconds": 2.4333014152944088e-05
+    },
+    {
+      "at_seconds": 14.034120041003916,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998874996090308,
+      "task_seconds": 2.4375010980293155e-05
+    },
+    {
+      "at_seconds": 14.059149625012651,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005209008231759,
+      "task_seconds": 2.7250003768131137e-05
+    },
+    {
+      "at_seconds": 14.084173875016859,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997000010916963,
+      "task_seconds": 2.4249980924651027e-05
+    },
+    {
+      "at_seconds": 14.109195708006155,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049975830188486725,
+      "task_seconds": 2.416700590401888e-05
+    },
+    {
+      "at_seconds": 14.134221790998708,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001915997127071,
+      "task_seconds": 2.370899892412126e-05
+    },
+    {
+      "at_seconds": 14.159247250005137,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001750017981976,
+      "task_seconds": 2.4375010980293155e-05
+    },
+    {
+      "at_seconds": 14.184092415991472,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004820790985831991,
+      "task_seconds": 2.5042012566700578e-05
+    },
+    {
+      "at_seconds": 14.209118583006784,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001125013222918,
+      "task_seconds": 2.441700780764222e-05
+    },
+    {
+      "at_seconds": 14.234139750013128,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00499675000901334,
+      "task_seconds": 2.4457986000925303e-05
+    },
+    {
+      "at_seconds": 14.259168332995614,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004125006962568,
+      "task_seconds": 2.950002090074122e-05
+    },
+    {
+      "at_seconds": 14.284198291017674,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050004580116365105,
+      "task_seconds": 2.6541994884610176e-05
+    },
+    {
+      "at_seconds": 14.309220708004432,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004995875002350658,
+      "task_seconds": 2.7750007575377822e-05
+    },
+    {
+      "at_seconds": 14.334150208014762,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004901750013232231,
+      "task_seconds": 2.7332978788763285e-05
+    },
+    {
+      "at_seconds": 14.359182332991622,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004792008548975,
+      "task_seconds": 2.4375010980293155e-05
+    },
+    {
+      "at_seconds": 14.384206082992023,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049993749998975545,
+      "task_seconds": 2.6875000912696123e-05
+    },
+    {
+      "at_seconds": 14.409242041001562,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005009083019103855,
+      "task_seconds": 3.0041992431506515e-05
+    },
+    {
+      "at_seconds": 14.434270750003634,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998667020117864,
+      "task_seconds": 2.7291011065244675e-05
+    },
+    {
+      "at_seconds": 14.45930354099255,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050054999883286655,
+      "task_seconds": 2.6500027161091566e-05
+    },
+    {
+      "at_seconds": 14.484333333006361,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005003291997127235,
+      "task_seconds": 2.8332986403256655e-05
+    },
+    {
+      "at_seconds": 14.509360124997329,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00499845901504159,
+      "task_seconds": 2.6708003133535385e-05
+    },
+    {
+      "at_seconds": 14.534389583015582,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500275002559647,
+      "task_seconds": 2.3707980290055275e-05
+    },
+    {
+      "at_seconds": 14.559415916010039,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002625024644658,
+      "task_seconds": 2.5999994250014424e-05
+    },
+    {
+      "at_seconds": 14.584442541003227,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000625009415671,
+      "task_seconds": 2.416700590401888e-05
+    },
+    {
+      "at_seconds": 14.609472333017038,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005625018384308,
+      "task_seconds": 2.508299075998366e-05
+    },
+    {
+      "at_seconds": 14.634502333006822,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004917009500787,
+      "task_seconds": 2.5332992663607e-05
+    },
+    {
+      "at_seconds": 14.65952741599176,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049997500027529895,
+      "task_seconds": 2.99170205835253e-05
+    },
+    {
+      "at_seconds": 14.684478375012986,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004921042011119425,
+      "task_seconds": 2.433298504911363e-05
+    },
+    {
+      "at_seconds": 14.709505125007126,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002417019568384,
+      "task_seconds": 2.379098441451788e-05
+    },
+    {
+      "at_seconds": 14.734528958011651,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000042030587792,
+      "task_seconds": 2.3832981241866946e-05
+    },
+    {
+      "at_seconds": 14.759553333016811,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000542034395039,
+      "task_seconds": 2.5166984414681792e-05
+    },
+    {
+      "at_seconds": 14.780162375012878,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.000583875022130087,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 14.805184625001857,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998499993234873,
+      "task_seconds": 2.5040993932634592e-05
+    },
+    {
+      "at_seconds": 14.829592541005695,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004382875020382926,
+      "task_seconds": 7.174999336712062e-05
+    },
+    {
+      "at_seconds": 14.854657332994975,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004993042006390169,
+      "task_seconds": 2.6708003133535385e-05
+    },
+    {
+      "at_seconds": 14.879205416014884,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004521375027252361,
+      "task_seconds": 2.63339898083359e-05
+    },
+    {
+      "at_seconds": 14.904227749997517,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00499600000330247,
+      "task_seconds": 2.633300027810037e-05
+    },
+    {
+      "at_seconds": 14.929256916017039,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002833029720932,
+      "task_seconds": 2.63339898083359e-05
+    },
+    {
+      "at_seconds": 14.949627207999583,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0003439580032136291,
+      "task_seconds": 2.400000812485814e-05
+    },
+    {
+      "at_seconds": 14.974654666002607,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500345800537616,
+      "task_seconds": 2.3667002096772194e-05
+    },
+    {
+      "at_seconds": 14.999678874999518,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000542005291209,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 15.024699708010303,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997083015041426,
+      "task_seconds": 2.6749999960884452e-05
+    },
+    {
+      "at_seconds": 15.049723250005627,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004996792005840689,
+      "task_seconds": 2.4208013201132417e-05
+    },
+    {
+      "at_seconds": 15.074753624998266,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005006166989915073,
+      "task_seconds": 2.6124995201826096e-05
+    },
+    {
+      "at_seconds": 15.099778583011357,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998833028366789,
+      "task_seconds": 2.416700590401888e-05
+    },
+    {
+      "at_seconds": 15.124736208003014,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049334579962305725,
+      "task_seconds": 2.3667002096772194e-05
+    },
+    {
+      "at_seconds": 15.149765291018412,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005416023777798,
+      "task_seconds": 2.358399797230959e-05
+    },
+    {
+      "at_seconds": 15.174790207995102,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001332989195362,
+      "task_seconds": 2.6708003133535385e-05
+    },
+    {
+      "at_seconds": 15.199814708001213,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997792013455182,
+      "task_seconds": 2.7417001547291875e-05
+    },
+    {
+      "at_seconds": 15.224845457996707,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050033330044243485,
+      "task_seconds": 2.600002335384488e-05
+    },
+    {
+      "at_seconds": 15.249867583013838,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049961250042542815,
+      "task_seconds": 2.679199678823352e-05
+    },
+    {
+      "at_seconds": 15.274897082999814,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500270799966529,
+      "task_seconds": 2.8583017410710454e-05
+    },
+    {
+      "at_seconds": 15.299923832993954,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998166987206787,
+      "task_seconds": 2.779200440272689e-05
+    },
+    {
+      "at_seconds": 15.32494950000546,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997875017579645,
+      "task_seconds": 2.649999805726111e-05
+    },
+    {
+      "at_seconds": 15.349973291013157,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049972910201177,
+      "task_seconds": 2.3625005269423127e-05
+    },
+    {
+      "at_seconds": 15.374998625018634,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001709010684863,
+      "task_seconds": 2.5332992663607e-05
+    },
+    {
+      "at_seconds": 15.400022165995324,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049982079945039,
+      "task_seconds": 2.820900408551097e-05
+    },
+    {
+      "at_seconds": 15.425056083011441,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500570802250877,
+      "task_seconds": 2.5332992663607e-05
+    },
+    {
+      "at_seconds": 15.450081040995428,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999625001801178,
+      "task_seconds": 2.7292000595480204e-05
+    },
+    {
+      "at_seconds": 15.475030166009674,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004921833024127409,
+      "task_seconds": 2.449998282827437e-05
+    },
+    {
+      "at_seconds": 15.500063999992562,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005009334010537714,
+      "task_seconds": 2.908302121795714e-05
+    },
+    {
+      "at_seconds": 15.525089541013585,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049964580102823675,
+      "task_seconds": 3.0625000363215804e-05
+    },
+    {
+      "at_seconds": 15.55011608300265,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004995916999178007,
+      "task_seconds": 2.720800694078207e-05
+    },
+    {
+      "at_seconds": 15.575140666012885,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997375013772398,
+      "task_seconds": 2.479198155924678e-05
+    },
+    {
+      "at_seconds": 15.59550266599399,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0003372080100234598,
+      "task_seconds": 2.7709000278264284e-05
+    },
+    {
+      "at_seconds": 15.620526707993122,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004996333009330556,
+      "task_seconds": 2.808301360346377e-05
+    },
+    {
+      "at_seconds": 15.645556875009788,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002084013540298,
+      "task_seconds": 2.7750007575377822e-05
+    },
+    {
+      "at_seconds": 15.670582499995362,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049978749884758145,
+      "task_seconds": 2.808301360346377e-05
+    },
+    {
+      "at_seconds": 15.695607750007184,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997167008696124,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 15.720631333009806,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999833006877452,
+      "task_seconds": 2.4542008759453893e-05
+    },
+    {
+      "at_seconds": 15.745653416001005,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997540992917493,
+      "task_seconds": 2.429200685583055e-05
+    },
+    {
+      "at_seconds": 15.770676665997598,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049989580002147704,
+      "task_seconds": 2.6124995201826096e-05
+    },
+    {
+      "at_seconds": 15.79570191600942,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999125027097762,
+      "task_seconds": 2.429200685583055e-05
+    },
+    {
+      "at_seconds": 15.820726041012676,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999833006877452,
+      "task_seconds": 2.8624985134229064e-05
+    },
+    {
+      "at_seconds": 15.845753833011258,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999167023925111,
+      "task_seconds": 2.4457986000925303e-05
+    },
+    {
+      "at_seconds": 15.870779374992708,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001084005925804,
+      "task_seconds": 2.3791013518348336e-05
+    },
+    {
+      "at_seconds": 15.895805291016586,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002125020837411,
+      "task_seconds": 2.591699012555182e-05
+    },
+    {
+      "at_seconds": 15.920745915995212,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004914707998977974,
+      "task_seconds": 2.3833999875932932e-05
+    },
+    {
+      "at_seconds": 15.945772125007352,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002375022741035,
+      "task_seconds": 2.387500717304647e-05
+    },
+    {
+      "at_seconds": 15.970797250018222,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500125001417473,
+      "task_seconds": 2.508299075998366e-05
+    },
+    {
+      "at_seconds": 15.995820333017036,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998000018531457,
+      "task_seconds": 2.3832981241866946e-05
+    },
+    {
+      "at_seconds": 16.020849041000474,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004875012673438,
+      "task_seconds": 2.5375018594786525e-05
+    },
+    {
+      "at_seconds": 16.045875583018642,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001167010050267,
+      "task_seconds": 2.3749977117404342e-05
+    },
+    {
+      "at_seconds": 16.07089516601991,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00499583303462714,
+      "task_seconds": 2.3833999875932932e-05
+    },
+    {
+      "at_seconds": 16.095891500008292,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004972499998984858,
+      "task_seconds": 2.358300844207406e-05
+    },
+    {
+      "at_seconds": 16.120915791019797,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000708013540134,
+      "task_seconds": 2.3333996068686247e-05
+    },
+    {
+      "at_seconds": 16.14594295801362,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005003833008231595,
+      "task_seconds": 2.3792003048583865e-05
+    },
+    {
+      "at_seconds": 16.1709668750118,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050001250056084245,
+      "task_seconds": 2.358300844207406e-05
+    },
+    {
+      "at_seconds": 16.195992749999277,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050022919895127416,
+      "task_seconds": 2.5208020815625787e-05
+    },
+    {
+      "at_seconds": 16.221022125013405,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004167003789917,
+      "task_seconds": 2.4957989808171988e-05
+    },
+    {
+      "at_seconds": 16.246044708008412,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997625015676022,
+      "task_seconds": 2.3917004000395536e-05
+    },
+    {
+      "at_seconds": 16.269375541014597,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0033069160126615316,
+      "task_seconds": 2.370899892412126e-05
+    },
+    {
+      "at_seconds": 16.294401374994777,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002124991733581,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 16.319424000015715,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998875025194138,
+      "task_seconds": 2.3665983462706208e-05
+    },
+    {
+      "at_seconds": 16.344439000007696,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004991334018995985,
+      "task_seconds": 2.5040993932634592e-05
+    },
+    {
+      "at_seconds": 16.369463500013808,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999459022656083,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 16.394486791017698,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00499954100814648,
+      "task_seconds": 2.3833999875932932e-05
+    },
+    {
+      "at_seconds": 16.419515790999867,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005165992770344,
+      "task_seconds": 2.6166992029175162e-05
+    },
+    {
+      "at_seconds": 16.444538665993605,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004996708012185991,
+      "task_seconds": 2.3917004000395536e-05
+    },
+    {
+      "at_seconds": 16.469568791013444,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005006208026316017,
+      "task_seconds": 2.3999979021027684e-05
+    },
+    {
+      "at_seconds": 16.494592333008768,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999542026780546,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 16.51962187499157,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005791987059638,
+      "task_seconds": 2.458301605656743e-05
+    },
+    {
+      "at_seconds": 16.5446476250072,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001167010050267,
+      "task_seconds": 2.508299075998366e-05
+    },
+    {
+      "at_seconds": 16.569670708006015,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998000018531457,
+      "task_seconds": 2.3792003048583865e-05
+    },
+    {
+      "at_seconds": 16.594698875007452,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004375008866191,
+      "task_seconds": 2.520799171179533e-05
+    },
+    {
+      "at_seconds": 16.619678666000254,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004954583011567593,
+      "task_seconds": 6.983400089666247e-05
+    },
+    {
+      "at_seconds": 16.644742625008803,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004994125018129125,
+      "task_seconds": 2.6416004402562976e-05
+    },
+    {
+      "at_seconds": 16.669767125014914,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998084012186155,
+      "task_seconds": 2.7457979740574956e-05
+    },
+    {
+      "at_seconds": 16.694790708017536,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004996125033358112,
+      "task_seconds": 2.7000001864507794e-05
+    },
+    {
+      "at_seconds": 16.71982279099757,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005082988645881,
+      "task_seconds": 2.6042020181193948e-05
+    },
+    {
+      "at_seconds": 16.744851625000592,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002791993319988,
+      "task_seconds": 2.358300844207406e-05
+    },
+    {
+      "at_seconds": 16.76972095799283,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004845749994274229,
+      "task_seconds": 2.5792018277570605e-05
+    },
+    {
+      "at_seconds": 16.794748707994586,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500195799395442,
+      "task_seconds": 2.4833017960190773e-05
+    },
+    {
+      "at_seconds": 16.819780416000867,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005006874998798594,
+      "task_seconds": 2.5125016691163182e-05
+    },
+    {
+      "at_seconds": 16.84480375002022,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998209013137966,
+      "task_seconds": 2.8082984499633312e-05
+    },
+    {
+      "at_seconds": 16.86983300000429,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001167010050267,
+      "task_seconds": 2.37500062212348e-05
+    },
+    {
+      "at_seconds": 16.89486666599987,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005009915999835357,
+      "task_seconds": 3.225001273676753e-05
+    },
+    {
+      "at_seconds": 16.91989133300376,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004992417001631111,
+      "task_seconds": 2.5332992663607e-05
+    },
+    {
+      "at_seconds": 16.944851458014455,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004934792028507218,
+      "task_seconds": 7.258300320245326e-05
+    },
+    {
+      "at_seconds": 16.969934708002256,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005010666995076463,
+      "task_seconds": 3.1458010198548436e-05
+    },
+    {
+      "at_seconds": 16.994959833013127,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004993667011149228,
+      "task_seconds": 2.8749986086040735e-05
+    },
+    {
+      "at_seconds": 17.01998683300917,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00499825002043508,
+      "task_seconds": 2.6124995201826096e-05
+    },
+    {
+      "at_seconds": 17.045010625006398,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997667012503371,
+      "task_seconds": 2.4208013201132417e-05
+    },
+    {
+      "at_seconds": 17.070037083001807,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050022499926853925,
+      "task_seconds": 2.662499900907278e-05
+    },
+    {
+      "at_seconds": 17.09489675000077,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004833042010432109,
+      "task_seconds": 2.8291018679738045e-05
+    },
+    {
+      "at_seconds": 17.1199319580046,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005006916995625943,
+      "task_seconds": 2.8292008209973574e-05
+    },
+    {
+      "at_seconds": 17.14495691601769,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004996666015358642,
+      "task_seconds": 2.8999987989664078e-05
+    },
+    {
+      "at_seconds": 17.169986291002715,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000375007512048,
+      "task_seconds": 2.429200685583055e-05
+    },
+    {
+      "at_seconds": 17.195007333008107,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00499675000901334,
+      "task_seconds": 2.4832988856360316e-05
+    },
+    {
+      "at_seconds": 17.22003733299789,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500516701140441,
+      "task_seconds": 2.762500662356615e-05
+    },
+    {
+      "at_seconds": 17.244938290998107,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004873333004070446,
+      "task_seconds": 2.679199678823352e-05
+    },
+    {
+      "at_seconds": 17.269964666018495,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999583034077659,
+      "task_seconds": 2.954198862425983e-05
+    },
+    {
+      "at_seconds": 17.29499183301232,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997625015676022,
+      "task_seconds": 2.5874993298202753e-05
+    },
+    {
+      "at_seconds": 17.320016208017478,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998500022338703,
+      "task_seconds": 3.404199378564954e-05
+    },
+    {
+      "at_seconds": 17.345050708012423,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050004580116365105,
+      "task_seconds": 3.274998744018376e-05
+    },
+    {
+      "at_seconds": 17.37008637501276,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500291702337563,
+      "task_seconds": 2.8582988306879997e-05
+    },
+    {
+      "at_seconds": 17.395111707999604,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00499675000901334,
+      "task_seconds": 2.9207993065938354e-05
+    },
+    {
+      "at_seconds": 17.420140291011194,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999375029001385,
+      "task_seconds": 2.866698196157813e-05
+    },
+    {
+      "at_seconds": 17.445166582998354,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997625015676022,
+      "task_seconds": 2.4125009076669812e-05
+    },
+    {
+      "at_seconds": 17.470196375012165,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005667015211657,
+      "task_seconds": 2.7040980057790875e-05
+    },
+    {
+      "at_seconds": 17.495218583004316,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004995167022570968,
+      "task_seconds": 2.5332992663607e-05
+    },
+    {
+      "at_seconds": 17.520247666019714,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005003750033210963,
+      "task_seconds": 2.6083987904712558e-05
+    },
+    {
+      "at_seconds": 17.545273958006874,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000208009732887,
+      "task_seconds": 2.5832996470853686e-05
+    },
+    {
+      "at_seconds": 17.570223499991698,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004923708998830989,
+      "task_seconds": 7.145802373997867e-05
+    },
+    {
+      "at_seconds": 17.595296290994156,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001332989195362,
+      "task_seconds": 2.704199869185686e-05
+    },
+    {
+      "at_seconds": 17.62032650000765,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005003167025279254,
+      "task_seconds": 2.691600820980966e-05
+    },
+    {
+      "at_seconds": 17.645353791012894,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000375007512048,
+      "task_seconds": 2.6875000912696123e-05
+    },
+    {
+      "at_seconds": 17.670378041017102,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997375013772398,
+      "task_seconds": 2.704199869185686e-05
+    },
+    {
+      "at_seconds": 17.695401166012743,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049960830074269325,
+      "task_seconds": 2.416700590401888e-05
+    },
+    {
+      "at_seconds": 17.72042587501346,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000542005291209,
+      "task_seconds": 2.3957982193678617e-05
+    },
+    {
+      "at_seconds": 17.745451208000304,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001375015126541,
+      "task_seconds": 2.4125009076669812e-05
+    },
+    {
+      "at_seconds": 17.770477041020058,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001708021154627,
+      "task_seconds": 2.6666995836421847e-05
+    },
+    {
+      "at_seconds": 17.79550583299715,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002124991733581,
+      "task_seconds": 2.691699774004519e-05
+    },
+    {
+      "at_seconds": 17.820534958009375,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002208024961874,
+      "task_seconds": 2.7000001864507794e-05
+    },
+    {
+      "at_seconds": 17.845556000014767,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004994042014004663,
+      "task_seconds": 2.4582986952736974e-05
+    },
+    {
+      "at_seconds": 17.87058000001707,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999417025828734,
+      "task_seconds": 2.7000001864507794e-05
+    },
+    {
+      "at_seconds": 17.895544708007947,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004937707999488339,
+      "task_seconds": 2.562499139457941e-05
+    },
+    {
+      "at_seconds": 17.920575708005344,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005375016480684,
+      "task_seconds": 2.3958011297509074e-05
+    },
+    {
+      "at_seconds": 17.945606166002108,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005006499995943159,
+      "task_seconds": 2.516701351851225e-05
+    },
+    {
+      "at_seconds": 17.97062870801892,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997375013772398,
+      "task_seconds": 2.4416978703811765e-05
+    },
+    {
+      "at_seconds": 17.99565125000663,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998125019483268,
+      "task_seconds": 2.3958011297509074e-05
+    },
+    {
+      "at_seconds": 18.02067679099855,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001582991098985,
+      "task_seconds": 2.6875000912696123e-05
+    },
+    {
+      "at_seconds": 18.045707790995948,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004125006962568,
+      "task_seconds": 2.6209017960354686e-05
+    },
+    {
+      "at_seconds": 18.07065912502003,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004925125016598031,
+      "task_seconds": 2.420798409730196e-05
+    },
+    {
+      "at_seconds": 18.09568554101861,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002208024961874,
+      "task_seconds": 2.4374981876462698e-05
+    },
+    {
+      "at_seconds": 18.12071154100704,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001625017030165,
+      "task_seconds": 2.3792003048583865e-05
+    },
+    {
+      "at_seconds": 18.14573379099602,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998457996407524,
+      "task_seconds": 2.441700780764222e-05
+    },
+    {
+      "at_seconds": 18.17075620801188,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998000018531457,
+      "task_seconds": 2.4042004952207208e-05
+    },
+    {
+      "at_seconds": 18.195777165994514,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004996915988158435,
+      "task_seconds": 2.370899892412126e-05
+    },
+    {
+      "at_seconds": 18.220805916003883,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005041020922363,
+      "task_seconds": 2.4959008442237973e-05
+    },
+    {
+      "at_seconds": 18.245832749991678,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050018749898299575,
+      "task_seconds": 2.5625020498409867e-05
+    },
+    {
+      "at_seconds": 18.27086024999153,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050018749898299575,
+      "task_seconds": 2.4333014152944088e-05
+    },
+    {
+      "at_seconds": 18.29588595801033,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001375015126541,
+      "task_seconds": 2.429200685583055e-05
+    },
+    {
+      "at_seconds": 18.32090804100153,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997790994821116,
+      "task_seconds": 2.3792003048583865e-05
+    },
+    {
+      "at_seconds": 18.345930583018344,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998750024242327,
+      "task_seconds": 2.3874978069216013e-05
+    },
+    {
+      "at_seconds": 18.370959666004637,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050052080187015235,
+      "task_seconds": 2.3542001144960523e-05
+    },
+    {
+      "at_seconds": 18.395988000003854,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004792008548975,
+      "task_seconds": 2.8290989575907588e-05
+    },
+    {
+      "at_seconds": 18.420941832999233,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004925542016280815,
+      "task_seconds": 2.4083012249320745e-05
+    },
+    {
+      "at_seconds": 18.445971416018438,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005500017432496,
+      "task_seconds": 2.504198346287012e-05
+    },
+    {
+      "at_seconds": 18.470994791015983,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049983330245595425,
+      "task_seconds": 2.3917004000395536e-05
+    },
+    {
+      "at_seconds": 18.496016207995126,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049974999856203794,
+      "task_seconds": 2.441700780764222e-05
+    },
+    {
+      "at_seconds": 18.521041916013928,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001291021471843,
+      "task_seconds": 2.504198346287012e-05
+    },
+    {
+      "at_seconds": 18.546068916009972,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050019580230582505,
+      "task_seconds": 2.3667002096772194e-05
+    },
+    {
+      "at_seconds": 18.571094290993642,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001707992050797,
+      "task_seconds": 2.3833999875932932e-05
+    },
+    {
+      "at_seconds": 18.59605749999173,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00493937500868924,
+      "task_seconds": 2.3416010662913322e-05
+    },
+    {
+      "at_seconds": 18.6210884579923,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005007542000385001,
+      "task_seconds": 2.779200440272689e-05
+    },
+    {
+      "at_seconds": 18.64610966600594,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004993416019715369,
+      "task_seconds": 2.745899837464094e-05
+    },
+    {
+      "at_seconds": 18.67113150001387,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004994375020032749,
+      "task_seconds": 2.4457986000925303e-05
+    },
+    {
+      "at_seconds": 18.69615795800928,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050020000198856,
+      "task_seconds": 2.995799877680838e-05
+    },
+    {
+      "at_seconds": 18.721185708011035,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997792013455182,
+      "task_seconds": 2.7166999643668532e-05
+    },
+    {
+      "at_seconds": 18.74158395800623,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0003710830060299486,
+      "task_seconds": 3.937500878237188e-05
+    },
+    {
+      "at_seconds": 18.76662650000071,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005003166996175423,
+      "task_seconds": 2.5375018594786525e-05
+    },
+    {
+      "at_seconds": 18.791645541001344,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004993665992515162,
+      "task_seconds": 2.5749992346391082e-05
+    },
+    {
+      "at_seconds": 18.81667116601602,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999875032808632,
+      "task_seconds": 2.491698251105845e-05
+    },
+    {
+      "at_seconds": 18.841692707996117,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004996625008061528,
+      "task_seconds": 2.4625012883916497e-05
+    },
+    {
+      "at_seconds": 18.866718041012064,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000708013540134,
+      "task_seconds": 2.791700535453856e-05
+    },
+    {
+      "at_seconds": 18.891652000020258,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004906042013317347,
+      "task_seconds": 2.8165988624095917e-05
+    },
+    {
+      "at_seconds": 18.916676082997583,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004995916999178007,
+      "task_seconds": 2.8292008209973574e-05
+    },
+    {
+      "at_seconds": 18.94170458300505,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000208009732887,
+      "task_seconds": 2.937499084509909e-05
+    },
+    {
+      "at_seconds": 18.96672862500418,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004994667018763721,
+      "task_seconds": 2.4083012249320745e-05
+    },
+    {
+      "at_seconds": 18.991750457993476,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997749987524003,
+      "task_seconds": 2.4208013201132417e-05
+    },
+    {
+      "at_seconds": 19.01618900001631,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00441433402011171,
+      "task_seconds": 2.6374997105449438e-05
+    },
+    {
+      "at_seconds": 19.04121766600292,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002290999982506,
+      "task_seconds": 2.6749999960884452e-05
+    },
+    {
+      "at_seconds": 19.066242000000784,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997584008378908,
+      "task_seconds": 2.491599298082292e-05
+    },
+    {
+      "at_seconds": 19.091263790993253,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049968750099651515,
+      "task_seconds": 2.3792003048583865e-05
+    },
+    {
+      "at_seconds": 19.116288082994288,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050005000084638596,
+      "task_seconds": 2.3667002096772194e-05
+    },
+    {
+      "at_seconds": 19.141309166006977,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997416021069512,
+      "task_seconds": 2.4667009711265564e-05
+    },
+    {
+      "at_seconds": 19.166338375012856,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004542006645352,
+      "task_seconds": 2.5540997739881277e-05
+    },
+    {
+      "at_seconds": 19.19136083300691,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004996917006792501,
+      "task_seconds": 2.4083012249320745e-05
+    },
+    {
+      "at_seconds": 19.216389833018184,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004917009500787,
+      "task_seconds": 2.6416993932798505e-05
+    },
+    {
+      "at_seconds": 19.241413750016363,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00499750001472421,
+      "task_seconds": 2.408298314549029e-05
+    },
+    {
+      "at_seconds": 19.266434916004073,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997083015041426,
+      "task_seconds": 2.8417009161785245e-05
+    },
+    {
+      "at_seconds": 19.291465957998298,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050026249955408275,
+      "task_seconds": 2.7542002499103546e-05
+    },
+    {
+      "at_seconds": 19.313267207995523,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0017737080052029341,
+      "task_seconds": 2.5667017325758934e-05
+    },
+    {
+      "at_seconds": 19.336495208000997,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.003202332998625934,
+      "task_seconds": 7.091701263561845e-05
+    },
+    {
+      "at_seconds": 19.361570708017098,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004583013942465,
+      "task_seconds": 2.608299837447703e-05
+    },
+    {
+      "at_seconds": 19.386592750001,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004995958996005356,
+      "task_seconds": 2.4833017960190773e-05
+    },
+    {
+      "at_seconds": 19.41161741601536,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999833006877452,
+      "task_seconds": 2.72089964710176e-05
+    },
+    {
+      "at_seconds": 19.43664795800578,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050033330044243485,
+      "task_seconds": 2.429200685583055e-05
+    },
+    {
+      "at_seconds": 19.46167400002014,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001750017981976,
+      "task_seconds": 2.566599869169295e-05
+    },
+    {
+      "at_seconds": 19.4865395410161,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004839875007746741,
+      "task_seconds": 2.7083995519205928e-05
+    },
+    {
+      "at_seconds": 19.51156812501722,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001500016078353,
+      "task_seconds": 2.4165987269952893e-05
+    },
+    {
+      "at_seconds": 19.536602291016607,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005010000022593886,
+      "task_seconds": 2.912498894147575e-05
+    },
+    {
+      "at_seconds": 19.561629875010112,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00499845901504159,
+      "task_seconds": 2.4582986952736974e-05
+    },
+    {
+      "at_seconds": 19.586655082996003,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000625009415671,
+      "task_seconds": 2.616702113300562e-05
+    },
+    {
+      "at_seconds": 19.611682375019882,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001125013222918,
+      "task_seconds": 2.6374997105449438e-05
+    },
+    {
+      "at_seconds": 19.636715666012606,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005006916006095707,
+      "task_seconds": 2.5416986318305135e-05
+    },
+    {
+      "at_seconds": 19.661658541008364,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004917458019917831,
+      "task_seconds": 2.804200630635023e-05
+    },
+    {
+      "at_seconds": 19.68669187501655,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005292012356222,
+      "task_seconds": 2.4665991077199578e-05
+    },
+    {
+      "at_seconds": 19.711715583020123,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999042022973299,
+      "task_seconds": 2.408298314549029e-05
+    },
+    {
+      "at_seconds": 19.736740583000937,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000917008146644,
+      "task_seconds": 2.3708009393885732e-05
+    },
+    {
+      "at_seconds": 19.761772083002143,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005007792002288625,
+      "task_seconds": 2.4667009711265564e-05
+    },
+    {
+      "at_seconds": 19.786801915994147,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005165992770344,
+      "task_seconds": 2.616702113300562e-05
+    },
+    {
+      "at_seconds": 19.811826207995182,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998124990379438,
+      "task_seconds": 2.600002335384488e-05
+    },
+    {
+      "at_seconds": 19.836849415994948,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004997207986889407,
+      "task_seconds": 2.779200440272689e-05
+    },
+    {
+      "at_seconds": 19.86188129099901,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050040830101352185,
+      "task_seconds": 2.416700590401888e-05
+    },
+    {
+      "at_seconds": 19.886909749999177,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005004292004741728,
+      "task_seconds": 2.6875000912696123e-05
+    },
+    {
+      "at_seconds": 19.911940291000064,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005003666010452434,
+      "task_seconds": 2.4667009711265564e-05
+    },
+    {
+      "at_seconds": 19.93696804100182,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005003083002520725,
+      "task_seconds": 2.5459012249484658e-05
+    },
+    {
+      "at_seconds": 19.9619902910199,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004996791016310453,
+      "task_seconds": 2.391697489656508e-05
+    },
+    {
+      "at_seconds": 19.9870137910184,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004999583034077659,
+      "task_seconds": 2.6583991711959243e-05
+    },
+    {
+      "at_seconds": 20.01196370800608,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0049233330064453185,
+      "task_seconds": 2.3958011297509074e-05
+    },
+    {
+      "at_seconds": 20.036988875013776,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001209006877616,
+      "task_seconds": 2.5415996788069606e-05
+    },
+    {
+      "at_seconds": 20.062014875002205,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005000584002118558,
+      "task_seconds": 2.4208013201132417e-05
+    },
+    {
+      "at_seconds": 20.087041624996345,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005002541991416365,
+      "task_seconds": 2.6458001229912043e-05
+    },
+    {
+      "at_seconds": 20.112072165997233,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.0050040830101352185,
+      "task_seconds": 2.541701542213559e-05
+    },
+    {
+      "at_seconds": 20.13709941599518,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005001832993002608,
+      "task_seconds": 2.4042004952207208e-05
+    },
+    {
+      "at_seconds": 20.162122375011677,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004998917022021487,
+      "task_seconds": 2.4165987269952893e-05
+    },
+    {
+      "at_seconds": 20.18707616601023,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004929625021759421,
+      "task_seconds": 2.3542001144960523e-05
+    },
+    {
+      "at_seconds": 20.2121054159943,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.00500570799340494,
+      "task_seconds": 2.400000812485814e-05
+    },
+    {
+      "at_seconds": 20.237135208008112,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005005792016163468,
+      "task_seconds": 2.5124987587332726e-05
+    },
+    {
+      "at_seconds": 20.262163458013674,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.005003125028451905,
+      "task_seconds": 2.5874993298202753e-05
+    },
+    {
+      "at_seconds": 20.28718512499472,
+      "phase": "sample_phase",
+      "wake_delay_seconds": 0.004995791998226196,
+      "task_seconds": 2.920802216976881e-05
+    }
+  ],
+  "summaries": {
+    "preparation": {
+      "observations": 493,
+      "p95_wake_seconds": 0.005004875012673438,
+      "max_wake_seconds": 0.005016083014197648,
+      "p95_task_seconds": 2.750000567175448e-05
+    },
+    "sample_phase": {
+      "observations": 322,
+      "p95_wake_seconds": 0.005006291001336649,
+      "max_wake_seconds": 0.005015459028072655,
+      "p95_task_seconds": 3.0041992431506515e-05
+    }
+  },
+  "elapsed_seconds": 20.287472541007446
+}

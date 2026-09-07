@@ -119,8 +119,11 @@ Set numerical memory/latency targets and regression tolerance from baselines
 before accepting release defaults. Exact API shape, telemetry fallback values,
 backend allocation evidence and platform/capture coverage remain engineering work.
 The first synthetic serial/fixed-concurrency measurements are recorded in the
-[initial benchmark baseline](benchmarks/2026-09-06-m4-max/README.md); native,
-real-capture, other-platform and foreground-responsiveness evidence remains open. Full product
+[initial benchmark baseline](benchmarks/2026-09-06-m4-max/README.md). The later
+[completion investigation](BenchmarkCompletion.md) adds real captures on three
+volumes, extended synthetic scaling, profiles, CLI cancellation and an automated
+responsiveness proxy. Native exclusions, broader producer/platform coverage and
+actual foreground/pressure testing remain open. Full product
 admission and benchmark requirements are recorded in AstroMuninn's monitor and
 image-validation designs; general policy is in the workspace
 `docs/PerformanceAndResourceDesign.md` when working in the multi-repo checkout.

@@ -1,0 +1,81 @@
+{
+  "architecture": "aarch64",
+  "build_profile": "release",
+  "cache_state": "uncontrolled / likely warm: fingerprints touch inputs before timing",
+  "complete": true,
+  "cpu_seconds": 0.1166290000000001,
+  "inputs": [
+    {
+      "index": 0,
+      "sha256": "144c01dc5f57ff774d5572f49208da8da0b5b1cd1917761658102f49d919a6ab",
+      "stored_bytes": 748984320
+    },
+    {
+      "index": 1,
+      "sha256": "e8a04dad5958d76fca39e9bf091e2016736e87998751fab361a102e351badedc",
+      "stored_bytes": 748984320
+    },
+    {
+      "index": 2,
+      "sha256": "5cf47189cd1c47b123dc0e4fc41d5c4cc4f78213bb53747541970056a610417e",
+      "stored_bytes": 748984320
+    }
+  ],
+  "kind": "capture_probe",
+  "level": "Full",
+  "operations": [
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Fits",
+      "images": 1,
+      "index": 0,
+      "pass": 0,
+      "read_bytes": 748994088,
+      "seconds": 0.040106917,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Fits",
+      "images": 1,
+      "index": 1,
+      "pass": 0,
+      "read_bytes": 748994088,
+      "seconds": 0.038271167,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Fits",
+      "images": 1,
+      "index": 2,
+      "pass": 0,
+      "read_bytes": 748994088,
+      "seconds": 0.038177708,
+      "success": true,
+      "undecoded_codec_count": 0
+    }
+  ],
+  "os": "macos",
+  "passes": 1,
+  "peak_reserved_bytes": 65536,
+  "peak_rss_bytes": 6455296,
+  "per_call_working_bytes": 268435456,
+  "preparation_seconds": 3.57891025,
+  "probe_source_sha256": "944d8de7f775b9e3c9ccb3b279508112e888f2e299872ff6979552d61de5ec60",
+  "reserved_bytes_after": 0,
+  "rss_source": "process-lifetime getrusage: macOS bytes, Linux KiB converted; null elsewhere",
+  "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "schema_version": 1,
+  "shared_memory_bytes": 536870912,
+  "source_revision": "da8927cb9d3cb736e75008cc578476c6c35e885f",
+  "source_sha256": "1b0a1b651e6c3a84b4a204268dfe9aa3eebf5556e0f754d5f268c16c3e7e4c1d",
+  "sources_unchanged": true,
+  "wall_seconds": 0.116657167,
+  "workers": 1
+}

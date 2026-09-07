@@ -118,3 +118,12 @@ The [compressed-FITS benchmark extension](FitsGzipBenchmarkImplementation.md)
 adds bounded GZIP_1/GZIP_2 recipes with row/whole-image tiles. These use the
 managed validator, not native CFITSIO decoding. Their generator version is 2;
 the original encodings, file bytes and generator version remain unchanged.
+
+The [completion investigation](BenchmarkCompletion.md) adds bounded orchestration
+for larger/tile/worker-order comparisons, profiling, cancellation and an automated
+responsiveness proxy. A separate read-only capture example supports explicit
+real-file inputs and mixed workloads without inventing synthetic recipes. It
+records input hashes, operation outcomes and its own source fingerprint; rejected
+samples remain diagnostics, not successful throughput. Three supplied volumes
+have now been measured. Application calibration, native exclusions and unverified
+platform/pressure/foreground scenarios still retain their separate release gates.
