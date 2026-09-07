@@ -113,3 +113,8 @@ hard process-memory guarantees. Shared reservations and streaming are now
 implemented; the [comparison](benchmarks/2026-09-06-m4-max-streaming/README.md)
 records measured memory reductions and throughput. Application calibration,
 native controls and broader workload/platform evidence remain separate work.
+
+The [compressed-FITS benchmark extension](FitsGzipBenchmarkImplementation.md)
+adds bounded GZIP_1/GZIP_2 recipes with row/whole-image tiles. These use the
+managed validator, not native CFITSIO decoding. Their generator version is 2;
+the original encodings, file bytes and generator version remain unchanged.

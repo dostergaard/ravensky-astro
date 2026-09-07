@@ -40,13 +40,31 @@ The runner measures separate operations, selected with `--workload`:
 | `structural` | Declared layout and extent checks | Container size / wall time; most payload bytes are not read |
 | `full` | All-byte reads, supported decoding and declared checksum verification | Stored bytes / wall time; managed reads may include repeated bytes |
 
-`--encoding` accepts `fits`, `xisf`, `zlib` and `zstd`. All frames contain one UInt16
+`--encoding` accepts `fits`, `fits-gzip`, `fits-gzip2`, `xisf`, `zlib` and `zstd`. All frames contain one UInt16
 monochrome image. Noise uses deterministic xorshift generation; gradient data
 exposes highly compressible behavior. XISF includes a SHA-256 attachment checksum;
-FITS uses ordinary images with no CHECKSUM/DATASUM. These are different workloads,
-so they are not an isolated codec contest. No tiled FITS/native CFITSIO decode,
-LZ4, byte shuffling, auxiliary blocks, camera metadata or scientific star-field
-model is included yet. Existing validator correctness tests cover more variants.
+FITS has no CHECKSUM/DATASUM; GZIP tiles additionally verify their embedded CRC32
+and size. These are different workloads, so they are not an isolated codec contest.
+Native CFITSIO decode, LZ4, auxiliary blocks, camera metadata and scientific
+star-field models are not included. Existing validator correctness tests cover more variants.
+
+For FITS GZIP, `--tile-rows N` selects the height of full-width tiles; omit it for
+one whole-image tile or use `1` for row tiles. The last tile may be shorter.
+GZIP_2 groups each tile's high and low sample bytes into separate planes before
+compression. Both encodings use Q byte descriptors and preserve the same logical
+UInt16 values as ordinary FITS/XISF. Generation and validation use bounded Rust
+streams; native CFITSIO is used only in independent fixture tests.
+
+Run the compressed-FITS matrix after a release build:
+
+```sh
+sh astro-bench/scripts/fits-gzip-baseline.sh REPORT_DIRECTORY SCRATCH_DIRECTORY \
+  'Hardware, storage and competing-workload notes'
+```
+
+This creates 24 reports and 216 isolated samples spanning GZIP_1/GZIP_2, row/image
+tiles, noise/gradient, 8/32 MiB images and 1/2/4 workers. It establishes the current
+bounded validator's baseline, without comparing historical native implementations.
 
 ## Use the library
 
@@ -77,11 +95,16 @@ CLI isolates each sample's memory high-water mark from prior samples/generation.
   buffer or sparse file. Each frame is synced, fully validated and hashed before
   timing. Zlib/Zstandard validation now streams decoded output; LZ4 remains a
   bounded whole-block path (not part of the initial benchmark matrix).
+  GZIP_2 revisits deterministic pixel state for its second byte plane instead of
+  retaining a tile buffer. FITS headers/descriptors are backpatched only inside
+  already-accounted space. Tile heights must be 1..=image height with at most
+  16,384 tiles/image. Quota preflight includes per-tile expansion and descriptors.
 - Bounds: 1–256 frames, 64 MiB decoded/image, 1–16 workers, 1–20 repetitions,
   scratch quota default 512 MiB/maximum 8 GiB. Generation checks a conservative
   expansion allowance before creating files and enforces its quota on writes.
 - Admission estimates 16 MiB overhead per worker plus three image buffers and
-  expansion for compressed full validation, or a 64 KiB buffer otherwise. Samples
+  expansion for XISF compressed full validation, 2 MiB for bounded FITS GZIP full
+  validation, or a 64 KiB buffer otherwise. Samples
   exceeding 512 MiB estimated aggregate working memory are rejected. This estimate
   is specific to these generated fixtures, **not a hard RSS cap or an adaptive
   scheduler**. The original conservative preflight is retained for comparable
@@ -105,6 +128,9 @@ file timings within the same worker group. CPU time is a process user+system del
 Peak RSS uses `getrusage`: bytes on macOS, KiB converted to bytes on Linux, `null`
 elsewhere. It includes child setup and native/runtime allocations, excludes parent
 generation, and does not measure filesystem cache or foreground responsiveness.
+Fixture generator version 2 identifies the new tiled-FITS recipes; original
+encodings retain version 1 and unchanged bytes. Optional `tile_rows` is omitted
+when unspecified, so old recipes/manifests remain readable.
 
 Generation and pre-sample fingerprint verification touch every file. Cache state
 is **uncontrolled / likely warm** even in fresh child processes. No cache flushing
@@ -117,4 +143,5 @@ The CLI adds `ctrlc` for portable interrupts and a small isolated `libc::getrusa
 wrapper for Unix telemetry; generators reuse the existing codec/hash/serde stack.
 
 Recorded evidence: [initial baseline](../docs/benchmarks/2026-09-06-m4-max/README.md)
-and [shared-reservation/streaming comparison](../docs/benchmarks/2026-09-06-m4-max-streaming/README.md).
+and [shared-reservation/streaming comparison](../docs/benchmarks/2026-09-06-m4-max-streaming/README.md),
+plus the [bounded FITS GZIP baseline](../docs/benchmarks/2026-09-06-m4-max-fits-gzip/README.md).

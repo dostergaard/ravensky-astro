@@ -30,18 +30,21 @@ impl Workload {
     /// Check 1..=16 workers and a conservative 512 MiB aggregate admission estimate.
     ///
     /// Returns estimated bytes, not a hard RSS bound. Includes 16 MiB per worker
-    /// for runtime/codec overhead; compressed full validation allows three image
-    /// buffers plus expansion. This deliberately limits the initial measurement
-    /// harness until shared validator reservations and native telemetry are available.
+    /// for runtime/codec overhead; XISF compressed full validation retains the
+    /// original three-image estimate, while bounded FITS GZIP allows 2 MiB for
+    /// decoding. This is a fixture-specific estimate, not a native allocation cap.
     pub fn check_budget(self, recipe: &Recipe, workers: usize) -> Result<u64> {
         let decoded = recipe.validate()?;
         ensure!((1..=16).contains(&workers), "workers must be in 1..=16");
-        let buffers =
-            if self == Self::Full && matches!(recipe.encoding, Encoding::Zlib | Encoding::Zstd) {
-                decoded * 3 + decoded / 100 + 16384
-            } else {
-                65536
-            };
+        let buffers = if self == Self::Full
+            && matches!(recipe.encoding, Encoding::FitsGzip | Encoding::FitsGzip2)
+        {
+            2 * 1024 * 1024
+        } else if self == Self::Full && matches!(recipe.encoding, Encoding::Zlib | Encoding::Zstd) {
+            decoded * 3 + decoded / 100 + 16384
+        } else {
+            65536
+        };
         let estimate = (buffers + 16 * 1024 * 1024) * workers as u64;
         ensure!(
             estimate <= 512 * 1024 * 1024,
@@ -243,12 +246,12 @@ fn measure_file(
             budget,
         )?;
         let encoding = set.manifest().recipe.encoding;
-        let format = if encoding == Encoding::Fits {
+        let format = if encoding.is_fits() {
             FileFormat::Fits
         } else {
             FileFormat::Xisf
         };
-        let checksums = u64::from(encoding != Encoding::Fits);
+        let checksums = u64::from(!encoding.is_fits());
         ensure!(
             report.format() == format
                 && report.level() == level

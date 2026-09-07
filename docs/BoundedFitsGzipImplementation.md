@@ -94,5 +94,8 @@ Passed: 110 workspace all-target tests, four doctests, fmt, Clippy with warnings
 denied, documentation with warnings denied and release build. One existing SEP
 test remains ignored. No native allocation ceiling or new RSS/throughput result
 is claimed by these tests. The earlier XISF measurements describe their recorded
-revision; a compressed-FITS benchmark comparison remains to be captured.
+revision. A subsequent [compressed-FITS baseline](benchmarks/2026-09-06-m4-max-fits-gzip/README.md)
+now records synthetic GZIP_1/GZIP_2 row/image-tile RSS and worker scaling; it does
+not compare against the historical native decoder. Real-capture measurements
+remain outstanding.
 AstroMuninn changes only update its design documents; runtime integration is pending.

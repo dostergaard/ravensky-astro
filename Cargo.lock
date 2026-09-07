@@ -30,6 +30,7 @@ dependencies = [
  "anyhow",
  "astro-io",
  "ctrlc",
+ "fitsio",
  "flate2",
  "libc",
  "serde",

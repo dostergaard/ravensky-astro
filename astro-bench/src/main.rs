@@ -17,7 +17,8 @@ use std::{
 
 const HELP: &str = "astro-bench run --output REPORT.json [options]
   --scratch DIR           Existing scratch parent (default: OS temporary directory)
-  --encoding fits|xisf|zlib|zstd   (default: fits)
+  --encoding fits|fits-gzip|fits-gzip2|xisf|zlib|zstd   (default: fits)
+  --tile-rows N           FITS GZIP only; 1..height (default: whole-image tile)
   --pattern noise|gradient       (default: noise)
   --workload read|structural|full (default: full)
   --width N --height N     Pixel dimensions (default: 2048 x 2048; <=64 MiB/image)
@@ -68,6 +69,8 @@ fn parse(args: &[String]) -> Result<Options> {
             "--encoding" => {
                 result.recipe.encoding = match value.as_str() {
                     "fits" => Encoding::Fits,
+                    "fits-gzip" => Encoding::FitsGzip,
+                    "fits-gzip2" => Encoding::FitsGzip2,
                     "xisf" => Encoding::Xisf,
                     "zlib" => Encoding::Zlib,
                     "zstd" => Encoding::Zstd,
@@ -83,6 +86,7 @@ fn parse(args: &[String]) -> Result<Options> {
             }
             "--workload" => result.workload = workload(value)?,
             "--width" => result.recipe.width = value.parse()?,
+            "--tile-rows" => result.recipe.tile_rows = Some(value.parse()?),
             "--height" => result.recipe.height = value.parse()?,
             "--frames" => result.recipe.frames = value.parse()?,
             "--seed" => result.recipe.seed = value.parse()?,

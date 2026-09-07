@@ -81,3 +81,72 @@ fn cli_rejects_excessive_work_before_generating() {
     assert!(!result.status.success());
     assert!(String::from_utf8_lossy(&result.stderr).contains("workers"));
 }
+
+#[test]
+fn cli_records_compressed_fits_tile_recipe_and_rejects_misplaced_option() {
+    let owner = FixtureSet::generate(
+        &std::env::temp_dir(),
+        Recipe {
+            width: 2,
+            height: 2,
+            frames: 1,
+            ..Recipe::default()
+        },
+        &AtomicBool::new(false),
+    )
+    .unwrap();
+    for encoding in ["fits-gzip", "fits-gzip2"] {
+        let output = owner.directory().join(format!("{encoding}.json"));
+        let result = Command::new(env!("CARGO_BIN_EXE_astro-bench"))
+            .args([
+                "run",
+                "--encoding",
+                encoding,
+                "--tile-rows",
+                "3",
+                "--width",
+                "7",
+                "--height",
+                "5",
+                "--frames",
+                "2",
+                "--workers",
+                "1,2",
+                "--repeats",
+                "1",
+            ])
+            .arg("--scratch")
+            .arg(owner.directory())
+            .arg("--output")
+            .arg(&output)
+            .output()
+            .unwrap();
+        assert!(
+            result.status.success(),
+            "{}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        let report: serde_json::Value = serde_json::from_slice(&fs::read(output).unwrap()).unwrap();
+        assert_eq!(report["manifest"]["generator_version"], 2);
+        assert_eq!(report["manifest"]["recipe"]["tile_rows"], 3);
+        assert_eq!(report["samples"].as_array().unwrap().len(), 2);
+        assert!(report["samples"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|s| s["completed_files"] == 2));
+    }
+    let result = Command::new(env!("CARGO_BIN_EXE_astro-bench"))
+        .args(["run", "--encoding", "xisf", "--tile-rows", "1", "--output"])
+        .arg(owner.directory().join("invalid.json"))
+        .output()
+        .unwrap();
+    assert!(!result.status.success());
+    assert!(String::from_utf8_lossy(&result.stderr).contains("tile_rows"));
+    assert!(!owner.directory().join("invalid.json").exists());
+    assert!(!fs::read_dir(owner.directory()).unwrap().any(|e| e
+        .unwrap()
+        .file_name()
+        .to_string_lossy()
+        .starts_with("astro-bench-")));
+}

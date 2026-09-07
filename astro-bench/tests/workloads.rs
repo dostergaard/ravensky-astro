@@ -1,5 +1,125 @@
 use astro_bench::{run_sample, Encoding, FixtureSet, Pattern, Recipe, Workload};
 use std::sync::atomic::AtomicBool;
+
+#[test]
+fn compressed_fits_fixtures_match_native_pixels_and_are_reproducible() {
+    let cancel = AtomicBool::new(false);
+    for pattern in [Pattern::Noise, Pattern::Gradient] {
+        let raw = FixtureSet::generate(
+            &std::env::temp_dir(),
+            Recipe {
+                width: 7,
+                height: 5,
+                frames: 2,
+                pattern,
+                ..Recipe::default()
+            },
+            &cancel,
+        )
+        .unwrap();
+        for encoding in ["fits_gzip", "fits_gzip2"] {
+            for rows in [None, Some(1), Some(3)] {
+                let mut json = serde_json::to_value(&raw.manifest().recipe).unwrap();
+                json["encoding"] = encoding.into();
+                if let Some(rows) = rows {
+                    json["tile_rows"] = rows.into();
+                }
+                let recipe: Recipe = serde_json::from_value(json).unwrap();
+                let set =
+                    FixtureSet::generate(&std::env::temp_dir(), recipe.clone(), &cancel).unwrap();
+                let again = FixtureSet::generate(&std::env::temp_dir(), recipe, &cancel).unwrap();
+                assert_eq!(set.manifest().generator_version, 2);
+                assert_eq!(set.manifest().files, again.manifest().files);
+                FixtureSet::open(set.directory(), &cancel).unwrap();
+                for (original, compressed) in raw.manifest().files.iter().zip(&set.manifest().files)
+                {
+                    let bytes = std::fs::read(raw.directory().join(&original.name)).unwrap();
+                    let expected: Vec<_> = bytes[2880..2880 + 70]
+                        .chunks_exact(2)
+                        .map(|b| u16::from_be_bytes([b[0], b[1]]) ^ 0x8000)
+                        .collect();
+                    astro_io::fits::backend::with_cfitsio(|| {
+                        let mut file =
+                            fitsio::FitsFile::open(set.directory().join(&compressed.name)).unwrap();
+                        let hdu = file.hdu(1).unwrap();
+                        let actual: Vec<u16> = hdu.read_image(&mut file).unwrap();
+                        assert_eq!(actual, expected, "{encoding}, tile rows {rows:?}");
+                    });
+                }
+                for workload in [Workload::Read, Workload::Structural, Workload::Full] {
+                    let result = run_sample(&set, workload, 2, &cancel, |_| {}).unwrap();
+                    assert_eq!(result.completed_files, 2);
+                    assert_eq!(result.decoded_bytes, 140);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn tile_options_and_expansion_overhead_are_checked_before_generation() {
+    for recipe in [
+        Recipe {
+            tile_rows: Some(1),
+            ..Recipe::default()
+        },
+        Recipe {
+            encoding: Encoding::FitsGzip,
+            tile_rows: Some(0),
+            ..Recipe::default()
+        },
+        Recipe {
+            encoding: Encoding::FitsGzip2,
+            tile_rows: Some(2049),
+            ..Recipe::default()
+        },
+        Recipe {
+            width: 1,
+            height: 16385,
+            encoding: Encoding::FitsGzip,
+            tile_rows: Some(1),
+            ..Recipe::default()
+        },
+        // Tiny tiles require headers/trailers/descriptors beyond the original
+        // whole-image expansion allowance, even with only 32 KiB of pixels.
+        Recipe {
+            width: 1,
+            height: 16384,
+            frames: 1,
+            encoding: Encoding::FitsGzip,
+            tile_rows: Some(1),
+            max_disk_bytes: 2 * 1024 * 1024,
+            ..Recipe::default()
+        },
+    ] {
+        assert!(
+            FixtureSet::generate(&std::env::temp_dir(), recipe, &AtomicBool::new(false)).is_err()
+        );
+    }
+}
+
+#[test]
+fn original_generator_bytes_and_manifest_version_are_preserved() {
+    let cancel = AtomicBool::new(false);
+    let set = FixtureSet::generate(
+        &std::env::temp_dir(),
+        Recipe {
+            frames: 1,
+            ..Recipe::default()
+        },
+        &cancel,
+    )
+    .unwrap();
+    // Recorded by the pre-streaming benchmark, before this pixel-generator refactor.
+    assert_eq!(
+        set.manifest().files[0].sha256,
+        "859f4ef6fed5ab66521611ebda51ae8e327a5c0fa3d75aec605dc068192a72d9"
+    );
+    assert_eq!(set.manifest().generator_version, 1);
+    let json = serde_json::to_value(set.manifest()).unwrap();
+    assert!(json["recipe"].get("tile_rows").is_none());
+    FixtureSet::open(set.directory(), &cancel).unwrap();
+}
 #[test]
 fn fixtures_are_reproducible_valid_and_removed_on_drop() {
     let parent = std::env::temp_dir();

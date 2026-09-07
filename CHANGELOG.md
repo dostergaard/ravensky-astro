@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Compressed FITS benchmark recipes for GZIP_1/GZIP_2 with configurable tile rows,
+  bounded generation, quota checks, native pixel-parity tests and a repeatable
+  isolated measurement matrix. Original fixture versions and bytes are preserved.
 - Bounded full validation of integer GZIP_1/GZIP_2 FITS tiles in a single
   COMPRESSED_DATA P/Q byte column, available with shared memory admission.
   Stream decoded bytes with CRC/size/end checks and a 64 KiB optional-header cap.
