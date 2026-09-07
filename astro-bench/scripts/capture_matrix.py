@@ -67,26 +67,35 @@ def fingerprint_reads(paths):
                 cache_state="first observed read and immediate repeat; OS cache uncontrolled, no eviction")
 
 
-def run(binary, paths, level, workers, passes, output):
+def audit_capture(data, files, passes, allow_rejected=False):
+    require(data["sources_unchanged"], "changed capture sample")
+    require(data["reserved_bytes_after"] == 0, "capture reservations leaked")
+    require(0 <= data["peak_reserved_bytes"] <= data["shared_memory_bytes"],
+            "capture exceeded shared reservations")
+    require(len(data["operations"]) == files * passes, "capture count mismatch")
+    require(sorted((o["pass"], o["index"]) for o in data["operations"]) ==
+            [(p, i) for p in range(passes) for i in range(files)],
+            "missing/duplicate capture operations")
+    require(data["complete"] == all(o["success"] for o in data["operations"]),
+            "incorrect sample completion flag")
+    require(data["complete"] or allow_rejected,
+            "rejected capture sample; use --allow-rejected only to retain diagnostics")
+
+
+def run(binary, paths, level, workers, passes, output, allow_rejected=False):
     with output.open("x") as stream, output.with_suffix(".log").open("x") as log:
         child = subprocess.Popen([str(binary), level, str(workers), str(passes),
                                   *map(str, paths)], stdout=stream, stderr=log,
                                  stdin=subprocess.DEVNULL, start_new_session=True)
         try:
             code = child.wait(timeout=120)
-            require(code == 0, f"capture sample failed; retain diagnostic in {output}")
+            require(code in [0, 2], f"capture process failed; retain diagnostic in {output}")
         finally:
             stop_owned(child)
     require(output.stat().st_size <= 4 * 1024**2, "oversized capture report")
     data = json.loads(output.read_text())
-    require(data["complete"] and data["sources_unchanged"], "incomplete or changed capture sample")
-    require(data["reserved_bytes_after"] == 0, "capture reservations leaked")
-    require(0 <= data["peak_reserved_bytes"] <= data["shared_memory_bytes"],
-            "capture exceeded shared reservations")
-    require(len(data["operations"]) == len(paths) * passes, "capture count mismatch")
-    require(sorted((o["pass"], o["index"]) for o in data["operations"]) ==
-            [(p, i) for p in range(passes) for i in range(len(paths))],
-            "missing/duplicate capture operations")
+    require((code == 0) == data["complete"], "exit status disagrees with capture report")
+    audit_capture(data, len(paths), passes, allow_rejected)
     return data
 
 
@@ -98,6 +107,8 @@ def main():
     parser.add_argument("--note", required=True)
     parser.add_argument("--recursive", action="store_true")
     parser.add_argument("--per-format", type=int, default=3)
+    parser.add_argument("--allow-rejected", action="store_true",
+                        help="retain rejected samples as diagnostics; never successful throughput")
     options = parser.parse_args()
     binary = options.binary.resolve(strict=True)
     paths = select_inputs(options.inputs, options.recursive, options.per_format)
@@ -116,19 +127,23 @@ def main():
     hashes = {path: read_evidence["samples"][i]["sha256"] for i, path in enumerate(paths)}
     fingerprints = {}
     sources = set()
+    outcomes = []
     for level in ["structural", "full"]:
         for name, group in groups.items():
             for workers in [1, 2, 4]:
                 for repeat in range(5):
                     output = options.output / f"{name}-{level}-{workers}workers-{repeat}.json"
                     print(output.name, flush=True)
-                    data = run(binary, group, level, workers, 16, output)
+                    data = run(binary, group, level, workers, 16, output, options.allow_rejected)
+                    outcomes.append(dict(report=output.name, complete=data["complete"],
+                                         rejected_operations=sum(not o["success"] for o in data["operations"])))
                     require([f["sha256"] for f in data["inputs"]] == [hashes[p] for p in group],
                             "capture changed since initial fingerprint reads")
                     require(fingerprints.setdefault(name, data["inputs"]) == data["inputs"],
                             "capture fingerprints changed across samples")
                     sources.add((data["source_sha256"], data["probe_source_sha256"]))
     require(len(sources) == 1, "measured sources changed during capture matrix")
+    write_json(options.output / "outcomes.json", outcomes)
 
 
 if __name__ == "__main__":

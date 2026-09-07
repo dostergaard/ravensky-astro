@@ -131,6 +131,11 @@ operation outcomes/timings, CPU/RSS, shared reservations and before/after byte
 preservation. Hashes before timed validation warm caches. Worker startup/join is
 timed; hash preparation/final verification are excluded. No total speed score is
 produced for failed or unsupported inputs (exit status 2 with diagnostic JSON).
+The matrix normally stops on rejection. Use `--allow-rejected` for an explicitly
+diagnostic corpus: it keeps failed samples and an `outcomes.json` ledger while
+continuing other groups. These samples remain `complete: false` and must be
+excluded from throughput comparisons. Source changes and process failures still
+abort the matrix.
 Other errors/cancellation return failure; the supervisor keeps logs and enforces
 a 120-second process deadline. Direct example execution uses cooperative Ctrl-C,
 which cannot interrupt a blocked OS read.
