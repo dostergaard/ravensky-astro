@@ -1,84 +1,7 @@
 use super::*;
 
-// Bounded BufRead over one declared subblock. Logical consumption is separate
-// from read-ahead so trailing bytes and frame boundaries cannot be hidden.
-struct Input<'a, 'ctx> {
-    context: &'a mut Context<'ctx>,
-    storage: &'a Storage,
-    base: u64,
-    length: u64,
-    consumed: u64,
-    buffer: Buffer,
-    start: usize,
-    end: usize,
-}
-impl<'a, 'ctx> Input<'a, 'ctx> {
-    fn new(
-        context: &'a mut Context<'ctx>,
-        storage: &'a Storage,
-        base: u64,
-        length: u64,
-    ) -> Result<Self> {
-        if add(base, length)? > storage.len() {
-            return Err(invalid("subblock exceeds stored payload"));
-        }
-        let buffer = context.memory.buffer(length.min(65536) as usize)?;
-        Ok(Self {
-            context,
-            storage,
-            base,
-            length,
-            consumed: 0,
-            buffer,
-            start: 0,
-            end: 0,
-        })
-    }
-}
-impl BufRead for Input<'_, '_> {
-    fn fill_buf(&mut self) -> io::Result<&[u8]> {
-        self.context.checkpoint().map_err(io::Error::other)?;
-        if self.start == self.end && self.consumed < self.length {
-            let n = (self.length - self.consumed).min(self.buffer.len() as u64) as usize;
-            let offset = self.base + self.consumed;
-            match self.storage {
-                Storage::Attached(base, _) => self
-                    .context
-                    .read(base + offset, &mut self.buffer[..n])
-                    .map_err(io::Error::other)?,
-                Storage::Inline(bytes) => {
-                    self.buffer[..n].copy_from_slice(&bytes[offset as usize..offset as usize + n])
-                }
-            }
-            self.start = 0;
-            self.end = n;
-        }
-        Ok(&self.buffer[self.start..self.end])
-    }
-    fn consume(&mut self, n: usize) {
-        let n = n.min(self.end - self.start);
-        self.start += n;
-        self.consumed += n as u64;
-    }
-}
-impl Read for Input<'_, '_> {
-    fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
-        let bytes = self.fill_buf()?;
-        let n = bytes.len().min(output.len());
-        output[..n].copy_from_slice(&bytes[..n]);
-        self.consume(n);
-        Ok(n)
-    }
-}
-fn error(error: io::Error) -> ValidationError {
-    let message = error.to_string();
-    if let Some(inner) = error.into_inner() {
-        if let Ok(original) = inner.downcast::<ValidationError>() {
-            return *original;
-        }
-    }
-    integrity(format!("payload decode: {message}"))
-}
+use super::super::input::decode_error as error;
+
 pub(super) fn zlib(
     c: &mut Context<'_>,
     storage: &Storage,
@@ -90,7 +13,7 @@ pub(super) fn zlib(
     // infallible and the allowance is not an OS/native allocator interception.
     let _codec = c.memory.reserve(1024 * 1024)?;
     let mut output = c.memory.buffer(65536)?;
-    let mut source = Input::new(c, storage, offset, input)?;
+    let mut source = storage.input(c, offset, input)?;
     let mut decoder = flate2::Decompress::new(true);
     loop {
         let before_in = decoder.total_in();
@@ -188,7 +111,7 @@ pub(super) fn zstd(
     while position < input {
         c.checkpoint()?;
         c.structure()?;
-        let mut source = Input::new(c, storage, offset + position, input - position)?;
+        let mut source = storage.input(c, offset + position, input - position)?;
         let window = frame_window(source.fill_buf().map_err(error)?)?;
         let history = window
             .max(1024)

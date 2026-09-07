@@ -1,5 +1,6 @@
 use super::*;
 use std::collections::BTreeMap;
+mod gzip;
 
 fn padded(n: u64) -> Result<u64> {
     mul(add(n, 2879)? / 2880, 2880)
@@ -98,8 +99,13 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
                     | "ZIMAGE"
                     | "ZBITPIX"
                     | "ZCMPTYPE"
+                    | "ZQUANTIZ"
+                    | "ZSCALE"
+                    | "ZZERO"
+                    | "ZMASKCMP"
             ) || key.starts_with("NAXIS")
                 || key.starts_with("TFORM")
+                || key.starts_with("TTYPE")
                 || key.starts_with("TBCOL")
                 || key.starts_with("ZTILE")
                 || key.starts_with("ZNAXIS")
@@ -182,15 +188,18 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
         if kind == "TABLE" {
             ascii_table(&h)?;
         }
-        if h.get("ZIMAGE").map(String::as_str) == Some("T") {
+        // Bound declared work before checksum I/O; defer payload decoding until
+        // checksums have been verified.
+        let layout = if h.get("ZIMAGE").map(String::as_str) == Some("T") {
             c.images += 1;
             if kind != "BINTABLE" {
                 return Err(invalid("ZIMAGE requires a binary table"));
             }
-            validate_tiles(c, &h, index)?;
+            Some(tile_layout(c, &h)?)
         } else {
             c.decoded(size)?;
-        }
+            None
+        };
         if let Some(expected) = h.get("DATASUM") {
             expected
                 .parse::<u32>()
@@ -224,6 +233,9 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
                 }
                 c.checksums.verified += 1;
             }
+        }
+        if let Some(layout) = layout {
+            validate_tiles(c, &h, index, data, layout)?;
         }
         offset = add(data, padded(size)?)?;
         index += 1;
@@ -419,7 +431,13 @@ fn ascii_table(h: &BTreeMap<String, String>) -> Result<()> {
     Ok(())
 }
 
-fn validate_tiles(c: &mut Context<'_>, h: &BTreeMap<String, String>, index: usize) -> Result<()> {
+struct TileLayout {
+    pixels: u64,
+    tile: u64,
+    bitpix: i64,
+}
+
+fn tile_layout(c: &mut Context<'_>, h: &BTreeMap<String, String>) -> Result<TileLayout> {
     let ndim = number(h, "ZNAXIS")?;
     if ndim == 0 || ndim > 999 {
         return Err(invalid("invalid compressed image dimensions"));
@@ -449,6 +467,25 @@ fn validate_tiles(c: &mut Context<'_>, h: &BTreeMap<String, String>, index: usiz
     if tiles != number(h, "NAXIS2")? {
         return Err(invalid("compressed tile count does not match table rows"));
     }
+    Ok(TileLayout {
+        pixels,
+        tile,
+        bitpix,
+    })
+}
+
+fn validate_tiles(
+    c: &mut Context<'_>,
+    h: &BTreeMap<String, String>,
+    index: usize,
+    data: u64,
+    layout: TileLayout,
+) -> Result<()> {
+    let TileLayout {
+        pixels,
+        tile,
+        bitpix,
+    } = layout;
     let codec = h
         .get("ZCMPTYPE")
         .ok_or_else(|| invalid("missing ZCMPTYPE"))?;
@@ -466,6 +503,9 @@ fn validate_tiles(c: &mut Context<'_>, h: &BTreeMap<String, String>, index: usiz
     .contains(&codec.as_str())
     {
         return Err(unsupported(format!("FITS compression codec {codec}")));
+    }
+    if gzip::supported(h, bitpix) {
+        return gzip::validate(c, h, data, bitpix);
     }
     if c.shared_control {
         return Err(unsupported("full CFITSIO decoding lacks enforced native allocation limits; use structural validation or the standalone estimated path"));

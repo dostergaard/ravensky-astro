@@ -271,6 +271,24 @@ enum Storage {
     Inline(Buffer),
 }
 impl Storage {
+    fn input<'a, 'ctx>(
+        &'a self,
+        c: &'a mut Context<'ctx>,
+        offset: u64,
+        length: u64,
+    ) -> Result<super::input::Input<'a, 'ctx>> {
+        if add(offset, length)? > self.len() {
+            return Err(invalid("subblock exceeds stored payload"));
+        }
+        match self {
+            Self::Attached(base, _) => {
+                super::input::Input::attached(c, add(*base, offset)?, length)
+            }
+            Self::Inline(bytes) => {
+                super::input::Input::inline(c, &bytes[offset as usize..(offset + length) as usize])
+            }
+        }
+    }
     fn len(&self) -> u64 {
         match self {
             Self::Attached(_, n) => *n,

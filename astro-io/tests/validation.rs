@@ -24,6 +24,12 @@ impl Fixture {
 fn compressed_frame(codec: &str, data: &[u8]) -> Vec<u8> {
     use std::io::Write;
     match codec {
+        "gzip" => {
+            let mut encoder =
+                flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::fast());
+            encoder.write_all(data).unwrap();
+            encoder.finish().unwrap()
+        }
         "zlib" => {
             let mut encoder =
                 flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::fast());
@@ -38,6 +44,301 @@ fn compressed_frame(codec: &str, data: &[u8]) -> Vec<u8> {
         }
         _ => lz4_flex::block::compress(data),
     }
+}
+
+fn gzip_fits(
+    frames: &[Vec<u8>],
+    axes: &[usize],
+    tiles: &[usize],
+    bitpix: i32,
+    q: bool,
+    codec: &str,
+) -> Vec<u8> {
+    let row = if q { 16 } else { 8 };
+    let gap = 17;
+    let mut table = Vec::new();
+    let mut heap = vec![0; gap];
+    for frame in frames {
+        let offset = heap.len() - gap;
+        if q {
+            table.extend_from_slice(&(frame.len() as i64).to_be_bytes());
+            table.extend_from_slice(&(offset as i64).to_be_bytes());
+        } else {
+            table.extend_from_slice(&(frame.len() as i32).to_be_bytes());
+            table.extend_from_slice(&(offset as i32).to_be_bytes());
+        }
+        heap.extend_from_slice(frame);
+    }
+    let mut keys: Vec<(String, String)> =
+        [("XTENSION", "'BINTABLE'"), ("BITPIX", "8"), ("NAXIS", "2")]
+            .into_iter()
+            .map(|(k, v)| (k.into(), v.into()))
+            .collect();
+    for (key, value) in [
+        ("NAXIS1", row),
+        ("NAXIS2", frames.len()),
+        ("PCOUNT", heap.len()),
+        ("GCOUNT", 1),
+        ("TFIELDS", 1),
+        ("THEAP", table.len() + gap),
+        ("ZNAXIS", axes.len()),
+    ] {
+        keys.push((key.into(), value.to_string()));
+    }
+    keys.extend([
+        ("TTYPE1".into(), "'COMPRESSED_DATA'".into()),
+        ("TFORM1".into(), if q { "'1QB'" } else { "'1PB'" }.into()),
+        ("ZIMAGE".into(), "T".into()),
+        ("ZCMPTYPE".into(), format!("'{codec}'")),
+        ("ZBITPIX".into(), bitpix.to_string()),
+    ]);
+    for (i, n) in axes.iter().enumerate() {
+        keys.push((format!("ZNAXIS{}", i + 1), n.to_string()));
+    }
+    for (i, n) in tiles.iter().enumerate() {
+        keys.push((format!("ZTILE{}", i + 1), n.to_string()));
+    }
+    let refs: Vec<_> = keys.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+    let mut bytes = hdu(&[("SIMPLE", "T"), ("BITPIX", "8"), ("NAXIS", "0")], &[]);
+    table.extend(heap);
+    bytes.extend(hdu(&refs, &table));
+    bytes
+}
+
+#[test]
+fn fits_gzip_streams_large_tiles_with_a_small_shared_budget() {
+    let payload = vec![42; 8 * 1024 * 1024];
+    let frame = compressed_frame("gzip", &payload);
+    let budget = MemoryBudget::new(2 * 1024 * 1024).unwrap();
+    let options = ValidationOptions::default().with_level(ValidationLevel::Full);
+    for codec in ["GZIP_1", "GZIP_2"] {
+        for q in [false, true] {
+            let file = Fixture::new(&gzip_fits(
+                std::slice::from_ref(&frame),
+                &[payload.len()],
+                &[],
+                8,
+                q,
+                codec,
+            ));
+            let report = validate_file_with_budget(&file.0, &options, None, &budget).unwrap();
+            assert_eq!(report.image_count(), 1);
+            assert!(report.peak_reserved_bytes() < budget.capacity_bytes());
+            assert_eq!(budget.used_bytes(), 0);
+        }
+    }
+    // A highly compressible payload must not expand beyond the tile declaration.
+    let concurrent = Fixture::new(&gzip_fits(
+        std::slice::from_ref(&frame),
+        &[payload.len()],
+        &[],
+        8,
+        false,
+        "GZIP_1",
+    ));
+    let shared = MemoryBudget::new(8 * 1024 * 1024).unwrap();
+    std::thread::scope(|scope| {
+        let workers: Vec<_> = (0..4)
+            .map(|_| {
+                scope.spawn(|| {
+                    validate_file_with_budget(&concurrent.0, &options, None, &shared).unwrap()
+                })
+            })
+            .collect();
+        for worker in workers {
+            assert_eq!(worker.join().unwrap().image_count(), 1);
+        }
+    });
+    assert_eq!(shared.used_bytes(), 0);
+    assert!(shared.peak_bytes() <= shared.capacity_bytes());
+    let file = Fixture::new(&gzip_fits(&[frame], &[128], &[], 8, false, "GZIP_1"));
+    assert_eq!(
+        validate_file_with_budget(&file.0, &options, None, &budget)
+            .unwrap_err()
+            .kind(),
+        ValidationErrorKind::IntegrityMismatch
+    );
+    assert_eq!(budget.used_bytes(), 0);
+}
+
+#[test]
+fn fits_gzip_checks_edges_trailers_headers_and_shared_admission() {
+    use std::io::Write;
+    let budget = MemoryBudget::new(2 * 1024 * 1024).unwrap();
+    let options = ValidationOptions::default().with_level(ValidationLevel::Full);
+    for bitpix in [8, 16, 32, 64] {
+        let frames: Vec<_> = [6, 4, 3, 2, 6, 4, 3, 2]
+            .iter()
+            .map(|n| compressed_frame("gzip", &vec![42; n * bitpix as usize / 8]))
+            .collect();
+        let file = Fixture::new(&gzip_fits(
+            &frames,
+            &[5, 3, 2],
+            &[3, 2, 1],
+            bitpix,
+            true,
+            "GZIP_2",
+        ));
+        validate_file_with_budget(&file.0, &options, None, &budget).unwrap();
+        assert_eq!(budget.used_bytes(), 0);
+    }
+    let frame = compressed_frame("gzip", &[42; 128]);
+    let mut encoder = flate2::GzBuilder::new()
+        .filename("capture.fits")
+        .comment("synthetic fixture")
+        .extra(vec![0; 4096])
+        .write(Vec::new(), flate2::Compression::fast());
+    encoder.write_all(&[42; 128]).unwrap();
+    let named = Fixture::new(&gzip_fits(
+        &[encoder.finish().unwrap()],
+        &[128],
+        &[],
+        8,
+        false,
+        "GZIP_1",
+    ));
+    validate_file_with_budget(&named.0, &options, None, &budget).unwrap();
+    let check = |bytes: Vec<u8>, expected_kind| {
+        let file = Fixture::new(&gzip_fits(&[bytes], &[128], &[], 8, false, "GZIP_1"));
+        validate_file(&file.0, &ValidationOptions::default(), None).unwrap();
+        assert_eq!(
+            validate_file_with_budget(&file.0, &options, None, &budget)
+                .unwrap_err()
+                .kind(),
+            expected_kind
+        );
+        assert_eq!(budget.used_bytes(), 0);
+    };
+    for trim in 1..=9 {
+        check(
+            frame[..frame.len() - trim].to_vec(),
+            ValidationErrorKind::IntegrityMismatch,
+        );
+    }
+    for at in [frame.len() - 8, frame.len() - 4] {
+        let mut corrupt = frame.clone();
+        corrupt[at] ^= 1;
+        check(corrupt, ValidationErrorKind::IntegrityMismatch);
+    }
+    let mut trailing = frame.clone();
+    trailing.push(0);
+    check(trailing, ValidationErrorKind::IntegrityMismatch);
+    let mut concatenated = frame.clone();
+    concatenated.extend(&frame);
+    check(concatenated, ValidationErrorKind::Unsupported);
+    check(
+        compressed_frame("gzip", &[42; 127]),
+        ValidationErrorKind::IntegrityMismatch,
+    );
+    // An unterminated filename must be bounded before the library header parser
+    // can retain the rest of a file in its filename Vec.
+    let mut header = vec![b'a'; 80 * 1024];
+    header[..10].copy_from_slice(&[31, 139, 8, 8, 0, 0, 0, 0, 0, 255]);
+    check(header, ValidationErrorKind::ResourceLimit);
+    let mut invalid = frame.clone();
+    invalid[0] = 0;
+    check(invalid, ValidationErrorKind::IntegrityMismatch);
+    // A non-final Deflate block followed by a plausible GZIP trailer must fail.
+    let mut nonfinal = frame[..10].to_vec();
+    nonfinal.extend([0, 128, 0, 127, 255]);
+    nonfinal.extend([42; 128]);
+    nonfinal.extend(&frame[frame.len() - 8..]);
+    check(nonfinal, ValidationErrorKind::IntegrityMismatch);
+    let file = Fixture::new(&gzip_fits(&[frame], &[128], &[], 8, false, "GZIP_1"));
+    let held = budget.try_reserve(1024 * 1024).unwrap();
+    assert_eq!(
+        validate_file_with_budget(&file.0, &options, None, &budget)
+            .unwrap_err()
+            .kind(),
+        ValidationErrorKind::ResourceBusy
+    );
+    assert_eq!(budget.used_bytes(), held.bytes());
+    drop(held);
+    let cancel = AtomicBool::new(true);
+    assert_eq!(
+        validate_file_with_budget(&file.0, &options, Some(&cancel), &budget)
+            .unwrap_err()
+            .kind(),
+        ValidationErrorKind::Cancelled
+    );
+    assert_eq!(budget.used_bytes(), 0);
+    let small = MemoryBudget::new(1024 * 1024).unwrap();
+    assert_eq!(
+        validate_file_with_budget(&file.0, &options, None, &small)
+            .unwrap_err()
+            .kind(),
+        ValidationErrorKind::ResourceLimit
+    );
+    assert_eq!(small.used_bytes(), 0);
+}
+
+#[test]
+fn fits_gzip_managed_profile_does_not_admit_other_native_layouts() {
+    let frame = compressed_frame("gzip", &[42; 128]);
+    let options = ValidationOptions::default().with_level(ValidationLevel::Full);
+    let budget = MemoryBudget::new(2 * 1024 * 1024).unwrap();
+    for (bitpix, codec) in [(-32, "GZIP_1"), (8, "RICE_1"), (8, "HCOMPRESS_1")] {
+        let file = Fixture::new(&gzip_fits(
+            std::slice::from_ref(&frame),
+            &[32],
+            &[],
+            bitpix,
+            false,
+            codec,
+        ));
+        assert_eq!(
+            validate_file_with_budget(&file.0, &options, None, &budget)
+                .unwrap_err()
+                .kind(),
+            ValidationErrorKind::Unsupported
+        );
+        assert_eq!(budget.used_bytes(), 0);
+    }
+    let mut bytes = gzip_fits(&[frame], &[128], &[], 8, false, "GZIP_1");
+    let fields = (2880..5760)
+        .step_by(80)
+        .find(|&p| &bytes[p..p + 8] == b"TFIELDS ")
+        .unwrap();
+    bytes[fields..fields + 80].copy_from_slice(card("TFIELDS", "2").as_bytes());
+    let end = (2880..5760)
+        .step_by(80)
+        .find(|&p| &bytes[p..p + 8] == b"END     ")
+        .unwrap();
+    bytes.copy_within(end..end + 80, end + 160);
+    bytes[end..end + 80].copy_from_slice(card("TFORM2", "'0B'").as_bytes());
+    bytes[end + 80..end + 160].copy_from_slice(card("TTYPE2", "'OTHER'").as_bytes());
+    let file = Fixture::new(&bytes);
+    validate_file(&file.0, &ValidationOptions::default(), None).unwrap();
+    assert_eq!(
+        validate_file_with_budget(&file.0, &options, None, &budget)
+            .unwrap_err()
+            .kind(),
+        ValidationErrorKind::Unsupported
+    );
+    assert_eq!(budget.used_bytes(), 0);
+}
+
+#[test]
+fn fits_checksums_are_verified_before_compressed_payload_decode() {
+    let mut frame = compressed_frame("gzip", &[42; 128]);
+    frame[0] = 0;
+    let mut bytes = gzip_fits(&[frame], &[128], &[], 8, false, "GZIP_1");
+    let end = (2880..5760)
+        .step_by(80)
+        .find(|&p| &bytes[p..p + 8] == b"END     ")
+        .unwrap();
+    bytes.copy_within(end..end + 80, end + 80);
+    bytes[end..end + 80].copy_from_slice(card("DATASUM", "'1'").as_bytes());
+    let file = Fixture::new(&bytes);
+    let options = ValidationOptions::default().with_level(ValidationLevel::Full);
+    let error = validate_file_with_budget(
+        &file.0,
+        &options,
+        None,
+        &MemoryBudget::new(2 * 1024 * 1024).unwrap(),
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("DATASUM mismatch"), "{error}");
 }
 fn compressed_fixture(codec: &str, bytes: &[u8], decoded: usize) -> Fixture {
     let xml = format!(
@@ -555,7 +856,7 @@ fn tiled_fits_is_checked_through_the_native_backend() {
                     None,
                     &budget,
                 );
-                if level == ValidationLevel::Full {
+                if level == ValidationLevel::Full && codec != GZIP_1 && codec != GZIP_2 {
                     assert_eq!(
                         controlled.unwrap_err().kind(),
                         ValidationErrorKind::Unsupported

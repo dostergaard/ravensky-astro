@@ -8,11 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Bounded full validation of integer GZIP_1/GZIP_2 FITS tiles in a single
+  COMPRESSED_DATA P/Q byte column, available with shared memory admission.
+  Stream decoded bytes with CRC/size/end checks and a 64 KiB optional-header cap.
+  Remaining native compressed-FITS layouts stay unsupported with shared budgets.
 - Shared CFITSIO admission across FITS loaders, metadata helpers and native
   validation, with runtime reentrancy detection and public wrappers for direct
   native callers. Reentrant builds retain parallelism; non-reentrant builds
   serialize participating callers. Native validation returns `ResourceBusy` on
-  contention. Shared full compressed FITS remains gated on native allocation work.
+  contention. Full layouts that require CFITSIO remain gated on native allocation work.
 - Caller-owned `MemoryBudget` and nonblocking `validate_file_with_budget`, with
   automatic reservation release, distinct `ResourceBusy` outcomes and peak
   reservation telemetry. Shared full CFITSIO decoding explicitly remains unsupported.
@@ -31,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   remaining real-capture/platform rollout checks in the `astro-io` README.
 
 ### Changed
+- Verify FITS stored-data/HDU checksums before compressed payload decoding,
+  preserving declared-size preflight before checksum I/O. Reuse one bounded input
+  reader across FITS GZIP and XISF streamed codecs.
 - Stream XISF zlib/Zstandard input and discard decoded chunks, preserving checksum,
   frame, trailing-data and exact-output checks. Reserve parser/inline/LZ4/FITS
   working data before allocation. Truncated zlib trailers now fail explicitly.

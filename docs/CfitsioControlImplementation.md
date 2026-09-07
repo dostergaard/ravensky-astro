@@ -3,6 +3,10 @@
 Status: concurrency implementation complete and locally verified on macOS after
 checkpoint `eb06530`. Native allocation limits remain a separate open step.
 
+Follow-up: [bounded FITS GZIP validation](BoundedFitsGzipImplementation.md) now
+avoids native decoding for a precisely defined integer GZIP profile. Other native
+codecs/layouts and native image loaders still have the allocation limitations below.
+
 ## Objective
 
 Close the native concurrency gap across FITS loading, metadata extraction and

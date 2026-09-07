@@ -16,6 +16,7 @@
 //! # Ok::<(), astro_io::validation::ValidationError>(())
 //! ```
 mod fits;
+mod input;
 mod resources;
 mod xisf;
 use resources::{Account, Buffer, Reservation};
@@ -507,9 +508,11 @@ pub fn validate_file(
 /// Share one budget across concurrent calls. `ResourceBusy` is temporary capacity
 /// contention; it is not file corruption. Every failure releases this call's
 /// reservations before returning. Callers own queuing, fairness and cancellation.
-/// Full CFITSIO tile decoding is unsupported on this entry point until its native
-/// allocations and cross-loader exclusivity can be controlled. Structural tiled
-/// FITS checks and all supported XISF codecs remain available.
+/// Full integer GZIP_1/GZIP_2 FITS validation supports a single COMPRESSED_DATA
+/// P/Q byte column, without quantization, scaling or mask extensions, through
+/// bounded streaming. Other full tiled-FITS layouts still require CFITSIO and
+/// remain unsupported here until native allocations can be controlled.
+/// Structural tiled FITS checks and all supported XISF codecs remain available.
 /// Returned reports and caller-owned queues are outside the working allowance.
 ///
 /// ```no_run
@@ -656,6 +659,22 @@ mod tests {
                 .stream(0, c.stamp.size, |_| cancel.store(true, Ordering::Relaxed))
                 .unwrap_err();
             assert_eq!(error.kind(), ValidationErrorKind::Cancelled);
+            assert_eq!(c.bytes_read, 65536);
+            assert_eq!(c.memory.remaining(), c.options.limits.working);
+        });
+    }
+    #[test]
+    fn payload_input_checks_cancellation_even_with_buffered_bytes() {
+        use std::io::BufRead;
+        with_context(|c, cancel| {
+            {
+                let mut input = input::Input::attached(c, 0, 100_000).unwrap();
+                assert_eq!(input.fill_buf().unwrap().len(), 65536);
+                input.consume(1);
+                cancel.store(true, Ordering::Relaxed);
+                let error = input::decode_error(input.fill_buf().unwrap_err());
+                assert_eq!(error.kind(), ValidationErrorKind::Cancelled);
+            }
             assert_eq!(c.bytes_read, 65536);
             assert_eq!(c.memory.remaining(), c.options.limits.working);
         });

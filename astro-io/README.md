@@ -162,7 +162,7 @@ contains a compilable usage example.
 | --- | --- | --- |
 | FITS primary/image HDUs, all standard sample widths and dimensions | Mandatory header order, checked sizes, complete padded HDU chain | Reads all physical bytes |
 | FITS ASCII/binary tables | Column layout and variable-array heap descriptor bounds | Reads table/heap storage |
-| FITS tiled images | Tile geometry, table/heap extents, declared decoded size | CFITSIO sectional decoding of RICE, GZIP, PLIO, HCOMPRESS and uncompressed tiles |
+| FITS tiled images | Tile geometry, table/heap extents, declared decoded size | Bounded integer GZIP_1/GZIP_2 profile below; standalone CFITSIO sectional decoding for remaining supported layouts/codecs |
 | FITS `DATASUM` / `CHECKSUM` | Presence and encoding | Stored-data/HDU ones-complement verification |
 | XISF 1.0 images, thumbnails, profiles and property blocks | Prefix/XML, local references, geometry, sample widths, block extents | Reads every physical byte and local block |
 | XISF attachments, inline Base64/hex, embedded Data | Location/encoding and declared lengths | Payload checks below |
@@ -227,7 +227,19 @@ println!("Peak call reservations: {}", report.peak_reserved_bytes());
 | Zstandard | 64 KiB input/output, rounded declared frame history plus 1 MiB context/block allowance; admit each concatenated/skippable frame independently and enforce native window limit |
 | LZ4/LZ4HC | Complete attached input and decoded output blocks must fit live reservations; no streaming claim for the raw-block decoder |
 | FITS header/tables | 1 KiB per retained structural keyword covers map/string/table bookkeeping before insertion |
-| CFITSIO tiles | **Shared-budget full decoding returns `Unsupported`** until native allocation limits are enforceable. Native concurrency is coordinated across loaders. Structural checks work; standalone full calls retain an estimated tile/stored-data/native allowance that does not bound tile caches or malformed GZIP expansion |
+| Integer FITS GZIP_1/GZIP_2 tiles | Single COMPRESSED_DATA P/Q byte column, ZBITPIX 8/16/32/64, without ZQUANTIZ/ZSCALE/ZZERO/ZMASKCMP: reserve 1 MiB inflater + 256 KiB header allowance, ≤64 KiB each input/output, and small axis bookkeeping. Stream and discard output; no CFITSIO call or decoded-tile cache |
+| Remaining CFITSIO tile layouts/codecs | **Shared-budget full decoding returns `Unsupported`** until native allocation limits are enforceable. Structural checks work; standalone full calls retain an estimated allowance that does not bound tile caches or malformed GZIP expansion |
+
+The bounded FITS GZIP path supports short edge tiles and 32/64-bit heap offsets.
+It requires one complete GZIP member per tile, exact decoded size, valid CRC32 and
+ISIZE, and no trailing bytes. A following GZIP member returns `Unsupported`;
+other trailing bytes fail integrity. Optional GZIP headers are limited to 64 KiB
+per tile before the header parser can retain more data. GZIP_2 unshuffling is a reversible
+byte permutation; container validation does not need to retain/reconstruct pixels.
+FITS DATASUM/CHECKSUM checks precede payload decode, with decoded-size preflight
+still applied before checksum I/O. Floating-point quantization, extra/fallback
+columns, masks and other codecs remain outside this bounded profile. See the
+[bounded FITS GZIP design](../docs/BoundedFitsGzipImplementation.md).
 
 `MemoryBudget::used_bytes()` and `peak_bytes()` report reservation accounting;
 `ValidationReport::peak_reserved_bytes()` reports the call high-water mark. These
@@ -258,8 +270,8 @@ This is container/payload validation, not exhaustive FITS keyword, XISF metadata
 ICC profile, color-space, or XML-signature conformance/authentication.
 
 FITS random groups, unknown HDU extensions and externally wrapped files (such
-as whole-file gzip) return `Unsupported`. Full compressed FITS paths containing
-`[` or `]` are rejected to avoid CFITSIO filter interpretation. XISF external
+as whole-file gzip) return `Unsupported`. Compressed FITS paths requiring CFITSIO
+and containing `[` or `]` are rejected to avoid backend filter interpretation. XISF external
 block locations, foreign XML element namespaces, DTDs, and external entities
 are unsupported; the validator does not fetch external resources. Namespace-less
 XISF headers are accepted for producer compatibility. Native access is serialized
