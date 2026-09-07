@@ -1,0 +1,3 @@
+# Preserve format/checksum fixture bytes on every checkout platform.
+astro-bench/tests/test_data/*.fits binary
+astro-bench/tests/test_data/*.xisf binary
