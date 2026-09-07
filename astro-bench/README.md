@@ -101,6 +101,50 @@ and rerun into a new directory. See [completion plan](../docs/BenchmarkCompletio
 Test report auditing and matrix contracts with
 `python3 -m unittest discover -s astro-bench/scripts -p test_benchmark_suite.py`.
 
+## Measure existing captures
+
+Build the separate read-only diagnostic example:
+
+```sh
+cargo build --workspace --all-features --examples --release
+python3 astro-bench/scripts/capture_matrix.py CAPTURE_DIRECTORY \
+  --recursive --per-format 3 --output RESULTS/captures \
+  --note 'Hardware, storage, power and competing load'
+```
+
+The matrix chooses up to three files of each format in sorted traversal order,
+records first-observed and repeated sequential reads with SHA-256, then measures
+FITS-only, XISF-only and mixed groups at structural/full levels, 1/2/4 workers,
+16 passes and five fresh-process repetitions (90 samples). Selection and file
+hashes are stable across samples. Read-plus-hash timing includes checksum CPU;
+first-observed reads are not guaranteed cold. Files are never copied or modified.
+
+For explicit files or a diagnostic that may fail:
+
+```sh
+target/release/examples/capture_probe full 4 16 FILE1.fits FILE2.xisf
+```
+
+Capture reports have their own `kind: capture_probe` schema and example-source
+fingerprint. They omit input names/metadata, retain indexed SHA-256 identities,
+operation outcomes/timings, CPU/RSS, shared reservations and before/after byte
+preservation. Hashes before timed validation warm caches. Worker startup/join is
+timed; hash preparation/final verification are excluded. No total speed score is
+produced for failed or unsupported inputs (exit status 2 with diagnostic JSON).
+Other errors/cancellation return failure; the supervisor keeps logs and enforces
+a 120-second process deadline. Direct example execution uses cooperative Ctrl-C,
+which cannot interrupt a blocked OS read.
+
+Bounds: 256 regular input files / 8 GiB stored total, 1–8 workers, 1–256 passes and
+4,096 retained operation records. Hashing uses 64 KiB chunks. All workers share
+512 MiB reservations; each call is limited to `min(256 MiB, 512 MiB / workers)`.
+Operation records/runtime overhead are additional bounded memory, not included
+in validator reservations. Shared full native-codec exclusions still apply.
+RSS is process-lifetime and null where unavailable. Use controlled directories;
+final-component symlinks/duplicate canonical paths are rejected, but this is not
+a sandbox for hostile directory mutation. Applications' automatic policy and
+settings remain outside this diagnostic example.
+
 ## Use the library
 
 ```rust,no_run

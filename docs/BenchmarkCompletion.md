@@ -79,3 +79,44 @@ Real captures, remote/rotating storage and Windows/Linux environments have been
 requested from the user; perform those checks if provided. Otherwise document the
 exact missing evidence and reproducible commands without claiming completion of
 release qualification. Automatic-mode comparisons require the future scheduler.
+
+## Capture measurement extension
+
+Six existing local captures were found in ignored `tests/data`. Add a read-only
+`capture_probe` example to measure arbitrary explicitly selected inputs without
+inventing synthetic recipes or copying/modifying captures. This diagnostic runner
+keeps its results separate from synthetic schema-one reports and identifies its
+own source hash in addition to the existing measured-source fingerprint.
+
+Use up to eight workers and one shared 512 MiB budget, with per-call limits of
+`min(256 MiB, 512 MiB / workers)`. The native paths excluded by shared admission
+remain excluded. Bound inputs to 256 files / 8 GiB stored total, passes to 256,
+and retained operation records to 4,096. Hash inputs in 64 KiB chunks before and
+after timing; reject final-component symlinks and duplicate canonical paths.
+Do not include file names or capture metadata in committed reports. Hash equality
+establishes byte preservation, not an immutable snapshot or protection against
+hostile directory mutation. File I/O remains read-only.
+
+A bounded atomic work index distributes mixed formats/sizes without serializing
+all validation. Worker results are bounded by the operation cap, joined on every
+exit, and include error kinds. Failed/unsupported inputs must produce a failed
+sample, never apparently successful throughput. Reuse existing Unix telemetry;
+record unavailable platform telemetry as null. No production API changes.
+
+First test mixed-format repeated accounting/source preservation, invalid-input
+diagnostics, resource/work limits and symlink/duplicate rejection. Build/test only
+between timing suites. Run the six real captures alone and mixed in fresh
+processes; retain unsupported-layout results separately from successful timings.
+Additional untracked test fixtures will be kept local unless the user authorizes
+committing them.
+
+The user subsequently approved committing the 14 local format fixtures and
+provided `/Volumes/WD_ElementsHD/RavenSkyTestFiles` (mechanical HDD) and
+`/Volumes/ap_projects/0Working` (external SSD). They have no available network
+storage or Windows/Linux test environment. Capture matrices will select bounded
+FITS/XISF groups from these volumes, including images beyond the synthetic 64 MiB
+limit. Record sequential first-observed/repeated read-plus-SHA-256 times before
+the validation matrices; cache state remains uncontrolled, not guaranteed cold.
+These larger capture observations are exploratory: the 64 MiB RSS target above
+applies to the synthetic GZIP matrix, not an invented universal bound for every
+XISF codec/window or capture layout.
