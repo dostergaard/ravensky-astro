@@ -66,6 +66,41 @@ This creates 24 reports and 216 isolated samples spanning GZIP_1/GZIP_2, row/ima
 tiles, noise/gradient, 8/32 MiB images and 1/2/4 workers. It establishes the current
 bounded validator's baseline, without comparing historical native implementations.
 
+The extended investigation uses Python 3.12+ standard-library tooling around the
+same CLI (from this repository's root):
+
+```sh
+python3 astro-bench/scripts/benchmark_suite.py scaling --output RESULTS/scaling \
+  --scratch SCRATCH_DIRECTORY --note 'Hardware, storage, power and competing load'
+python3 astro-bench/scripts/benchmark_suite.py contention --output RESULTS/contention \
+  --scratch SCRATCH_DIRECTORY --note 'Hardware, storage, power and competing load'
+python3 astro-bench/scripts/benchmark_suite.py cancellation --output RESULTS/cancellation \
+  --scratch SCRATCH_DIRECTORY --note 'Hardware, storage, power and competing load'
+python3 astro-bench/scripts/benchmark_suite.py profile --output RESULTS/profile \
+  --scratch SCRATCH_DIRECTORY --note 'Hardware, storage, power and competing load'
+```
+
+Each output directory must be new. `scaling` records 960 samples (forward/reverse
+worker order, five repetitions, 1/2/4/8 workers, 8/64 MiB images and row/32-row/image
+tiles). `contention` records a separate 20 ms scheduling / 64 KiB SHA-256 probe,
+alone and with two CPU competitors retaining 32 MiB of touched data each. It keeps
+preparation separate from the sample phase, which includes child fingerprint
+verification and inter-sample gaps. This proxy does not measure application
+switching or low-memory pressure. `cancellation` measures CLI SIGINT exit/cleanup
+during generation and the sample-child lifetime (including hash verification),
+not the library's cooperative cancellation latency during decode. It requires
+POSIX and `pgrep`. `profile` additionally requires macOS `/usr/bin/sample`; its
+instrumented timings are excluded from throughput comparisons.
+
+Experiments have ten-minute per-command deadlines, one CLI at a time and existing
+scratch quotas (up to 4 GiB preflight for profiling; most matrices use 1 GiB).
+The child still has its independent 120-second deadline. No system-wide cache or
+memory-pressure manipulation is performed. On failure, keep logs/partial evidence
+and rerun into a new directory. See [completion plan](../docs/BenchmarkCompletion.md).
+
+Test report auditing and matrix contracts with
+`python3 -m unittest discover -s astro-bench/scripts -p test_benchmark_suite.py`.
+
 ## Use the library
 
 ```rust,no_run
