@@ -38,8 +38,12 @@ its input is intentionally outside Git. Where that capture is available, run
 `cargo test -p astro-io test_load_xisf_real_sample -- --ignored` separately.
 Generated XISF loader and validator tests remain part of normal CI.
 
-CI covers Linux x86-64 GNU, macOS ARM64 and Windows x86-64 GNU. This is build/test
-coverage, not benchmark evidence for those machines. Windows MSVC still requires
+CI covers the whole workspace on Linux x86-64 GNU and macOS ARM64. Windows x86-64
+GNU covers `astro-io`, `astro-metadata` and `astro-bench`: existing `sep-sys 1.3.0`
+requires POSIX `rand_r` and fails compilation on Windows, so `astro-metrics` and
+the root facade are not Windows-supported by this CI. The failure is recorded in
+[the first candidate run](https://github.com/dostergaard/ravensky-astro/actions/runs/34209794638).
+This is build/test coverage, not benchmark evidence. Windows MSVC still requires
 the consuming application's patched backend build; GNU CI is not MSVC evidence.
 AstroMuninn's vendored `fitsio-sys 0.5.5` must be checked separately from this
 workspace's normal registry `0.5.7` dependency before application integration.
@@ -82,8 +86,13 @@ capture test also passed when invoked explicitly. Nine Python investigation test
 passed. An isolated copy using AstroMuninn's unchanged vendored `fitsio-sys 0.5.5`
 passed all 108 applicable `astro-io`, `astro-metadata` and `astro-bench` tests.
 The normal registry dependency remains `fitsio-sys 0.5.7`. All four 0.6.0 packages
-passed online Cargo verification before final archive-content cleanup; the clean
-candidate check and CI results must be recorded before merge approval.
+passed online Cargo verification from clean commit `6237264`, including a fresh
+`--target-dir target/package-check-060` run after archive-content cleanup. Archive
+inspection confirmed retained decoder notices and excluded raw benchmark reports.
+Use a new package target directory after changing exclusions: this Cargo version
+left trailing bytes when overwriting a previously larger `.crate` archive locally.
+The fresh archives passed checks for complete gzip consumption as well as builds.
+Final platform CI results must be checked before merge approval.
 
 - [Managed compressed-FITS implementation](docs/CompressedFitsResourceImplementation.md)
 - [Managed codec memory/scaling/cancellation](docs/benchmarks/2026-09-08-managed-fits/README.md)
