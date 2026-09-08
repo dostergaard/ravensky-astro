@@ -365,6 +365,7 @@ mod tests {
                         .is_some_and(|raw| raw.contains("first duplicate-preserving comment"))
             }));
 
+            drop(file); // Windows requires the native handle closed before deletion.
             fs::remove_file(path)?;
             Ok(())
         })
@@ -393,6 +394,7 @@ mod tests {
                 && card.keyword == "EXTKEY"
                 && card.value.as_deref() == Some("42")));
 
+            drop(file); // Keep close/drop inside the coordinated backend scope.
             fs::remove_file(path)?;
             Ok(())
         })
