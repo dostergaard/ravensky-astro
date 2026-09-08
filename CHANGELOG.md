@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - Unreleased
+
 ### Added
 - Managed compressed-FITS validation for Rice, PLIO, HCOMPRESS, floating-point,
   quantized, fallback-column and null-mask layouts. Streaming or admitted tile

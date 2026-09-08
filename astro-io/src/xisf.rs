@@ -404,6 +404,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires the local capture in tests/data; run explicitly where available"]
     fn test_load_xisf_real_sample() {
         let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("../tests/data/2024-08-23_21-44-23_LIGHT_-10.00_60.00s_0000_a.xisf");
