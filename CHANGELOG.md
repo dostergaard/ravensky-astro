@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Managed compressed-FITS validation for Rice, PLIO, HCOMPRESS, floating-point,
+  quantized, fallback-column and null-mask layouts. Streaming or admitted tile
+  buffers replace the validator's estimated CFITSIO path; both entry points now
+  share the same bounded behavior. Includes native-oracle and malformed-input tests.
 - Standalone benchmark guide covering setup, runnable CLI and external-project
   Rust examples, real captures, report interpretation and investigation suites.
 - Extended benchmark investigation: worker-order/tile/size matrices, sampled
@@ -20,15 +24,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bounded full validation of integer GZIP_1/GZIP_2 FITS tiles in a single
   COMPRESSED_DATA P/Q byte column, available with shared memory admission.
   Stream decoded bytes with CRC/size/end checks and a 64 KiB optional-header cap.
-  Remaining native compressed-FITS layouts stay unsupported with shared budgets.
-- Shared CFITSIO admission across FITS loaders, metadata helpers and native
-  validation, with runtime reentrancy detection and public wrappers for direct
+- Shared CFITSIO admission across FITS loaders and metadata helpers,
+  with runtime reentrancy detection and public wrappers for direct
   native callers. Reentrant builds retain parallelism; non-reentrant builds
-  serialize participating callers. Native validation returns `ResourceBusy` on
-  contention. Full layouts that require CFITSIO remain gated on native allocation work.
+  serialize participating callers. Managed validation does not use this gate.
 - Caller-owned `MemoryBudget` and nonblocking `validate_file_with_budget`, with
   automatic reservation release, distinct `ResourceBusy` outcomes and peak
-  reservation telemetry. Shared full CFITSIO decoding explicitly remains unsupported.
+  reservation telemetry.
 - Optional `astro-bench` library/CLI with bounded deterministic FITS/XISF fixtures,
   read/structural/full workloads, fixed concurrency, cancellation, isolated repeated
   samples, peak-memory/CPU telemetry and versioned JSON reports. Application

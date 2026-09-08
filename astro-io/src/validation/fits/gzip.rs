@@ -3,7 +3,7 @@ use crate::validation::input::{decode_error, Input};
 use std::io::BufRead;
 
 // This exact profile needs no quantization, null-mask or fallback-column decoder.
-// A false result leaves the existing native path responsible for other layouts.
+// A false result dispatches to the general managed column/layout validator.
 pub(super) fn supported(h: &BTreeMap<String, String>, bitpix: i64) -> bool {
     matches!(bitpix, 8 | 16 | 32 | 64)
         && h.get("ZCMPTYPE")
@@ -16,6 +16,9 @@ pub(super) fn supported(h: &BTreeMap<String, String>, bitpix: i64) -> bool {
         && !h.contains_key("ZSCALE")
         && !h.contains_key("ZZERO")
         && !h.contains_key("ZMASKCMP")
+        && !h.keys().any(|key| {
+            key.starts_with("TSCAL") || key.starts_with("TZERO") || key.starts_with("TNULL")
+        })
 }
 
 fn descriptor_width(h: &BTreeMap<String, String>) -> Option<usize> {
@@ -126,7 +129,7 @@ fn tile_bytes(axes: &[Axis], mut row: u64, bytes_per_pixel: u64) -> Result<u64> 
     Ok(bytes)
 }
 
-fn stream(c: &mut Context<'_>, offset: u64, length: u64, expected: u64) -> Result<()> {
+pub(super) fn stream(c: &mut Context<'_>, offset: u64, length: u64, expected: u64) -> Result<()> {
     // The header parser can retain extra/name/comment Vecs. Take bounds bytes
     // delivered during header parsing; allowances precede those allocations.
     let _codec = c.memory.reserve(1024 * 1024 + 256 * 1024)?;

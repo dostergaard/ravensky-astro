@@ -50,7 +50,7 @@ monochrome image. Noise uses deterministic xorshift generation; gradient data
 exposes highly compressible behavior. XISF includes a SHA-256 attachment checksum;
 FITS has no CHECKSUM/DATASUM; GZIP tiles additionally verify their embedded CRC32
 and size. These are different workloads, so they are not an isolated codec contest.
-Native CFITSIO decode, LZ4, auxiliary blocks, camera metadata and scientific
+Rice/PLIO/HCOMPRESS generation, LZ4, auxiliary blocks, camera metadata and scientific
 star-field models are not included. Existing validator correctness tests cover more variants.
 
 For FITS GZIP, `--tile-rows N` selects the height of full-width tiles; omit it for
@@ -152,7 +152,7 @@ Bounds: 256 regular input files / 8 GiB stored total, 1–8 workers, 1–256 pas
 4,096 retained operation records. Hashing uses 64 KiB chunks. All workers share
 512 MiB reservations; each call is limited to `min(256 MiB, 512 MiB / workers)`.
 Operation records/runtime overhead are additional bounded memory, not included
-in validator reservations. Shared full native-codec exclusions still apply.
+in validator reservations. Managed compressed-FITS coverage applies; unsupported extensions remain explicit errors.
 RSS is process-lifetime and null where unavailable. Use controlled directories;
 final-component symlinks/duplicate canonical paths are rejected, but this is not
 a sandbox for hostile directory mutation. Applications' automatic policy and

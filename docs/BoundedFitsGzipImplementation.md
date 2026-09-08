@@ -1,5 +1,10 @@
 # Bounded FITS GZIP validation
 
+Current follow-up: [managed compressed-FITS validation](CompressedFitsResourceImplementation.md)
+replaces the validator's remaining native fallback. The limitations below record
+this earlier checkpoint; existing native image loaders remain outside the managed
+validator's allocation contract.
+
 Status: implemented and locally verified after `348aceb`. Native allocation
 controls for remaining layouts are not complete.
 

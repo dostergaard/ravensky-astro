@@ -205,8 +205,9 @@ Capture reports use a separate diagnostic schema (`kind: "capture_probe"`), not
 the synthetic report's `manifest`/`summaries` structure. A validation rejection
 returns exit status 2 with diagnostic JSON and no successful throughput score.
 `Unsupported` means a feature cannot be validated by this path; it does not mean
-the file is corrupt. Shared-budget full validation still excludes native
-compressed-FITS layouts beyond the supported integer GZIP subset. See the
+the file is corrupt. Both validation entry points now use managed compressed-FITS decoders; unsupported
+extensions still return explicit errors. HCOMPRESS tiles must fit the working
+allowance. See the
 [validator's coverage and limits](../astro-io/README.md#file-validation-unreleased).
 
 For repeated FITS-only, XISF-only and mixed comparisons:

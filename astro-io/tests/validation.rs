@@ -8,6 +8,8 @@ use std::{
     sync::atomic::{AtomicBool, AtomicU64, Ordering},
 };
 static NEXT: AtomicU64 = AtomicU64::new(0);
+#[path = "validation/compressed.rs"]
+mod compressed;
 struct Fixture(PathBuf);
 impl Fixture {
     fn new(bytes: &[u8]) -> Self {
@@ -273,7 +275,7 @@ fn fits_gzip_checks_edges_trailers_headers_and_shared_admission() {
 }
 
 #[test]
-fn fits_gzip_managed_profile_does_not_admit_other_native_layouts() {
+fn fits_extended_dispatch_checks_payload_codec_and_accepts_extra_columns() {
     let frame = compressed_frame("gzip", &[42; 128]);
     let options = ValidationOptions::default().with_level(ValidationLevel::Full);
     let budget = MemoryBudget::new(2 * 1024 * 1024).unwrap();
@@ -286,12 +288,12 @@ fn fits_gzip_managed_profile_does_not_admit_other_native_layouts() {
             false,
             codec,
         ));
-        assert_eq!(
-            validate_file_with_budget(&file.0, &options, None, &budget)
-                .unwrap_err()
-                .kind(),
-            ValidationErrorKind::Unsupported
-        );
+        let result = validate_file_with_budget(&file.0, &options, None, &budget);
+        if bitpix == -32 {
+            result.unwrap();
+        } else {
+            assert!(result.is_err(), "mislabeled GZIP cannot pass as {codec}");
+        }
         assert_eq!(budget.used_bytes(), 0);
     }
     let mut bytes = gzip_fits(&[frame], &[128], &[], 8, false, "GZIP_1");
@@ -309,12 +311,7 @@ fn fits_gzip_managed_profile_does_not_admit_other_native_layouts() {
     bytes[end + 80..end + 160].copy_from_slice(card("TTYPE2", "'OTHER'").as_bytes());
     let file = Fixture::new(&bytes);
     validate_file(&file.0, &ValidationOptions::default(), None).unwrap();
-    assert_eq!(
-        validate_file_with_budget(&file.0, &options, None, &budget)
-            .unwrap_err()
-            .kind(),
-        ValidationErrorKind::Unsupported
-    );
+    validate_file_with_budget(&file.0, &options, None, &budget).unwrap();
     assert_eq!(budget.used_bytes(), 0);
 }
 
@@ -810,7 +807,7 @@ fn malformed_xml_reserved_bytes_and_external_blocks_do_not_pass() {
     );
 }
 #[test]
-fn tiled_fits_is_checked_through_the_native_backend() {
+fn native_generated_tiled_fits_supports_shared_bounded_validation() {
     astro_io::fits::backend::with_cfitsio(|| {
         use fitsio::sys::{GZIP_1, GZIP_2, HCOMPRESS_1, PLIO_1, RICE_1};
         let source = Fixture::new(&hdu(
@@ -856,14 +853,7 @@ fn tiled_fits_is_checked_through_the_native_backend() {
                     None,
                     &budget,
                 );
-                if level == ValidationLevel::Full && codec != GZIP_1 && codec != GZIP_2 {
-                    assert_eq!(
-                        controlled.unwrap_err().kind(),
-                        ValidationErrorKind::Unsupported
-                    );
-                } else {
-                    controlled.unwrap();
-                }
+                controlled.unwrap_or_else(|error| panic!("codec {codec}: {error}"));
                 assert_eq!(budget.used_bytes(), 0);
             }
             let mut bytes = fs::read(&target.0).unwrap();

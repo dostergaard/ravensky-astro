@@ -15,13 +15,13 @@ I/O operations for astronomical image formats.
 
 ## CFITSIO concurrency
 
-FITS loading, header access, metadata extraction and standalone compressed-image
-validation share `astro_io::fits::backend`. The linked backend's
+FITS loading, header access and metadata extraction share
+`astro_io::fits::backend`. The linked backend's
 `is_reentrant()` capability controls admission: independent handles run concurrently
 on reentrant builds; other builds admit one thread with nested calls supported.
-Loaders wait for admission. The validator uses nonblocking admission and can return
-`ResourceBusy`, including from standalone `validate_file`; retry outside the worker.
-Structural FITS and XISF validation do not acquire this native gate.
+Loaders wait for admission. FITS and XISF validation do not acquire this native
+gate. Validation uses separate caller-owned memory admission and reports
+`ResourceBusy` when concurrent reservations temporarily occupy its allowance.
 
 Callers using `fitsio` directly must enclose open, operations, error handling and
 close/drop in `with_cfitsio` or `try_with_cfitsio`. Do not let live handles escape
@@ -36,7 +36,8 @@ On Windows, FITS file access in AstroMuninn and the ravensky-astro FITS APIs dep
 
 Use full FITS paths shorter than 260 characters (`< 260`). At 260 or more, FITS open calls may fail.
 
-This limitation is specific to FITS access through CFITSIO. XISF handling is not affected.
+This limitation is specific to FITS loading and metadata access through CFITSIO.
+Managed FITS validation and XISF handling do not use that path implementation.
 
 ## Installation
 
@@ -162,7 +163,7 @@ contains a compilable usage example.
 | --- | --- | --- |
 | FITS primary/image HDUs, all standard sample widths and dimensions | Mandatory header order, checked sizes, complete padded HDU chain | Reads all physical bytes |
 | FITS ASCII/binary tables | Column layout and variable-array heap descriptor bounds | Reads table/heap storage |
-| FITS tiled images | Tile geometry, table/heap extents, declared decoded size | Bounded integer GZIP_1/GZIP_2 profile below; standalone CFITSIO sectional decoding for remaining supported layouts/codecs |
+| FITS tiled images | Tile geometry, table/heap extents, declared decoded size | Managed GZIP_1/GZIP_2, Rice, PLIO, HCOMPRESS and raw/fallback tile validation below |
 | FITS `DATASUM` / `CHECKSUM` | Presence and encoding | Stored-data/HDU ones-complement verification |
 | XISF 1.0 images, thumbnails, profiles and property blocks | Prefix/XML, local references, geometry, sample widths, block extents | Reads every physical byte and local block |
 | XISF attachments, inline Base64/hex, embedded Data | Location/encoding and declared lengths | Payload checks below |
@@ -182,7 +183,7 @@ Structural reports explicitly list compressed algorithms not decoded, including
 unknown algorithms with understandable layouts. Full mode returns `Unsupported`
 for unknown codecs or checksum algorithms and never downgrades to structural
 success. Missing optional checksums are allowed; `checksums().present() == 0`
-means no checksum protection was available. I/O counts exclude CFITSIO rereads.
+means no checksum protection was available. I/O counts include managed rereads; validation no longer calls CFITSIO.
 
 Typed failures distinguish incomplete input, invalid structure, integrity
 mismatch, unsupported features, resource limits, source changes, cancellation,
@@ -194,7 +195,7 @@ Defaults: 64 MiB combined header bytes, 256 MiB working allowance per call,
 100,000 structures, and 64 GiB combined declared decoded data. The decoded limit
 is total data checked, not a RAM allocation or physical-file-size limit.
 `ValidationLimits` exposes each nonzero limit. Working limits now include retained
-buffers and conservative parser/backend allowances, so a header/native stage can
+buffers and conservative parser/backend allowances, so a header/codec stage can
 be rejected earlier than under the previous estimates.
 
 Use `validate_file_with_budget(path, options, cancel, &budget)` with one cloneable
@@ -227,19 +228,44 @@ println!("Peak call reservations: {}", report.peak_reserved_bytes());
 | Zstandard | 64 KiB input/output, rounded declared frame history plus 1 MiB context/block allowance; admit each concatenated/skippable frame independently and enforce native window limit |
 | LZ4/LZ4HC | Complete attached input and decoded output blocks must fit live reservations; no streaming claim for the raw-block decoder |
 | FITS header/tables | 1 KiB per retained structural keyword covers map/string/table bookkeeping before insertion |
-| Integer FITS GZIP_1/GZIP_2 tiles | Single COMPRESSED_DATA P/Q byte column, ZBITPIX 8/16/32/64, without ZQUANTIZ/ZSCALE/ZZERO/ZMASKCMP: reserve 1 MiB inflater + 256 KiB header allowance, ≤64 KiB each input/output, and small axis bookkeeping. Stream and discard output; no CFITSIO call or decoded-tile cache |
-| Remaining CFITSIO tile layouts/codecs | **Shared-budget full decoding returns `Unsupported`** until native allocation limits are enforceable. Structural checks work; standalone full calls retain an estimated allowance that does not bound tile caches or malformed GZIP expansion |
+| FITS GZIP_1/GZIP_2 tiles and GZIP fallback | Reserve 1 MiB inflater + 256 KiB header allowance, ≤64 KiB each input/output, and axis bookkeeping. Stream/discard output without a decoded-tile cache |
+| FITS Rice / PLIO | ≤64 KiB buffered compressed input; decode differences / execute run instructions without allocating a pixel array |
+| FITS HCOMPRESS | Reserve stored compressed bytes plus `16 × tile_pixels + 64 KiB` for coefficients and scratch before fallible allocation. Geometry and bitplanes are checked before allocation and the buffered header must match the admission observation. No native calls or retained tile cache |
 
-The bounded FITS GZIP path supports short edge tiles and 32/64-bit heap offsets.
-It requires one complete GZIP member per tile, exact decoded size, valid CRC32 and
-ISIZE, and no trailing bytes. A following GZIP member returns `Unsupported`;
-other trailing bytes fail integrity. Optional GZIP headers are limited to 64 KiB
-per tile before the header parser can retain more data. GZIP_2 unshuffling is a reversible
-byte permutation; container validation does not need to retain/reconstruct pixels.
-FITS DATASUM/CHECKSUM checks precede payload decode, with decoded-size preflight
-still applied before checksum I/O. Floating-point quantization, extra/fallback
-columns, masks and other codecs remain outside this bounded profile. See the
-[bounded FITS GZIP design](../docs/BoundedFitsGzipImplementation.md).
+### Compressed-FITS coverage
+
+Both validation entry points use the same managed decoders; there is no estimated
+native fallback. Supported profiles include P/Q descriptors, arbitrary column
+ordering, short edge tiles and the following codecs:
+
+- GZIP_1/GZIP_2: integer and lossless Float32/64 payloads, or 32-bit quantized
+  integers. One complete member per tile, exact decoded size, CRC32/ISIZE and
+  no trailing bytes. Optional headers are limited to 64 KiB. Concatenated members
+  are `Unsupported`. Unshuffling is a reversible permutation; no pixel array is
+  required for validation.
+- RICE_1/RICE_ONE: BYTEPIX 1/2/4, explicit coding-block limits (1–65,536 pixels;
+  default 32), bounded unary codes, exact byte consumption and zero padding.
+  BYTEPIX 8 is explicitly unsupported.
+- PLIO_1: checked short/long line-list headers, bounded instructions, nonnegative
+  24-bit values and output runs that cannot exceed the tile. An unwritten tail
+  is implicitly zero, as defined by the decoder contract.
+- HCOMPRESS_1: 32/64-bit coefficient transforms, positive two-dimensional tile
+  geometry (additional unit axes allowed), lossy scale and exact stream ends.
+  A tile exceeding the working allowance is rejected before decoding.
+- NOCOMPRESS: exact raw payload extent. GZIP_COMPRESSED_DATA and legacy
+  UNCOMPRESSED_DATA fallback columns are supported; exactly one payload per row
+  must be nonempty. Null masks support GZIP, Rice and PLIO.
+
+Quantized Float32/64 tiles validate scale/zero metadata, supported NO_DITHER /
+SUBTRACTIVE_DITHER_1 / SUBTRACTIVE_DITHER_2 declarations and dither seeds, then
+validate the encoded integer payload. This does not render dequantized pixels,
+apply optional HCOMPRESS display smoothing, or assess scientific fidelity.
+NaN/undefined image samples remain legal. Scaled/nullable compressed-image table
+columns and unknown codecs/extensions return explicit unsupported outcomes.
+Present FITS checksums are verified before payload decode; decoded-size preflight
+still precedes checksum I/O. See the
+[compressed-FITS resource implementation](../docs/CompressedFitsResourceImplementation.md).
+The adapted HCOMPRESS algorithm's upstream notices are included in `licenses/`.
 
 `MemoryBudget::used_bytes()` and `peak_bytes()` report reservation accounting;
 `ValidationReport::peak_reserved_bytes()` reports the call high-water mark. These
@@ -256,7 +282,8 @@ scheduler/readiness integration, real-capture/platform verification and measured
 foreground responsiveness before enabling this as a monitoring release gate.
 
 The cancellation flag is checked between parser steps, reads and decode chunks.
-A blocked OS read or an individual native/codec call cannot be interrupted.
+A blocked OS read or an individual external codec call cannot be interrupted.
+Managed FITS loops also check cancellation during entropy/transform work.
 Size and modification time are compared on both the open handle and pathname
 before return; Unix also compares device/inode identity. Other platforms
 currently use size/time only. These observations cannot detect every concurrent
@@ -270,13 +297,13 @@ This is container/payload validation, not exhaustive FITS keyword, XISF metadata
 ICC profile, color-space, or XML-signature conformance/authentication.
 
 FITS random groups, unknown HDU extensions and externally wrapped files (such
-as whole-file gzip) return `Unsupported`. Compressed FITS paths requiring CFITSIO
-and containing `[` or `]` are rejected to avoid backend filter interpretation. XISF external
+as whole-file gzip) return `Unsupported`. FITS validation opens literal local
+paths without CFITSIO filter interpretation. XISF external
 block locations, foreign XML element namespaces, DTDs, and external entities
 are unsupported; the validator does not fetch external resources. Namespace-less
-XISF headers are accepted for producer compatibility. Native access is serialized
-when the linked CFITSIO reports a non-reentrant build; the Windows FITS path-length
-restriction above also applies to the native compressed-image path.
+XISF headers are accepted for producer compatibility. Existing image loaders and
+metadata APIs still use the coordinated native backend and retain its platform
+limitations; validation's managed allocation contract does not cover those loaders.
 
 Tests generate temporary containers, exercise native CFITSIO compression and
 checksums, and use published SHA test vectors. Broader capture compatibility and

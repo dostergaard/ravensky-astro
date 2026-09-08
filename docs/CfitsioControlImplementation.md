@@ -1,5 +1,10 @@
 # CFITSIO controls
 
+Current follow-up: [managed compressed-FITS validation](CompressedFitsResourceImplementation.md)
+replaces the validator's remaining native fallback. The limitations below record
+this earlier checkpoint; existing native image loaders remain outside the managed
+validator's allocation contract.
+
 Status: concurrency implementation complete and locally verified on macOS after
 checkpoint `eb06530`. Native allocation limits remain a separate open step.
 

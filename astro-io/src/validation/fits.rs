@@ -1,6 +1,10 @@
 use super::*;
 use std::collections::BTreeMap;
 mod gzip;
+mod hcompress;
+mod plio;
+mod rice;
+mod tiles;
 
 fn padded(n: u64) -> Result<u64> {
     mul(add(n, 2879)? / 2880, 2880)
@@ -109,6 +113,12 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
                 || key.starts_with("TBCOL")
                 || key.starts_with("ZTILE")
                 || key.starts_with("ZNAXIS")
+                || key.starts_with("ZNAME")
+                || key.starts_with("ZVAL")
+                || key.starts_with("TSCAL")
+                || key.starts_with("TZERO")
+                || key.starts_with("TNULL")
+                || matches!(key, "ZDITHER0" | "ZBLANK")
             {
                 if &card[8..10] != b"= " {
                     return Err(invalid(format!("invalid {key} card")));
@@ -432,8 +442,6 @@ fn ascii_table(h: &BTreeMap<String, String>) -> Result<()> {
 }
 
 struct TileLayout {
-    pixels: u64,
-    tile: u64,
     bitpix: i64,
 }
 
@@ -443,7 +451,6 @@ fn tile_layout(c: &mut Context<'_>, h: &BTreeMap<String, String>) -> Result<Tile
         return Err(invalid("invalid compressed image dimensions"));
     }
     let mut pixels = 1;
-    let mut tile = 1;
     let mut tiles = 1;
     for axis in 1..=ndim {
         let n = number(h, &format!("ZNAXIS{axis}"))?;
@@ -452,7 +459,6 @@ fn tile_layout(c: &mut Context<'_>, h: &BTreeMap<String, String>) -> Result<Tile
             return Err(invalid("zero compressed dimension/tile"));
         }
         pixels = mul(pixels, n)?;
-        tile = mul(tile, t.min(n))?;
         tiles = mul(tiles, n.div_ceil(t))?;
     }
     let bitpix: i64 = h
@@ -467,25 +473,17 @@ fn tile_layout(c: &mut Context<'_>, h: &BTreeMap<String, String>) -> Result<Tile
     if tiles != number(h, "NAXIS2")? {
         return Err(invalid("compressed tile count does not match table rows"));
     }
-    Ok(TileLayout {
-        pixels,
-        tile,
-        bitpix,
-    })
+    Ok(TileLayout { bitpix })
 }
 
 fn validate_tiles(
     c: &mut Context<'_>,
     h: &BTreeMap<String, String>,
-    index: usize,
+    _index: usize,
     data: u64,
     layout: TileLayout,
 ) -> Result<()> {
-    let TileLayout {
-        pixels,
-        tile,
-        bitpix,
-    } = layout;
+    let bitpix = layout.bitpix;
     let codec = h
         .get("ZCMPTYPE")
         .ok_or_else(|| invalid("missing ZCMPTYPE"))?;
@@ -494,6 +492,7 @@ fn validate_tiles(
     }
     if ![
         "RICE_1",
+        "RICE_ONE",
         "GZIP_1",
         "GZIP_2",
         "PLIO_1",
@@ -507,56 +506,5 @@ fn validate_tiles(
     if gzip::supported(h, bitpix) {
         return gzip::validate(c, h, data, bitpix);
     }
-    if c.shared_control {
-        return Err(unsupported("full CFITSIO decoding lacks enforced native allocation limits; use structural validation or the standalone estimated path"));
-    }
-    crate::fits::backend::try_with_cfitsio(|| {
-        c.checkpoint()?;
-        // Reserve a standalone estimate, not an allocation ceiling. Native tile
-        // caches and malformed GZIP expansion can exceed this allowance; this
-        // path remains unavailable through the shared-budget API.
-        let stored = add(
-            mul(number(h, "NAXIS1")?, number(h, "NAXIS2")?)?,
-            number(h, "PCOUNT")?,
-        )?;
-        let _native = c
-            .memory
-            .reserve(add(add(mul(tile, 64)?, mul(stored, 2)?)?, 1024 * 1024)?)?;
-        if c.path.as_os_str().to_string_lossy().contains(['[', ']']) {
-            return Err(unsupported(
-                "compressed FITS path contains backend filter syntax",
-            ));
-        }
-        c.consistent()?;
-        let local_path = std::fs::canonicalize(c.path).map_err(ValidationError::io)?;
-        if local_path
-            .as_os_str()
-            .to_string_lossy()
-            .contains(['[', ']'])
-        {
-            return Err(unsupported(
-                "compressed FITS resolved path contains backend filter syntax",
-            ));
-        }
-        let mut f = fitsio::FitsFile::open(&local_path)
-            .map_err(|e| integrity(format!("CFITSIO open: {e}")))?;
-        c.consistent()?;
-        let hdu = f
-            .hdu(index)
-            .map_err(|e| integrity(format!("CFITSIO HDU: {e}")))?;
-        let chunk = (c.options.limits.working / 64).clamp(1, 8192);
-        let mut start = 0;
-        while start < pixels {
-            c.checkpoint()?;
-            let end = add(start, chunk)?.min(pixels);
-            let a = usize::try_from(start).map_err(|_| limit("image exceeds address space"))?;
-            let b = usize::try_from(end).map_err(|_| limit("image exceeds address space"))?;
-            let _: Vec<f64> = hdu
-                .read_section(&mut f, a, b)
-                .map_err(|e| integrity(format!("compressed HDU {index}: {e}")))?;
-            start = end;
-        }
-        Ok(())
-    })
-    .map_err(|e| ValidationError::new(ValidationErrorKind::ResourceBusy, e.to_string()))?
+    tiles::validate(c, h, data, bitpix)
 }

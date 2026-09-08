@@ -1,5 +1,9 @@
 # File validation implementation strategy
 
+Current follow-up: [managed compressed-FITS resource controls](CompressedFitsResourceImplementation.md)
+replace the validator's native fallback. The implementation and baseline counts
+below describe earlier checkpoints; current coverage is in the `astro-io` README.
+
 ## Objective
 Add a read-only `astro_io::validation` API for structural and full FITS/XISF validation, independent of consuming applications.
 

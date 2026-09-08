@@ -1,5 +1,10 @@
 # Shared validator memory and streaming implementation
 
+Current follow-up: [managed compressed-FITS validation](CompressedFitsResourceImplementation.md)
+replaces the validator's remaining native fallback. The limitations below record
+this earlier checkpoint; existing native image loaders remain outside the managed
+validator's allocation contract.
+
 Status: implemented and locally verified after checkpoint `b513716`.
 The [216-sample comparison](benchmarks/2026-09-06-m4-max-streaming/README.md)
 passes the initial memory/throughput targets. Consumer/native integration remains

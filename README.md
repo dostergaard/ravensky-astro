@@ -49,7 +49,8 @@ On Windows, FITS file access in AstroMuninn and the ravensky-astro FITS APIs dep
 
 Use full FITS paths shorter than 260 characters (`< 260`). At 260 or more, FITS open calls may fail.
 
-This limitation is specific to FITS access through CFITSIO. XISF handling is not affected.
+This limitation is specific to FITS loading and metadata access through CFITSIO.
+Managed FITS validation and XISF handling do not use that path implementation.
 
 ---
 

@@ -61,8 +61,8 @@ pub enum ValidationErrorKind {
     Unsupported,
     /// A configured resource bound would be exceeded.
     ResourceLimit,
-    /// Memory or native backend admission is temporarily occupied; retry outside
-    /// the validator worker. Standalone native validation can also return this.
+    /// Shared memory admission is temporarily occupied; retry outside the
+    /// validator worker after other users release their reservations.
     ResourceBusy,
     /// The source observation or path identity changed during the call.
     ChangedDuringValidation,
@@ -336,7 +336,7 @@ impl ValidationReport {
     pub fn structure_count(&self) -> u64 {
         self.structures
     }
-    /// Physical bytes read by validator-managed I/O; excludes native backend rereads.
+    /// Physical bytes read by validation I/O, including repeated reads.
     pub fn bytes_read(&self) -> u64 {
         self.bytes_read
     }
@@ -360,7 +360,6 @@ struct Context<'a> {
     structures: u64,
     header_bytes: u64,
     memory: Account,
-    shared_control: bool,
     undecoded_codecs: Vec<String>,
     decoded: u64,
     images: u64,
@@ -492,7 +491,7 @@ impl Context<'_> {
 /// Validate a local file without modifying it.
 ///
 /// The extension is ignored. Full mode may read the file more than once.
-/// Cancellation is cooperative between chunks; blocking OS/native calls may
+/// Cancellation is cooperative between chunks; blocking OS/codec calls may
 /// delay it. Missing optional checksums are allowed. Errors distinguish incomplete,
 /// invalid, unsupported, changed, cancelled, resource-limited, and unreadable input.
 pub fn validate_file(
@@ -501,18 +500,20 @@ pub fn validate_file(
     cancel: Option<&AtomicBool>,
 ) -> Result<ValidationReport> {
     let budget = MemoryBudget::new(options.limits.working)?;
-    validate_controlled(path, options, cancel, &budget, false)
+    validate_controlled(path, options, cancel, &budget)
 }
 /// Validate using a caller-owned shared memory allowance, without waiting.
 ///
 /// Share one budget across concurrent calls. `ResourceBusy` is temporary capacity
 /// contention; it is not file corruption. Every failure releases this call's
 /// reservations before returning. Callers own queuing, fairness and cancellation.
-/// Full integer GZIP_1/GZIP_2 FITS validation supports a single COMPRESSED_DATA
-/// P/Q byte column, without quantization, scaling or mask extensions, through
-/// bounded streaming. Other full tiled-FITS layouts still require CFITSIO and
-/// remain unsupported here until native allocations can be controlled.
-/// Structural tiled FITS checks and all supported XISF codecs remain available.
+/// FITS GZIP, Rice (1/2/4-byte), PLIO and HCOMPRESS use managed decoding;
+/// quantized/fallback/mask layouts are checked without a native allocation path.
+/// GZIP/Rice/PLIO stream; HCOMPRESS admits a complete bounded tile working set.
+/// Unsupported extensions return an error without weaker/native fallback.
+/// Quantization metadata and payload integrity are checked, not rendered pixels
+/// or the scientific fidelity of lossy compression. Supported XISF codecs retain
+/// their documented streaming or admitted whole-block resource requirements.
 /// Returned reports and caller-owned queues are outside the working allowance.
 ///
 /// ```no_run
@@ -531,14 +532,13 @@ pub fn validate_file_with_budget(
     cancel: Option<&AtomicBool>,
     budget: &MemoryBudget,
 ) -> Result<ValidationReport> {
-    validate_controlled(path, options, cancel, budget, true)
+    validate_controlled(path, options, cancel, budget)
 }
 fn validate_controlled(
     path: &Path,
     options: &ValidationOptions,
     cancel: Option<&AtomicBool>,
     budget: &MemoryBudget,
-    shared_control: bool,
 ) -> Result<ValidationReport> {
     if cancel.is_some_and(|c| c.load(Ordering::Relaxed)) {
         return Err(ValidationError::new(
@@ -564,7 +564,6 @@ fn validate_controlled(
         structures: 0,
         header_bytes: 0,
         memory,
-        shared_control,
         diagnostics,
         undecoded_codecs: Vec::new(),
         decoded: 0,
@@ -640,7 +639,6 @@ mod tests {
             structures: 0,
             header_bytes: 0,
             memory,
-            shared_control: false,
             diagnostics,
             undecoded_codecs: Vec::new(),
             decoded: 0,

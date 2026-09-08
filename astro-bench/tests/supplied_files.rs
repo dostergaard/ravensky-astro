@@ -57,7 +57,7 @@ fn supplied_xisf_missing_thumbnails_are_incomplete_at_both_levels() {
 }
 
 #[test]
-fn supplied_rice_files_do_not_bypass_shared_native_restrictions() {
+fn supplied_rice_files_validate_with_shared_budgets() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/test_data");
     let budget = MemoryBudget::new(16 * 1024 * 1024).unwrap();
     for name in [
@@ -72,14 +72,13 @@ fn supplied_rice_files_do_not_bypass_shared_native_restrictions() {
             &budget,
         )
         .unwrap();
-        let error = validate_file_with_budget(
+        validate_file_with_budget(
             &root.join(name),
             &ValidationOptions::default().with_level(ValidationLevel::Full),
             None,
             &budget,
         )
-        .unwrap_err();
-        assert_eq!(error.kind(), ValidationErrorKind::Unsupported);
+        .unwrap();
         assert_eq!(budget.used_bytes(), 0);
     }
 }
