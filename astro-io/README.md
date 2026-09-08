@@ -317,6 +317,9 @@ the managed-reservation and streaming changes. The subsequent
 [completion investigation](../docs/benchmarks/2026-09-07-m4-max-completion/README.md)
 records extended GZIP scaling, profiles, cancellation, a responsiveness proxy and
 real captures on three supplied volumes, including 714 MiB ordinary FITS files.
+The [managed compressed-FITS measurements](../docs/benchmarks/2026-09-08-managed-fits/README.md)
+add Rice/PLIO/HCOMPRESS scaling and tile-memory evidence plus cooperative shutdown
+probes. See [release verification](../RELEASING.md) for current platform CI scope.
 These measurements do not establish release defaults or a hard process-memory ceiling.
 
 Format references: [FITS 4.0](https://fits.gsfc.nasa.gov/standard40/fits_standard40aa.pdf),

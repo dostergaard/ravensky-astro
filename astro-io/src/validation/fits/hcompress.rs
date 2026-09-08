@@ -1,5 +1,5 @@
 //! Bounded HCOMPRESS decoder adapted from fitskit 0.3.0 (MIT).
-//! Copyright (c) 2026 Steven Michael. See ../../../../licenses/fitskit-MIT.txt.
+//! Copyright (c) 2026 Steven Michael. See ../../../licenses/fitskit-MIT.txt.
 //! Original algorithm: R. White/STScI and CFITSIO; notices retained alongside it.
 //! Changes: admission before allocation, fallible growth, geometry/bitplane/input
 //! checks, exact stream consumption, integer log2 and cooperative cancellation.

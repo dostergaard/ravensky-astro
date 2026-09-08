@@ -45,6 +45,11 @@ and the path toward application-driven calibration.
 
 ## Windows FITS Path-Length Note
 
+Windows GNU CI covers `astro-io`, `astro-metadata` and the unpublished benchmark
+tools. `astro-metrics` and the root facade depend on `sep-sys 1.3.0`, whose POSIX
+`rand_r` call currently prevents Windows compilation. See
+[release verification and platform scope](RELEASING.md) before choosing a target.
+
 On Windows, FITS file access in AstroMuninn and the ravensky-astro FITS APIs depends on CFITSIO (via `fitsio` / `fitsio-sys`). CFITSIO currently opens disk files using its `fopen`-based path handling (`file_openfile`), which in this environment follows the classic Windows path-length boundary.
 
 Use full FITS paths shorter than 260 characters (`< 260`). At 260 or more, FITS open calls may fail.

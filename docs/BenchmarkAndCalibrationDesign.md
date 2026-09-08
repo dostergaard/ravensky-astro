@@ -1,5 +1,11 @@
 # Benchmark and Calibration Design
 
+Current follow-up (2026-09-08): the standalone guide and local investigation are
+complete, including [managed compressed-FITS measurements](benchmarks/2026-09-08-managed-fits/README.md).
+The validator no longer uses a native compressed-FITS fallback. The staged
+baseline descriptions below preserve the earlier measurements. Application
+calibration, scheduling and foreground responsiveness remain downstream work.
+
 Status: first foundation implemented and locally verified on `feature/file-validation`.
 The [initial baseline](benchmarks/2026-09-06-m4-max/README.md) contains 216 successful
 release samples with raw reports and measured limitations.
