@@ -1,0 +1,6 @@
+{
+  "target_shutdown_seconds": 0.25,
+  "signal_delay_seconds": 1,
+  "binary_sha256": "74f5af78fc044f032ca9e80bee6a13f7d4c0f4be86630c4e1e8441b8089ea831",
+  "script_sha256": "4e2cf0b82420e71ffdbdea3529f19ea22a356ad013f3f362e594510c7fc3a9bc"
+}

@@ -1,0 +1,169 @@
+{
+  "samples": 54,
+  "operations": 432,
+  "measured_source_sha256": "b464cb183e90d14c125c1717419d72ec48fda4e57cec16dbfb773257df0834a0",
+  "summaries": [
+    {
+      "case": "rice-noise",
+      "workers": 1,
+      "median_wall_seconds": 0.530265708,
+      "min_wall_seconds": 0.529180625,
+      "max_wall_seconds": 0.531067625,
+      "peak_rss_bytes": 6619136,
+      "peak_reserved_bytes": 90160
+    },
+    {
+      "case": "rice-noise",
+      "workers": 2,
+      "median_wall_seconds": 0.271168708,
+      "min_wall_seconds": 0.270561,
+      "max_wall_seconds": 0.271521375,
+      "peak_rss_bytes": 6717440,
+      "peak_reserved_bytes": 180320
+    },
+    {
+      "case": "rice-noise",
+      "workers": 4,
+      "median_wall_seconds": 0.151686,
+      "min_wall_seconds": 0.151685084,
+      "max_wall_seconds": 0.153045542,
+      "peak_rss_bytes": 7045120,
+      "peak_reserved_bytes": 360640
+    },
+    {
+      "case": "rice-gradient",
+      "workers": 1,
+      "median_wall_seconds": 0.113467167,
+      "min_wall_seconds": 0.112969875,
+      "max_wall_seconds": 0.113918584,
+      "peak_rss_bytes": 6635520,
+      "peak_reserved_bytes": 90112
+    },
+    {
+      "case": "rice-gradient",
+      "workers": 2,
+      "median_wall_seconds": 0.0574455,
+      "min_wall_seconds": 0.056781875,
+      "max_wall_seconds": 0.059228291,
+      "peak_rss_bytes": 6750208,
+      "peak_reserved_bytes": 180224
+    },
+    {
+      "case": "rice-gradient",
+      "workers": 4,
+      "median_wall_seconds": 0.032620916,
+      "min_wall_seconds": 0.030943458,
+      "max_wall_seconds": 0.033644583,
+      "peak_rss_bytes": 7274496,
+      "peak_reserved_bytes": 360448
+    },
+    {
+      "case": "plio-mask",
+      "workers": 1,
+      "median_wall_seconds": 0.009534416,
+      "min_wall_seconds": 0.009514125,
+      "max_wall_seconds": 0.010126125,
+      "peak_rss_bytes": 6619136,
+      "peak_reserved_bytes": 86016
+    },
+    {
+      "case": "plio-mask",
+      "workers": 2,
+      "median_wall_seconds": 0.005101167,
+      "min_wall_seconds": 0.005043333,
+      "max_wall_seconds": 0.005151708,
+      "peak_rss_bytes": 6717440,
+      "peak_reserved_bytes": 172032
+    },
+    {
+      "case": "plio-mask",
+      "workers": 4,
+      "median_wall_seconds": 0.003130791,
+      "min_wall_seconds": 0.003130083,
+      "max_wall_seconds": 0.00313325,
+      "peak_rss_bytes": 6881280,
+      "peak_reserved_bytes": 344064
+    },
+    {
+      "case": "hcompress-noise-32rows",
+      "workers": 1,
+      "median_wall_seconds": 1.523250541,
+      "min_wall_seconds": 1.520106666,
+      "max_wall_seconds": 1.52695625,
+      "peak_rss_bytes": 7421952,
+      "peak_reserved_bytes": 1274879
+    },
+    {
+      "case": "hcompress-noise-32rows",
+      "workers": 2,
+      "median_wall_seconds": 0.785104,
+      "min_wall_seconds": 0.7845755,
+      "max_wall_seconds": 0.787366625,
+      "peak_rss_bytes": 8339456,
+      "peak_reserved_bytes": 2549664
+    },
+    {
+      "case": "hcompress-noise-32rows",
+      "workers": 4,
+      "median_wall_seconds": 0.441859834,
+      "min_wall_seconds": 0.441128167,
+      "max_wall_seconds": 0.443600416,
+      "peak_rss_bytes": 10633216,
+      "peak_reserved_bytes": 5099256
+    },
+    {
+      "case": "hcompress-noise-whole",
+      "workers": 1,
+      "median_wall_seconds": 1.634958208,
+      "min_wall_seconds": 1.631983166,
+      "max_wall_seconds": 1.639224083,
+      "peak_rss_bytes": 32702464,
+      "peak_reserved_bytes": 75893635
+    },
+    {
+      "case": "hcompress-noise-whole",
+      "workers": 2,
+      "median_wall_seconds": 0.839933833,
+      "min_wall_seconds": 0.839006042,
+      "max_wall_seconds": 0.847994833,
+      "peak_rss_bytes": 58998784,
+      "peak_reserved_bytes": 151786653
+    },
+    {
+      "case": "hcompress-noise-whole",
+      "workers": 4,
+      "median_wall_seconds": 0.472006792,
+      "min_wall_seconds": 0.466756209,
+      "max_wall_seconds": 0.47212525,
+      "peak_rss_bytes": 110870528,
+      "peak_reserved_bytes": 303573223
+    },
+    {
+      "case": "hcompress-float-quantized",
+      "workers": 1,
+      "median_wall_seconds": 0.398563875,
+      "min_wall_seconds": 0.398233792,
+      "max_wall_seconds": 0.398950375,
+      "peak_rss_bytes": 24674304,
+      "peak_reserved_bytes": 34808201
+    },
+    {
+      "case": "hcompress-float-quantized",
+      "workers": 2,
+      "median_wall_seconds": 0.208274875,
+      "min_wall_seconds": 0.206552208,
+      "max_wall_seconds": 0.209058333,
+      "peak_rss_bytes": 44335104,
+      "peak_reserved_bytes": 69616378
+    },
+    {
+      "case": "hcompress-float-quantized",
+      "workers": 4,
+      "median_wall_seconds": 0.12038125,
+      "min_wall_seconds": 0.116566042,
+      "max_wall_seconds": 0.122330042,
+      "peak_rss_bytes": 83329024,
+      "peak_reserved_bytes": 139232020
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "architecture": "aarch64",
+  "build_profile": "release",
+  "cache_state": "uncontrolled / likely warm: fingerprints touch inputs before timing",
+  "complete": true,
+  "cpu_seconds": 1.838402,
+  "inputs": [
+    {
+      "index": 0,
+      "sha256": "095741cfa9623cdd71614c8c6bd9752b5df6e885d3287be77c548b4cf7079e3f",
+      "stored_bytes": 8700480
+    },
+    {
+      "index": 1,
+      "sha256": "fd899ae40c7076e79935ba072533cbbdf60574771c377cd2bb32ca5d01eca603",
+      "stored_bytes": 8700480
+    },
+    {
+      "index": 2,
+      "sha256": "5f16c6325a66522edc251539bbe171f66c29ea981b69edf3a3ba4eec9435ed0d",
+      "stored_bytes": 8700480
+    },
+    {
+      "index": 3,
+      "sha256": "2a75d178fccad56bbc235d399a9ecb372d07e91e0187d8063f71e84067543bb6",
+      "stored_bytes": 8700480
+    }
+  ],
+  "kind": "capture_probe",
+  "level": "Full",
+  "operations": [
+    {
+      "checksums_present": 4,
+      "checksums_verified": 4,
+      "format": "Fits",
+      "images": 1,
+      "index": 0,
+      "pass": 0,
+      "read_bytes": 34793220,
+      "seconds": 0.23544525,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 4,
+      "checksums_verified": 4,
+      "format": "Fits",
+      "images": 1,
+      "index": 1,
+      "pass": 0,
+      "read_bytes": 34792603,
+      "seconds": 0.23528625,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 4,
+      "checksums_verified": 4,
+      "format": "Fits",
+      "images": 1,
+      "index": 2,
+      "pass": 0,
+      "read_bytes": 34792763,
+      "seconds": 0.234813916,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 4,
+      "checksums_verified": 4,
+      "format": "Fits",
+      "images": 1,
+      "index": 3,
+      "pass": 0,
+      "read_bytes": 34792977,
+      "seconds": 0.234563125,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 4,
+      "checksums_verified": 4,
+      "format": "Fits",
+      "images": 1,
+      "index": 0,
+      "pass": 1,
+      "read_bytes": 34793220,
+      "seconds": 0.204772667,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 4,
+      "checksums_verified": 4,
+      "format": "Fits",
+      "images": 1,
+      "index": 1,
+      "pass": 1,
+      "read_bytes": 34792603,
+      "seconds": 0.2314465,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 4,
+      "checksums_verified": 4,
+      "format": "Fits",
+      "images": 1,
+      "index": 2,
+      "pass": 1,
+      "read_bytes": 34792763,
+      "seconds": 0.2307815,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 4,
+      "checksums_verified": 4,
+      "format": "Fits",
+      "images": 1,
+      "index": 3,
+      "pass": 1,
+      "read_bytes": 34792977,
+      "seconds": 0.231237208,
+      "success": true,
+      "undecoded_codec_count": 0
+    }
+  ],
+  "os": "macos",
+  "passes": 2,
+  "peak_reserved_bytes": 303573223,
+  "peak_rss_bytes": 110100480,
+  "per_call_working_bytes": 134217728,
+  "preparation_seconds": 0.055131458,
+  "probe_source_sha256": "944d8de7f775b9e3c9ccb3b279508112e888f2e299872ff6979552d61de5ec60",
+  "reserved_bytes_after": 0,
+  "rss_source": "process-lifetime getrusage: macOS bytes, Linux KiB converted; null elsewhere",
+  "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "schema_version": 1,
+  "shared_memory_bytes": 536870912,
+  "source_revision": "c9c047db90540f36e0c047e47b11490555df6560",
+  "source_sha256": "b464cb183e90d14c125c1717419d72ec48fda4e57cec16dbfb773257df0834a0",
+  "sources_unchanged": true,
+  "wall_seconds": 0.466756209,
+  "workers": 4
+}
