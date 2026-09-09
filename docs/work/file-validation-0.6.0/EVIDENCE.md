@@ -172,6 +172,20 @@ Fresh checks on 2026-09-09 passed, with complete commands and outputs retained:
   versions returned 404 on 2026-09-09. No republishing or version changes are needed.
 
 Task-document relative links, CI YAML/branch targets and manifest versions were
-also checked. Production Rust code is unchanged from the approved head. Package,
-merge, publication and clean-consumer results will be added after execution;
-the successful checks above do not imply publication.
+also checked. Production Rust code is unchanged from the approved head.
+
+Clean review packages from `e294ba542960c1d780a5dc072e1f86bb6e823c2f` passed
+`cargo package --locked --workspace --exclude astro-bench --target-dir
+target/package-closeout-review`. The [build log](records/review-package.log) and
+[archive audit](records/review-packages.json) retain hashes, sizes, clean source
+identity, 0.6.0 dependency requirements, matched Rust sources, complete gzip ends
+and notices. Reproduce inspection with [verify_archives.py](verify_archives.py):
+
+```sh
+python3 docs/work/file-validation-0.6.0/verify_archives.py \
+  target/package-closeout-review/package target/package-inspection.json \
+  e294ba542960c1d780a5dc072e1f86bb6e823c2f
+```
+
+Merge, actual release archives, publication and clean-consumer results follow
+after execution; successful review checks do not imply publication.
