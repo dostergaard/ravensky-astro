@@ -11,6 +11,25 @@ Hosted documentation failed on the native backend's write to read-only sources;
 tagging/release completion is blocked. See the handoff for the precise repair
 direction and actual identifiers. No AstroMuninn implementation was started.
 
+## 0.6.1 hosted-documentation repair
+
+The approved continuation uses a coordinated 0.6.1 patch release. Each
+publishable manifest supplies docs.rs metadata that passes
+`fitsio/src-cmake` directly to Cargo and builds only the supported Linux GNU
+documentation target. `astro-metrics` and the facade add configuration-only
+direct `fitsio` dependency edges because Cargo cannot select a transitive
+dependency feature from those package roots. The dependency and its
+`fitsio-src` feature were already present transitively, so ordinary resolution
+and backend selection remain unchanged.
+
+Do not replace this with a RavenSky documentation feature: Cargo's
+`--all-features` would then select CMake for ordinary validation builds and could
+forward a feature that AstroMuninn's patched `fitsio-sys 0.5.5` does not expose.
+The direct-selector metadata is intentionally outside RavenSky's feature surface.
+Published 0.6.0 manifests cannot be changed, and no currently released upstream
+version removes the failing autotools source write, so 0.6.1 is the required
+deployment vehicle.
+
 ## Problem, goals and boundaries
 
 AstroMuninn's separate CLI/Lite monitor loops inferred readiness from unchanged

@@ -11,6 +11,10 @@ description = "Metadata handling for astronomical images"
 documentation = "https://docs.rs/astro-metadata"
 readme = "README.md"
 
+[package.metadata.docs.rs]
+features = ["fitsio/src-cmake"]
+targets = ["x86_64-unknown-linux-gnu"]
+
 [dependencies]
 anyhow.workspace = true
 thiserror.workspace = true

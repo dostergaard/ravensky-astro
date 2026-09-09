@@ -1,11 +1,12 @@
 # RavenSky validation release → AstroMuninn handoff
 
-Status: **RELEASE INCOMPLETE — BLOCKED** as of 2026-09-09. PR #2 is merged and
-all four 0.6.0 crates are published and independently usable. The remaining gate
-is hosted API documentation: docs.rs cannot build the bundled CFITSIO autotools
-backend in its read-only source sandbox. The `v0.6.0` tag and GitHub release are
-not created, following the documentation-verification gate in `RELEASING.md`.
-No AstroMuninn implementation or dependency changes were made.
+Status: **0.6.1 REPAIR IN PROGRESS** as of 2026-09-09. PR #2 is merged and all
+four 0.6.0 crates are published and independently usable. Their only failed gate
+is hosted API documentation. A coordinated 0.6.1 candidate on
+`release/0.6.1-docs-rs` now contains the smallest RavenSky-owned configuration
+repair and has passed a fresh read-only-dependency-source documentation probe.
+It is not yet committed, reviewed by CI, published, or verified on docs.rs. No
+release tag or GitHub release exists, and no AstroMuninn files were changed.
 
 Read [PLAN.md](PLAN.md) for the settled architecture,
 [EVIDENCE.md](EVIDENCE.md) for verified observations, and
@@ -29,7 +30,7 @@ Read [PLAN.md](PLAN.md) for the settled architecture,
 - Post-publication commits preserve evidence only; find their exact current
   identity with `git log -1 master`. They do not change published 0.6.0 source.
 
-## Resolve the release gate first
+## Hosted-documentation repair
 
 `fitsio-sys 0.5.7` calls autotools with `.insource(true)`; `autotools 0.2.7`
 then attempts to create `ext/cfitsio/configure.prev`. docs.rs mounts crate sources
@@ -38,24 +39,53 @@ I/O and facade build logs confirm this cause; all four versioned API pages were
 unavailable at the final check. Local rustdoc and Linux CI pass because their
 source trees are writable. This is not a validator correctness failure.
 
-The isolated [CMake diagnostic](records/docs-cmake-probe.log) successfully built
+The earlier isolated [CMake diagnostic](records/docs-cmake-probe.log) successfully built
 documentation, with warnings denied, for all four published crates using the
 existing `fitsio/src-cmake` feature and a read-only copy of `fitsio-sys 0.5.7`.
 This is evidence for a repair direction, not a deployed fix or a docs.rs result.
 The diagnostic's manifest/lock are retained beside its log. No dependency code
 or production build defaults were changed to run it.
 
-Next action: obtain direction for a patch release (normally coordinated 0.6.1),
-then implement a documentation build option that selects the existing CMake
-backend, propagate it through the crate graph, configure docs.rs and validate
-against read-only sources and the existing platform/backend matrix. Keep the
-ordinary backend behavior unchanged. Feature unification and all-features builds
-must be assessed, including AstroMuninn's older vendored backend. An alternative
-is a compatible upstream backend fix followed by docs.rs rebuilds of 0.6.0;
-that depends on an external release and has not been arranged.
+The final repair uses each publishable crate's `[package.metadata.docs.rs]` to
+pass the dependency feature selector `fitsio/src-cmake` and limits hosted docs to
+the supported `x86_64-unknown-linux-gnu` target. `astro-io` and `astro-metadata`
+already depended directly on `fitsio`. Cargo only accepts a dependency feature
+selector from a package with a direct dependency edge, so configuration-only
+direct `fitsio` edges were added to `astro-metrics` and `ravensky-astro`. Those
+edges add no package or feature to their ordinary resolved graphs because the
+same configured dependency was already present transitively.
 
-Do not try to republish 0.6.0, move a release tag, silently publish an unapproved
-version, or request repeated builds without changing the failing conditions.
+This shape deliberately does **not** add a RavenSky docs feature. Default and
+`--all-features` graphs remain identical and select only `fitsio-src`/autotools.
+Only the docs-oriented command adds `src-cmake`; Cargo unifies that additive
+feature on the existing `fitsio` instance, and `fitsio-sys 0.5.7` intentionally
+chooses its CMake branch when both source-build features are present. Therefore
+ordinary native behavior and public Rust APIs are unchanged. AstroMuninn's
+patched `fitsio-sys 0.5.5` does not expose `src-cmake`, but it is unaffected:
+docs.rs package metadata is not applied to dependents and no RavenSky feature can
+forward the selector into an AstroMuninn build.
+
+The latest available `fitsio` release checked during this repair is 0.21.10; it
+still depends on `fitsio-sys 0.5`, and the latest `fitsio-sys` remains 0.5.7 with
+the same autotools source-write behavior. It already exposes the usable CMake
+alternative, but no available upstream release makes RavenSky's existing
+`fitsio-src` selection docs.rs-safe by default. Published 0.6.0 manifests are
+immutable, so a coordinated 0.6.1 is required to deploy the metadata.
+
+A fresh probe vendored all locked third-party sources into an isolated temporary
+tree, made that tree recursively read-only, and built docs for each publishable
+crate with `DOCS_RS=1`, warnings denied, offline mode, and its production feature
+selector. All four succeeded without any third-party modification. See
+[EVIDENCE.md](EVIDENCE.md#061-hosted-documentation-repair) for commands and graph
+results.
+
+Next action: finish the local release matrix and isolated AstroMuninn backend
+check, create and audit fresh 0.6.1 packages, update these records, commit/push,
+and require clean CI. Publish in dependency order only after those gates pass;
+then verify actual docs.rs builds before creating `v0.6.1` and its GitHub release.
+
+Do not try to republish 0.6.0, create a retrospective 0.6.0 release tag, or request
+repeated builds without changing the failing conditions.
 Only after hosted documentation is verified should the remaining tag/release
 steps run. The current 0.6.0 publication does not need repeating or yanking.
 Local API docs remain available with `cargo doc --workspace --all-features --no-deps`.
@@ -149,8 +179,8 @@ policy. Config serialization belongs to `crates/astromuninn-core/src/config.rs`.
 Recommended first steps in a fresh session:
 
 1. Verify this release is published and inspect both repositories' clean state.
-   In AstroMuninn, update the registry `astro-metadata` requirement to 0.6.0; add
-   `astro-io = "0.6.0"` to workspace/core when wiring validation. Refresh the lock
+   In AstroMuninn, update the registry `astro-metadata` requirement to 0.6.1; add
+   `astro-io = "0.6.1"` to workspace/core when wiring validation. Refresh the lock
    and check that the vendored backend patch is actually selected. Do not leak
    development path overrides into release manifests.
 2. Create an AstroMuninn task plan/handoff/evidence directory. Add backward-

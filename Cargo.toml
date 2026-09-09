@@ -9,7 +9,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Dean Ostergaard <dean@deanostergaard.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -35,9 +35,9 @@ serde_json = "1.0"
 sep-sys = "1.3.0"
 walkdir = "2.5"
 
-astro-io = { path = "./astro-io", version = "0.6.0" }
-astro-metadata = { path = "./astro-metadata", version = "0.6.0" }
-astro-metrics = { path = "./astro-metrics", version = "0.6.0" }
+astro-io = { path = "./astro-io", version = "0.6.1" }
+astro-metadata = { path = "./astro-metadata", version = "0.6.1" }
+astro-metrics = { path = "./astro-metrics", version = "0.6.1" }
 
 [package]
 name = "ravensky-astro"
@@ -54,6 +54,11 @@ readme = "README.md"
 # Investigation artifacts remain in Git; consumers need the library and examples.
 exclude = ["docs/benchmarks/**", ".agents/**", "AGENTS.md", ".github/**"]
 
+[package.metadata.docs.rs]
+# Select fitsio's read-only-source-compatible bundled build only on docs.rs.
+features = ["fitsio/src-cmake"]
+targets = ["x86_64-unknown-linux-gnu"]
+
 [lib]
 name = "ravensky_astro"
 
@@ -64,6 +69,9 @@ astro-metadata.workspace = true
 astro-metrics.workspace = true
 chrono.workspace = true
 csv.workspace = true
+# A direct edge lets docs.rs select fitsio/src-cmake without exposing a
+# RavenSky feature or changing normal/all-features backend selection.
+fitsio.workspace = true
 rayon.workspace = true
 serde_json.workspace = true
 walkdir.workspace = true

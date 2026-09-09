@@ -11,6 +11,10 @@ description = "Statistical metrics for astronomical images"
 documentation = "https://docs.rs/astro-metrics"
 readme = "README.md"
 
+[package.metadata.docs.rs]
+features = ["fitsio/src-cmake"]
+targets = ["x86_64-unknown-linux-gnu"]
+
 [dependencies]
 anyhow.workspace = true
 thiserror.workspace = true
@@ -18,4 +22,7 @@ ndarray.workspace = true
 serde.workspace = true
 astro-metadata.workspace = true
 astro-io.workspace = true
+# Configuration-only direct edge for the docs.rs feature selection above.
+# The same dependency is already present transitively in ordinary builds.
+fitsio.workspace = true
 sep-sys.workspace = true

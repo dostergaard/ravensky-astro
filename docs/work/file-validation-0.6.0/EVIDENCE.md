@@ -306,3 +306,130 @@ GitHub release remain absent. This is the only remaining release gate; see
 Final status: **RELEASE INCOMPLETE — BLOCKED**. Post-publication records are
 committed on `master`; their commit does not alter the released source identity.
 AstroMuninn remains unchanged at `5215a5bf5aae839db4615c628959c35f2245f145`.
+
+## 0.6.1 hosted-documentation repair
+
+Investigation on 2026-09-09 established:
+
+- `astro-io` and `astro-metadata` directly depend on workspace `fitsio` with
+  `fitsio-src`; `astro-metrics` and the facade reach the same dependency through
+  their RavenSky dependencies.
+- The locked graph selects `fitsio 0.21.9` and `fitsio-sys 0.5.7`.
+  `fitsio-src` activates `fitsio-sys/fitsio-src` and its `autotools` dependency.
+- `fitsio/src-cmake` activates `fitsio-sys/src-cmake`; with both features,
+  `fitsio-sys`'s existing build script selects CMake rather than autotools.
+- `cargo info` reported `fitsio 0.21.10` and `fitsio-sys 0.5.7` as the latest
+  available releases. Inspection of 0.21.10 confirms the same `fitsio-sys =
+  "0.5"`, `fitsio-src`, and `src-cmake` arrangement. No available release fixes
+  the autotools source write while retaining RavenSky's existing default feature.
+- docs.rs metadata passes its `features` values to Cargo. Cargo 1.94 accepts
+  `fitsio/src-cmake` for a package with a direct `fitsio` edge. It rejects that
+  selector from `astro-metrics` or the facade without such an edge.
+
+The candidate adds docs.rs metadata to all four publishable packages and
+configuration-only direct `fitsio` edges to `astro-metrics` and the facade. The
+following graph checks passed:
+
+```sh
+cargo tree --locked -e features -i fitsio-sys
+cargo tree --locked --all-features -e features -i fitsio-sys
+for pkg in astro-io astro-metadata astro-metrics ravensky-astro; do
+  cargo tree --locked -p "$pkg" --features fitsio/src-cmake \
+    -e features -i fitsio-sys -f '{p} {f}'
+done
+```
+
+Default and `--all-features` both selected only
+`fitsio-sys` features `autotools,fitsio-src`. Every docs-oriented package graph
+selected `autotools,cmake,fitsio-src,src-cmake`; the third-party build script's
+existing cfg chooses its CMake branch in that supported combination. No
+RavenSky feature was added, and public Rust source/API is unchanged.
+
+Writable-source documentation first passed for all four packages:
+
+```sh
+for pkg in astro-io astro-metadata astro-metrics ravensky-astro; do
+  RUSTDOCFLAGS='-D warnings' CARGO_TARGET_DIR=target/docs-061-cmake \
+    cargo doc --locked -p "$pkg" --features fitsio/src-cmake --no-deps
+done
+```
+
+The decisive fresh probe used `/private/tmp/ravensky-docs-061-final-probe.KLu3xp`.
+`cargo vendor --offline --versioned-dirs --sync <cmake-only-manifest> <vendor>`
+created an isolated source tree including the optional CMake backend. After
+`chmod -R a-w <vendor>`, the following equivalent command was run for each of the
+four package names:
+
+```sh
+DOCS_RS=1 RUSTDOCFLAGS='-D warnings' \
+CARGO_TARGET_DIR=<probe>/target cargo doc --locked --offline \
+  -p <package> --features fitsio/src-cmake --no-deps \
+  --config 'source.crates-io.replace-with="vendored-sources"' \
+  --config 'source.vendored-sources.directory="<probe>/vendor"'
+```
+
+The read-only assertion for
+`vendor/fitsio-sys-0.5.7/ext/cfitsio` passed before the builds. All four commands
+completed successfully and generated their crate index pages. All build output
+was outside the read-only source tree. The dependencies were copied without
+patches and are not part of the RavenSky candidate.
+
+The first vendor attempt omitted optional `cmake` because it was not active in
+the default lock traversal; it failed before compilation with “no matching
+package named `cmake`.” The final fresh probe explicitly synchronized that
+unchanged registry dependency before making the source tree read-only. This was
+a probe-setup correction, not a repair to third-party source.
+
+Patch-release package, CI, registry and hosted docs results remain pending.
+
+### Local candidate matrix and vendored-backend compatibility
+
+The complete local release matrix passed on the 0.6.1 candidate:
+
+```sh
+cargo fmt --all --check
+cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+cargo test --locked --workspace --all-targets --all-features
+cargo test --locked --workspace --all-features --doc
+cargo build --locked --release --workspace --all-features --examples
+RUSTDOCFLAGS='-D warnings' \
+  cargo doc --locked --workspace --all-features --no-deps
+```
+
+Results: formatting, Clippy and rustdoc passed with warnings denied; 131 tests
+passed with the same two intentional ignores; four doctests passed; and the
+optimized workspace/example build passed. This all-features run used the
+unchanged autotools backend, as confirmed by the graph audit above.
+
+A fresh isolated copy at `/private/tmp/ravensky-061-vendored.4kr02W/source`
+patched only dependency resolution to AstroMuninn's unchanged vendored
+`fitsio-sys 0.5.5`. `cargo update --offline -p fitsio-sys --precise 0.5.5`
+selected that path. `cargo tree --locked --offline --all-features -i fitsio-sys
+-e features` showed only its existing `default,fitsio-src` features; no
+`src-cmake` request escaped the docs.rs metadata. The following passed with 108
+tests and the local-capture test intentionally ignored:
+
+```sh
+cargo test --locked --offline \
+  -p astro-io -p astro-metadata -p astro-bench \
+  --all-targets --all-features \
+  --target-dir <ravensky-repository>/target/vendored-061
+```
+
+No AstroMuninn tracked file was changed. This macOS check confirms resolution and
+applicable RavenSky behavior with the vendored backend; it is not Windows MSVC
+evidence.
+
+A fresh precommit package build also passed for all four publishable crates:
+
+```sh
+cargo package --locked --workspace --exclude astro-bench --allow-dirty \
+  --target-dir target/package-061-precommit
+```
+
+Inspection of every normalized archive manifest confirmed version 0.6.1,
+internal requirements 0.6.1, `package.metadata.docs.rs.features =
+["fitsio/src-cmake"]`, the single Linux GNU docs target, and direct configured
+`fitsio` dependencies where required. Cargo verified each archive in dependency
+order through its temporary registry. Final clean-commit archive verification is
+still required; these precommit archives must not be published.
