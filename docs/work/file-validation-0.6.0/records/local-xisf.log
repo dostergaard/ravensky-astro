@@ -1,0 +1,20 @@
+
+running 1 test
+test xisf::tests::test_load_xisf_real_sample ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 27 filtered out; finished in 0.64s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 39 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (target/debug/deps/astro_io-5a5efdfcec78abc7)
+     Running tests/resources.rs (target/debug/deps/resources-7c75fd50b1c764d5)
+     Running tests/validation.rs (target/debug/deps/validation-d2e4ca27ce0ad90d)

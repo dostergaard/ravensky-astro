@@ -1,0 +1,29 @@
+{
+  "checked_at_utc": "2026-09-09T17:09:07.761267+00:00",
+  "crates": [
+    {
+      "name": "astro-io",
+      "version": "0.6.0",
+      "exists": false,
+      "http_status": 404
+    },
+    {
+      "name": "astro-metadata",
+      "version": "0.6.0",
+      "exists": false,
+      "http_status": 404
+    },
+    {
+      "name": "astro-metrics",
+      "version": "0.6.0",
+      "exists": false,
+      "http_status": 404
+    },
+    {
+      "name": "ravensky-astro",
+      "version": "0.6.0",
+      "exists": false,
+      "http_status": 404
+    }
+  ]
+}

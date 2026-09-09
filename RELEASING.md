@@ -1,7 +1,9 @@
 # Releasing RavenSky Astro
 
-The next coordinated release is **0.6.0**, currently prepared for review on
-`feature/file-validation`. The version introduces the additive file-validation
+The coordinated release line is **0.6.0**, approved for closeout on 2026-09-09.
+Actual publication and handoff status are recorded in
+[`docs/work/file-validation-0.6.0/HANDOFF.md`](docs/work/file-validation-0.6.0/HANDOFF.md).
+The version introduces the additive file-validation
 and resource-control APIs. Existing image-loader contracts remain unchanged.
 `astro-bench` is a repository library/CLI with `publish = false`; it is not one
 of the crates uploaded to crates.io. Its standalone usage is documented in the
@@ -11,7 +13,8 @@ of the crates uploaded to crates.io. Its standalone usage is documented in the
 
 Keep implementation, benchmark evidence and release preparation as separate
 commits. Review the complete PR against `master` before merging. Do not publish
-from an unreviewed feature branch. The user has reserved this review step.
+from an unreviewed feature branch. The user approved PR #2 and its release on
+2026-09-09, including final task documentation and release preparation.
 
 Verify the declared Rust 1.94 minimum with the committed lockfile:
 
@@ -22,7 +25,7 @@ cargo test --locked --workspace --all-targets --all-features
 cargo test --locked --workspace --all-features --doc
 cargo build --locked --release --workspace --all-features --examples
 RUSTDOCFLAGS='-D warnings' cargo doc --locked --workspace --all-features --no-deps
-cargo package --locked --workspace --exclude astro-bench
+cargo package --locked --workspace --exclude astro-bench --target-dir target/package-060-final
 ```
 
 The package command verifies all four archives with a temporary registry for the
@@ -30,7 +33,9 @@ unpublished local dependencies; it does not upload them. Registry access is need
 Cargo 1.94's offline multi-package verification failed with `no hash listed` in
 the temporary registry here; online verification passed. Use `--allow-dirty` only
 for precommit inspection, then repeat from a clean reviewed checkout. Inspect
-archive contents, including the adapted decoder's third-party notices. Raw
+archive contents, including the adapted decoder's third-party notices. Choose a
+fresh target directory for each changed candidate; do not reuse a larger archive.
+Raw
 benchmark reports stay in Git and are excluded from the root crate archive.
 
 The local-capture XISF loader test is explicitly ignored in normal runs because
@@ -92,7 +97,10 @@ inspection confirmed retained decoder notices and excluded raw benchmark reports
 Use a new package target directory after changing exclusions: this Cargo version
 left trailing bytes when overwriting a previously larger `.crate` archive locally.
 The fresh archives passed checks for complete gzip consumption as well as builds.
-Final platform CI results must be checked before merge approval.
+Final implementation CI passed on `2e9ba95`, run
+[34237121494](https://github.com/dostergaard/ravensky-astro/actions/runs/34237121494).
+The durable [evidence record](docs/work/file-validation-0.6.0/EVIDENCE.md) contains
+fresh closeout checks and actual publication verification.
 
 - [Managed compressed-FITS implementation](docs/CompressedFitsResourceImplementation.md)
 - [Managed codec memory/scaling/cancellation](docs/benchmarks/2026-09-08-managed-fits/README.md)

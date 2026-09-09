@@ -208,7 +208,7 @@ returns exit status 2 with diagnostic JSON and no successful throughput score.
 the file is corrupt. Both validation entry points now use managed compressed-FITS decoders; unsupported
 extensions still return explicit errors. HCOMPRESS tiles must fit the working
 allowance. See the
-[validator's coverage and limits](../astro-io/README.md#file-validation-unreleased).
+[validator's coverage and limits](../astro-io/README.md#file-validation).
 
 For repeated FITS-only, XISF-only and mixed comparisons:
 

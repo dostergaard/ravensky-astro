@@ -1,0 +1,378 @@
+{
+  "conclusion": "success",
+  "createdAt": "2026-09-08T14:15:40Z",
+  "headSha": "2e9ba9505f0685839a14b5141d6faea20bbeb759",
+  "jobs": [
+    {
+      "completedAt": "2026-09-08T14:17:18Z",
+      "conclusion": "success",
+      "databaseId": 102097591139,
+      "name": "Rust (aarch64-apple-darwin)",
+      "startedAt": "2026-09-08T14:15:47Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-08T14:15:49Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-08T14:15:47Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:15:51Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v5",
+          "number": 2,
+          "startedAt": "2026-09-08T14:15:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:01Z",
+          "conclusion": "success",
+          "name": "Install Rust at the declared minimum version",
+          "number": 3,
+          "startedAt": "2026-09-08T14:15:51Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:01Z",
+          "conclusion": "skipped",
+          "name": "Install native build dependencies (Linux)",
+          "number": 4,
+          "startedAt": "2026-09-08T14:16:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:01Z",
+          "conclusion": "skipped",
+          "name": "Install native build dependencies (Windows GNU)",
+          "number": 5,
+          "startedAt": "2026-09-08T14:16:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:01Z",
+          "conclusion": "success",
+          "name": "Check formatting",
+          "number": 6,
+          "startedAt": "2026-09-08T14:16:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:26Z",
+          "conclusion": "success",
+          "name": "Clippy",
+          "number": 7,
+          "startedAt": "2026-09-08T14:16:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:58Z",
+          "conclusion": "success",
+          "name": "Build optimized libraries and examples",
+          "number": 8,
+          "startedAt": "2026-09-08T14:16:26Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:12Z",
+          "conclusion": "success",
+          "name": "Run tests",
+          "number": 9,
+          "startedAt": "2026-09-08T14:16:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:13Z",
+          "conclusion": "success",
+          "name": "Run documentation tests",
+          "number": 10,
+          "startedAt": "2026-09-08T14:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:14Z",
+          "conclusion": "success",
+          "name": "Build API documentation",
+          "number": 11,
+          "startedAt": "2026-09-08T14:17:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:14Z",
+          "conclusion": "skipped",
+          "name": "Verify publishable packages",
+          "number": 12,
+          "startedAt": "2026-09-08T14:17:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:15Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v5",
+          "number": 24,
+          "startedAt": "2026-09-08T14:17:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:15Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-09-08T14:17:15Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/dostergaard/ravensky-astro/actions/runs/34237121494/job/102097591139"
+    },
+    {
+      "completedAt": "2026-09-08T14:19:21Z",
+      "conclusion": "success",
+      "databaseId": 102097591270,
+      "name": "Rust (x86_64-pc-windows-gnu)",
+      "startedAt": "2026-09-08T14:15:42Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-08T14:15:45Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-08T14:15:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:01Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v5",
+          "number": 2,
+          "startedAt": "2026-09-08T14:15:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:17Z",
+          "conclusion": "success",
+          "name": "Install Rust at the declared minimum version",
+          "number": 3,
+          "startedAt": "2026-09-08T14:16:01Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:17Z",
+          "conclusion": "skipped",
+          "name": "Install native build dependencies (Linux)",
+          "number": 4,
+          "startedAt": "2026-09-08T14:16:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:12Z",
+          "conclusion": "success",
+          "name": "Install native build dependencies (Windows GNU)",
+          "number": 5,
+          "startedAt": "2026-09-08T14:16:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:14Z",
+          "conclusion": "success",
+          "name": "Check formatting",
+          "number": 6,
+          "startedAt": "2026-09-08T14:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:18:02Z",
+          "conclusion": "success",
+          "name": "Clippy",
+          "number": 7,
+          "startedAt": "2026-09-08T14:17:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:18:54Z",
+          "conclusion": "success",
+          "name": "Build optimized libraries and examples",
+          "number": 8,
+          "startedAt": "2026-09-08T14:18:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:19:13Z",
+          "conclusion": "success",
+          "name": "Run tests",
+          "number": 9,
+          "startedAt": "2026-09-08T14:18:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:19:14Z",
+          "conclusion": "success",
+          "name": "Run documentation tests",
+          "number": 10,
+          "startedAt": "2026-09-08T14:19:13Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:19:16Z",
+          "conclusion": "success",
+          "name": "Build API documentation",
+          "number": 11,
+          "startedAt": "2026-09-08T14:19:14Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:19:16Z",
+          "conclusion": "skipped",
+          "name": "Verify publishable packages",
+          "number": 12,
+          "startedAt": "2026-09-08T14:19:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:19:18Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v5",
+          "number": 24,
+          "startedAt": "2026-09-08T14:19:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:19:18Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-09-08T14:19:18Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/dostergaard/ravensky-astro/actions/runs/34237121494/job/102097591270"
+    },
+    {
+      "completedAt": "2026-09-08T14:17:32Z",
+      "conclusion": "success",
+      "databaseId": 102097591439,
+      "name": "Rust (x86_64-unknown-linux-gnu)",
+      "startedAt": "2026-09-08T14:15:42Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-08T14:15:44Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-08T14:15:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:15:45Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v5",
+          "number": 2,
+          "startedAt": "2026-09-08T14:15:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:15:54Z",
+          "conclusion": "success",
+          "name": "Install Rust at the declared minimum version",
+          "number": 3,
+          "startedAt": "2026-09-08T14:15:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:08Z",
+          "conclusion": "success",
+          "name": "Install native build dependencies (Linux)",
+          "number": 4,
+          "startedAt": "2026-09-08T14:15:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:08Z",
+          "conclusion": "skipped",
+          "name": "Install native build dependencies (Windows GNU)",
+          "number": 5,
+          "startedAt": "2026-09-08T14:16:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:08Z",
+          "conclusion": "success",
+          "name": "Check formatting",
+          "number": 6,
+          "startedAt": "2026-09-08T14:16:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:16:29Z",
+          "conclusion": "success",
+          "name": "Clippy",
+          "number": 7,
+          "startedAt": "2026-09-08T14:16:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:00Z",
+          "conclusion": "success",
+          "name": "Build optimized libraries and examples",
+          "number": 8,
+          "startedAt": "2026-09-08T14:16:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:11Z",
+          "conclusion": "success",
+          "name": "Run tests",
+          "number": 9,
+          "startedAt": "2026-09-08T14:17:00Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:11Z",
+          "conclusion": "success",
+          "name": "Run documentation tests",
+          "number": 10,
+          "startedAt": "2026-09-08T14:17:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:12Z",
+          "conclusion": "success",
+          "name": "Build API documentation",
+          "number": 11,
+          "startedAt": "2026-09-08T14:17:11Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:30Z",
+          "conclusion": "success",
+          "name": "Verify publishable packages",
+          "number": 12,
+          "startedAt": "2026-09-08T14:17:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:30Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v5",
+          "number": 24,
+          "startedAt": "2026-09-08T14:17:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T14:17:30Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "startedAt": "2026-09-08T14:17:30Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/dostergaard/ravensky-astro/actions/runs/34237121494/job/102097591439"
+    }
+  ],
+  "updatedAt": "2026-09-08T14:19:21Z",
+  "url": "https://github.com/dostergaard/ravensky-astro/actions/runs/34237121494"
+}

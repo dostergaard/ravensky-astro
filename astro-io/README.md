@@ -151,7 +151,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 This project is dual-licensed under the MIT License or the Apache License, Version 2.0.
 
-## File validation (unreleased)
+## File validation
+
+Introduced in the 0.6.0 release line.
 
 `astro_io::validation::validate_file` checks a local file read-only, independently
 of the pixel loaders and metadata normalization. Format detection uses file
