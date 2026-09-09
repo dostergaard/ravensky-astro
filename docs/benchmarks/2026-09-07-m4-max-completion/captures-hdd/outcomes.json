@@ -1,0 +1,452 @@
+[
+  {
+    "report": "fits-structural-1workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-1workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-1workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-1workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-1workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-2workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-2workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-2workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-2workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-2workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-4workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-4workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-4workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-4workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-structural-4workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-1workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-1workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-1workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-1workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-1workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-2workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-2workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-2workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-2workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-2workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-4workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-4workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-4workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-4workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-structural-4workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-1workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-1workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-1workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-1workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-1workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-2workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-2workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-2workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-2workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-2workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-4workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-4workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-4workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-4workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-structural-4workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-1workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-1workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-1workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-1workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-1workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-2workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-2workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-2workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-2workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-2workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-4workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-4workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-4workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-4workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "fits-full-4workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-1workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-1workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-1workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-1workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-1workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-2workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-2workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-2workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-2workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-2workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-4workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-4workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-4workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-4workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "xisf-full-4workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-1workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-1workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-1workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-1workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-1workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-2workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-2workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-2workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-2workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-2workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-4workers-0.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-4workers-1.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-4workers-2.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-4workers-3.json",
+    "complete": true,
+    "rejected_operations": 0
+  },
+  {
+    "report": "mixed-full-4workers-4.json",
+    "complete": true,
+    "rejected_operations": 0
+  }
+]

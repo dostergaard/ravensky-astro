@@ -1,0 +1,22 @@
+Preparing 8 synthetic FitsGzip2 frames outside timing...
+Full: 8 worker(s), repetition 1/5
+Full: 8 worker(s), repetition 2/5
+Full: 8 worker(s), repetition 3/5
+Full: 8 worker(s), repetition 4/5
+Full: 8 worker(s), repetition 5/5
+Full: 4 worker(s), repetition 1/5
+Full: 4 worker(s), repetition 2/5
+Full: 4 worker(s), repetition 3/5
+Full: 4 worker(s), repetition 4/5
+Full: 4 worker(s), repetition 5/5
+Full: 2 worker(s), repetition 1/5
+Full: 2 worker(s), repetition 2/5
+Full: 2 worker(s), repetition 3/5
+Full: 2 worker(s), repetition 4/5
+Full: 2 worker(s), repetition 5/5
+Full: 1 worker(s), repetition 1/5
+Full: 1 worker(s), repetition 2/5
+Full: 1 worker(s), repetition 3/5
+Full: 1 worker(s), repetition 4/5
+Full: 1 worker(s), repetition 5/5
+Report written: docs/benchmarks/2026-09-07-m4-max-completion/scaling/fits-gzip2-image-noise-64mib-reverse.json

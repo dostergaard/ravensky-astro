@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "mode": "scaling",
+  "note": "Apple M4 Max; 36 GiB RAM; 14 logical/physical cores; macOS 26.6.2 (25G83), arm64; rustc 1.94.0; cargo build --workspace --all-features --release --offline. Local APFS /dev/disk3s5, 625 GiB available initially. AC power, low-power mode off. Desktop load uncontrolled; no concurrent agent builds/tests. OS cache likely warm. Initial swap usage zero.",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "python": "3.12.14 (main, Aug 12 2026, 13:57:54) [Clang 21.0.0 (clang-2100.1.1.101)]",
+  "script_sha256": "1d9cc9be132832b2b8e51f48135fdb5fa8d8277efb9256996844e96ade46a439",
+  "binary_sha256": "18c47ed4f66f6b71152398158fc895f398a1ac6ada17e0081b63f2379891f58c",
+  "started_unix_seconds": 1788793789.006825,
+  "cache_state": "uncontrolled / likely warm"
+}

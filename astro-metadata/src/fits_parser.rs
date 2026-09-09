@@ -20,47 +20,55 @@ pub use super::coordinates::parse_sexagesimal;
 
 /// Extract metadata from a FITS file path
 pub fn extract_metadata_from_path(path: &Path) -> Result<AstroMetadata> {
-    let mut fits_file = FitsFile::open(path).context("Failed to open FITS file")?;
-    extract_metadata(&mut fits_file)
+    astro_io::fits::backend::with_cfitsio(|| {
+        let mut fits_file = FitsFile::open(path).context("Failed to open FITS file")?;
+        extract_metadata(&mut fits_file)
+    })
 }
 
 /// Extract metadata from a FITS file
+///
+/// Native calls share astro-io's CFITSIO gate. On non-reentrant builds, enclose
+/// open, use and drop of the caller-owned handle in
+/// [`astro_io::fits::backend::with_cfitsio`].
 pub fn extract_metadata(fits_file: &mut FitsFile) -> Result<AstroMetadata> {
-    let hdu = fits_file.primary_hdu()?;
-    let mut metadata = AstroMetadata::default();
-    let raw_header_cards =
-        read_header_cards(fits_file, hdu.number).context("Failed to extract FITS header cards")?;
-    let raw_headers = header_cards_to_map(&raw_header_cards);
+    astro_io::fits::backend::with_cfitsio(|| {
+        let hdu = fits_file.primary_hdu()?;
+        let mut metadata = AstroMetadata::default();
+        let raw_header_cards = read_header_cards(fits_file, hdu.number)
+            .context("Failed to extract FITS header cards")?;
+        let raw_headers = header_cards_to_map(&raw_header_cards);
 
-    // Parse equipment information
-    parse_equipment(&mut metadata.equipment, &raw_headers);
+        // Parse equipment information
+        parse_equipment(&mut metadata.equipment, &raw_headers);
 
-    // Parse detector information
-    parse_detector(&mut metadata.detector, &raw_headers, &hdu.info);
+        // Parse detector information
+        parse_detector(&mut metadata.detector, &raw_headers, &hdu.info);
 
-    // Parse filter information
-    parse_filter(&mut metadata.filter, &raw_headers);
+        // Parse filter information
+        parse_filter(&mut metadata.filter, &raw_headers);
 
-    // Parse exposure information
-    parse_exposure(&mut metadata.exposure, &raw_headers);
+        // Parse exposure information
+        parse_exposure(&mut metadata.exposure, &raw_headers);
 
-    // Parse mount information
-    metadata.mount = parse_mount(&raw_headers);
+        // Parse mount information
+        metadata.mount = parse_mount(&raw_headers);
 
-    // Parse environment information
-    metadata.environment = parse_environment(&raw_headers);
+        // Parse environment information
+        metadata.environment = parse_environment(&raw_headers);
 
-    // Parse WCS information
-    metadata.wcs = parse_wcs(&raw_headers);
+        // Parse WCS information
+        metadata.wcs = parse_wcs(&raw_headers);
 
-    // Store the canonical lossless cards plus the compatibility lookup map.
-    metadata.raw_header_cards = raw_header_cards;
-    metadata.raw_headers = raw_headers;
+        // Store the canonical lossless cards plus the compatibility lookup map.
+        metadata.raw_header_cards = raw_header_cards;
+        metadata.raw_headers = raw_headers;
 
-    // Calculate session date
-    metadata.calculate_session_date();
+        // Calculate session date
+        metadata.calculate_session_date();
 
-    Ok(metadata)
+        Ok(metadata)
+    })
 }
 
 /// Parse equipment information from FITS headers
@@ -494,39 +502,41 @@ mod tests {
 
     #[test]
     fn test_extract_metadata_preserves_duplicate_cards() -> Result<()> {
-        let path = unique_temp_fits_path("metadata");
-        let mut file = FitsFile::create(&path).open()?;
-        let hdu = file.primary_hdu()?;
+        astro_io::fits::backend::with_cfitsio(|| {
+            let path = unique_temp_fits_path("metadata");
+            let mut file = FitsFile::create(&path).open()?;
+            let hdu = file.primary_hdu()?;
 
-        hdu.write_key(&mut file, "OBJECT", "M42".to_string())?;
-        hdu.write_key(&mut file, "EXPTIME", 300.0f32)?;
-        append_duplicate_test_records(&mut file)?;
-        drop(file);
+            hdu.write_key(&mut file, "OBJECT", "M42".to_string())?;
+            hdu.write_key(&mut file, "EXPTIME", 300.0f32)?;
+            append_duplicate_test_records(&mut file)?;
+            drop(file);
 
-        let metadata = extract_metadata_from_path(&path)?;
+            let metadata = extract_metadata_from_path(&path)?;
 
-        assert_eq!(metadata.exposure.object_name.as_deref(), Some("M42"));
-        assert_eq!(metadata.exposure.exposure_time, Some(300.0));
-        assert_eq!(metadata.raw_headers.get("OBJECT"), Some(&"M42".to_string()));
-        assert_eq!(metadata.raw_headers.get("DUPKEY"), Some(&"two".to_string()));
-        assert_eq!(
-            metadata
-                .raw_header_cards
-                .iter()
-                .filter(|card| card.keyword == "DUPKEY")
-                .count(),
-            2
-        );
-        assert!(metadata.raw_header_cards.iter().any(|card| {
-            card.keyword == "COMMENT"
-                && card
-                    .raw_card
-                    .as_deref()
-                    .is_some_and(|raw| raw.contains("metadata parser comment"))
-        }));
+            assert_eq!(metadata.exposure.object_name.as_deref(), Some("M42"));
+            assert_eq!(metadata.exposure.exposure_time, Some(300.0));
+            assert_eq!(metadata.raw_headers.get("OBJECT"), Some(&"M42".to_string()));
+            assert_eq!(metadata.raw_headers.get("DUPKEY"), Some(&"two".to_string()));
+            assert_eq!(
+                metadata
+                    .raw_header_cards
+                    .iter()
+                    .filter(|card| card.keyword == "DUPKEY")
+                    .count(),
+                2
+            );
+            assert!(metadata.raw_header_cards.iter().any(|card| {
+                card.keyword == "COMMENT"
+                    && card
+                        .raw_card
+                        .as_deref()
+                        .is_some_and(|raw| raw.contains("metadata parser comment"))
+            }));
 
-        fs::remove_file(path)?;
-        Ok(())
+            fs::remove_file(path)?;
+            Ok(())
+        })
     }
 
     fn append_duplicate_test_records(file: &mut FitsFile) -> Result<()> {

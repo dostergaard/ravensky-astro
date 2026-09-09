@@ -1,0 +1,972 @@
+{
+  "architecture": "aarch64",
+  "build_profile": "release",
+  "cache_state": "uncontrolled / likely warm: fingerprints touch inputs before timing",
+  "complete": false,
+  "cpu_seconds": 0.660689,
+  "inputs": [
+    {
+      "index": 0,
+      "sha256": "83c192ee32ab0836024cf335c9b99ac79ebbbb2d68e4b8d90dfed8f2592e035c",
+      "stored_bytes": 16820352
+    },
+    {
+      "index": 1,
+      "sha256": "458ab4c7b8c91e80bcfac69bd9d33bad4a289fbccfbca2c1f6205171697d26aa",
+      "stored_bytes": 16820352
+    },
+    {
+      "index": 2,
+      "sha256": "568cf45284a4b69b4ffc9acc252a861d543e4240928d1c8a8c13733df8fe2f7c",
+      "stored_bytes": 16820352
+    },
+    {
+      "index": 3,
+      "sha256": "9a7f983da028459e33d9558934b2175fdd2060afe5e9850e617e770c0490e6c9",
+      "stored_bytes": 16819200
+    },
+    {
+      "index": 4,
+      "sha256": "e9f64b9b00836609b4dc9485dd0778b3747a7988b74ea2029df06b0d74c51b03",
+      "stored_bytes": 16819200
+    },
+    {
+      "index": 5,
+      "sha256": "e0df6e95a7b2cf0998d66ae1f61c36c49052bcbbe1c2c6ed3f5180fc6f799c3b",
+      "stored_bytes": 16819200
+    }
+  ],
+  "kind": "capture_probe",
+  "level": "Full",
+  "operations": [
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 0,
+      "read_bytes": 33638890,
+      "seconds": 0.002095584,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 0,
+      "read_bytes": 33638884,
+      "seconds": 0.00208925,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 0,
+      "read_bytes": 33638893,
+      "seconds": 0.002084167,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 0,
+      "seconds": 0.012459125,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 0,
+      "seconds": 0.012421875,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 0,
+      "seconds": 0.012333834,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 1,
+      "read_bytes": 33638890,
+      "seconds": 0.001593625,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 1,
+      "read_bytes": 33638884,
+      "seconds": 0.001606,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 1,
+      "read_bytes": 33638893,
+      "seconds": 0.001657459,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 1,
+      "seconds": 0.01188,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 1,
+      "seconds": 0.0119395,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 1,
+      "seconds": 0.012303375,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 2,
+      "read_bytes": 33638890,
+      "seconds": 0.00171275,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 2,
+      "read_bytes": 33638884,
+      "seconds": 0.001666375,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 2,
+      "read_bytes": 33638893,
+      "seconds": 0.001693208,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 2,
+      "seconds": 0.012340583,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 2,
+      "seconds": 0.01240975,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 2,
+      "seconds": 0.011938417,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 3,
+      "read_bytes": 33638890,
+      "seconds": 0.001731084,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 3,
+      "read_bytes": 33638884,
+      "seconds": 0.001686541,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 3,
+      "read_bytes": 33638893,
+      "seconds": 0.001882625,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 3,
+      "seconds": 0.01235675,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 3,
+      "seconds": 0.011852541,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 3,
+      "seconds": 0.012205375,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 4,
+      "read_bytes": 33638890,
+      "seconds": 0.001766375,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 4,
+      "read_bytes": 33638884,
+      "seconds": 0.001689375,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 4,
+      "read_bytes": 33638893,
+      "seconds": 0.001814625,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 4,
+      "seconds": 0.012349958,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 4,
+      "seconds": 0.01205725,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 4,
+      "seconds": 0.011868625,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 5,
+      "read_bytes": 33638890,
+      "seconds": 0.001708917,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 5,
+      "read_bytes": 33638884,
+      "seconds": 0.00165625,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 5,
+      "read_bytes": 33638893,
+      "seconds": 0.001754583,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 5,
+      "seconds": 0.011978875,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 5,
+      "seconds": 0.011806791,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 5,
+      "seconds": 0.012204917,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 6,
+      "read_bytes": 33638890,
+      "seconds": 0.001775916,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 6,
+      "read_bytes": 33638884,
+      "seconds": 0.001716167,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 6,
+      "read_bytes": 33638893,
+      "seconds": 0.001797416,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 6,
+      "seconds": 0.012336541,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 6,
+      "seconds": 0.011928458,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 6,
+      "seconds": 0.01248225,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 7,
+      "read_bytes": 33638890,
+      "seconds": 0.001748416,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 7,
+      "read_bytes": 33638884,
+      "seconds": 0.001788291,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 7,
+      "read_bytes": 33638893,
+      "seconds": 0.001734167,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 7,
+      "seconds": 0.012248375,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 7,
+      "seconds": 0.012465667,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 7,
+      "seconds": 0.012128459,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 8,
+      "read_bytes": 33638890,
+      "seconds": 0.001691292,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 8,
+      "read_bytes": 33638884,
+      "seconds": 0.001716542,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 8,
+      "read_bytes": 33638893,
+      "seconds": 0.001731333,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 8,
+      "seconds": 0.01225625,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 8,
+      "seconds": 0.012208167,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 8,
+      "seconds": 0.011078875,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 9,
+      "read_bytes": 33638890,
+      "seconds": 0.00177275,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 9,
+      "read_bytes": 33638884,
+      "seconds": 0.001669667,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 9,
+      "read_bytes": 33638893,
+      "seconds": 0.001685166,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 9,
+      "seconds": 0.012154375,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 9,
+      "seconds": 0.012093291,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 9,
+      "seconds": 0.012196458,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 10,
+      "read_bytes": 33638890,
+      "seconds": 0.001759916,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 10,
+      "read_bytes": 33638884,
+      "seconds": 0.001688959,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 10,
+      "read_bytes": 33638893,
+      "seconds": 0.001709041,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 10,
+      "seconds": 0.011225333,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 10,
+      "seconds": 0.011286792,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 10,
+      "seconds": 0.011565791,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 11,
+      "read_bytes": 33638890,
+      "seconds": 0.001688083,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 11,
+      "read_bytes": 33638884,
+      "seconds": 0.001636375,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 11,
+      "read_bytes": 33638893,
+      "seconds": 0.001676083,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 11,
+      "seconds": 0.012018125,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 11,
+      "seconds": 0.01224725,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 11,
+      "seconds": 0.012115958,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 12,
+      "read_bytes": 33638890,
+      "seconds": 0.00172325,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 12,
+      "read_bytes": 33638884,
+      "seconds": 0.001685458,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 12,
+      "read_bytes": 33638893,
+      "seconds": 0.001774667,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 12,
+      "seconds": 0.012357958,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 12,
+      "seconds": 0.012085375,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 12,
+      "seconds": 0.012142417,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 13,
+      "read_bytes": 33638890,
+      "seconds": 0.001677084,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 13,
+      "read_bytes": 33638884,
+      "seconds": 0.001641292,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 13,
+      "read_bytes": 33638893,
+      "seconds": 0.0017605,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 13,
+      "seconds": 0.011644458,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 13,
+      "seconds": 0.01127625,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 13,
+      "seconds": 0.011719125,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 14,
+      "read_bytes": 33638890,
+      "seconds": 0.001651292,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 14,
+      "read_bytes": 33638884,
+      "seconds": 0.001629167,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 14,
+      "read_bytes": 33638893,
+      "seconds": 0.001619125,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 14,
+      "seconds": 0.012271584,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 14,
+      "seconds": 0.011901292,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 14,
+      "seconds": 0.012509125,
+      "success": false
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 0,
+      "pass": 15,
+      "read_bytes": 33638890,
+      "seconds": 0.001716916,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 1,
+      "pass": 15,
+      "read_bytes": 33638884,
+      "seconds": 0.001659083,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "checksums_present": 0,
+      "checksums_verified": 0,
+      "format": "Xisf",
+      "images": 1,
+      "index": 2,
+      "pass": 15,
+      "read_bytes": 33638893,
+      "seconds": 0.00197925,
+      "success": true,
+      "undecoded_codec_count": 0
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 3,
+      "pass": 15,
+      "seconds": 0.011830166,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 4,
+      "pass": 15,
+      "seconds": 0.011966166,
+      "success": false
+    },
+    {
+      "error_kind": "IntegrityMismatch",
+      "index": 5,
+      "pass": 15,
+      "seconds": 0.011524,
+      "success": false
+    }
+  ],
+  "os": "macos",
+  "passes": 16,
+  "peak_reserved_bytes": 1736288,
+  "peak_rss_bytes": 7651328,
+  "per_call_working_bytes": 134217728,
+  "preparation_seconds": 0.162279375,
+  "probe_source_sha256": "944d8de7f775b9e3c9ccb3b279508112e888f2e299872ff6979552d61de5ec60",
+  "reserved_bytes_after": 0,
+  "rss_source": "process-lifetime getrusage: macOS bytes, Linux KiB converted; null elsewhere",
+  "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "schema_version": 1,
+  "shared_memory_bytes": 536870912,
+  "source_revision": "da8927cb9d3cb736e75008cc578476c6c35e885f",
+  "source_sha256": "1b0a1b651e6c3a84b4a204268dfe9aa3eebf5556e0f754d5f268c16c3e7e4c1d",
+  "sources_unchanged": true,
+  "wall_seconds": 0.167169792,
+  "workers": 4
+}

@@ -1,0 +1,259 @@
+
+running 2 tests
+test fixtures::tests::pixel_stream_stops_between_chunks_when_cancelled ... ok
+test fixtures::tests::gzip_writes_cannot_exceed_remaining_scratch_quota ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+
+running 1 test
+test tests::timeout_stops_and_reaps_child_before_scratch_cleanup ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test cli_rejects_excessive_work_before_generating ... ok
+test cli_records_compressed_fits_tile_recipe_and_rejects_misplaced_option ... ok
+test cli_runs_isolated_samples_and_preserves_existing_outputs ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+
+running 3 tests
+test supplied_rice_files_validate_with_shared_budgets ... ok
+test supplied_xisf_missing_thumbnails_are_incomplete_at_both_levels ... ok
+test supplied_valid_fits_and_false_checksum_follow_level_contracts ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 10 tests
+test invalid_budgets_and_cancellation_do_not_create_fixtures ... ok
+test tile_options_and_expansion_overhead_are_checked_before_generation ... ok
+test symlink_fixtures_are_rejected ... ok
+test manifest_tampering_and_changed_content_are_rejected_without_deleting_owned_files ... ok
+test noise_changes_with_seed_and_raw_io_counts_bytes ... ok
+test fits_and_xisf_store_the_same_logical_pixels_and_workers_visit_each_file_once ... ok
+test cancellation_and_file_failures_are_not_successful_samples ... ok
+test fixtures_are_reproducible_valid_and_removed_on_drop ... ok
+test compressed_fits_fixtures_match_native_pixels_and_are_reproducible ... ok
+test original_generator_bytes_and_manifest_version_are_preserved ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.20s
+
+
+running 4 tests
+test tests::reject_invalid_work_bounds_before_file_access ... ok
+test tests::invalid_capture_is_diagnostic_not_successful_throughput ... ok
+test tests::reject_symlinks_and_duplicate_capture_paths ... ok
+test tests::mixed_captures_are_counted_and_preserved_across_passes ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+
+running 28 tests
+test fits::tests::test_normalize_pixels ... ok
+test fits::tests::test_extract_dimensions ... ok
+test fits::tests::test_header_cards_to_map_uses_last_duplicate_value ... ok
+test fits::backend::tests::reentrant_gate_allows_simultaneous_callers ... ok
+test fits::backend::tests::waiting_caller_enters_after_owner_releases ... ok
+test validation::xisf::streaming::tests::frame_history_sizes_cover_single_segment_dictionary_and_window_forms ... ok
+test xisf::tests::test_extract_attribute ... ok
+test fits::backend::tests::serial_gate_rejects_other_threads_but_allows_nested_calls ... ok
+test xisf::tests::test_extract_xml_content ... ok
+test xisf::tests::test_load_xisf_real_sample ... ignored, requires the local capture in tests/data; run explicitly where available
+test fits::backend::tests::serial_gate_releases_after_unwinding ... ok
+test validation::tests::disappearance_is_a_changed_source ... ok
+test validation::tests::cancellation_between_read_chunks_does_not_read_the_rest ... ok
+test xisf::tests::test_read_pixel_data ... ok
+test xisf::tests::test_read_pixel_data_rejects_truncated_buffer ... ok
+test xisf::tests::test_load_xisf_reads_valid_uint16_payload ... ok
+test validation::tests::payload_input_checks_cancellation_even_with_buffered_bytes ... ok
+test validation::fits::hcompress::tests::lossy_transform_matches_native_and_observes_cancellation ... ok
+test validation::tests::mutation_during_a_read_invalidates_the_observation ... ok
+test xisf::tests::test_load_xisf_rejects_unsupported_sample_format ... ok
+test xisf::tests::test_load_xisf_rejects_missing_geometry ... ok
+test xisf::tests::test_load_xisf_rejects_truncated_payload ... ok
+test xisf::tests::test_load_xisf_rejects_missing_location ... ok
+test fits::tests::test_read_all_header_cards_across_hdus ... ok
+test validation::tests::path_replacement_with_matching_length_and_mtime_is_detected ... ok
+test fits::tests::test_read_header_cards_preserves_duplicates ... ok
+test validation::fits::rice::tests::streaming_rice_matches_native_signed_and_wrapping_pixels ... ok
+test validation::fits::hcompress::tests::native_hcompress_roundtrips_signed_samples_and_odd_geometry ... ok
+
+test result: ok. 27 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 2 tests
+test reservations_distinguish_busy_from_impossible_and_release_on_unwind ... ok
+test simultaneous_callers_cannot_overbook_and_clones_share_capacity ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 39 tests
+test cancellation_is_a_distinct_outcome ... ok
+test checksum_failure_is_reported_before_attempting_decompression ... ok
+test binary_tform_optional_suffix_is_legal_and_not_reinterpreted ... ok
+test bad_heap_descriptor_and_invalid_tform_are_rejected ... ok
+test checksum_validation_distinguishes_same_length_corruption ... ok
+test embedded_hex_and_multiple_compression_subblocks_are_supported ... ok
+test configurable_limits_and_oversized_lengths_fail_explicitly ... ok
+test embedded_zlib_example_from_xisf_specification_validates ... ok
+test fits_checksums_are_verified_before_compressed_payload_decode ... ok
+test fits_ascii_and_binary_extensions_are_validated ... ok
+test fits_is_valid_at_both_levels_and_not_modified ... ok
+test compressed_corruption_and_unknown_codecs_cannot_be_full_success ... ok
+test local_references_are_checked_and_target_blocks_are_validated ... ok
+test fits_extended_dispatch_checks_payload_codec_and_accepts_extra_columns ... ok
+test all_xisf_capture_codecs_and_shuffling_validate ... ok
+test malformed_compression_and_unknown_checksum_are_distinct ... ok
+test mandatory_fits_card_order_is_checked ... ok
+test missing_image_bytes_are_incomplete_even_with_readable_header ... ok
+test malformed_xml_reserved_bytes_and_external_blocks_do_not_pass ... ok
+test misplaced_data_descriptors_are_not_silently_ignored ... ok
+test all_standard_sample_widths_and_image_extensions_are_supported ... ok
+test preallocation_and_absent_checksums_do_not_prove_original_pixel_integrity ... ok
+test unknown_codec_is_structural_only_and_never_full_success ... ok
+test xisf_auxiliary_truncation_prevents_success ... ok
+test published_sha_vectors_validate_inline_payloads ... ok
+test xisf_rgb_float_layout_is_supported_without_using_narrow_pixel_loader ... ok
+test zstd_concatenated_and_skippable_frames_are_accounted_independently ... ok
+test compressed::named_fallbacks_null_masks_and_conflicting_payloads_are_checked ... ok
+test compressed::busy_admission_cancellation_and_concurrent_codecs_release_shared_resources ... ok
+test streaming_rejects_truncated_footers_and_trailing_bytes ... ok
+test concurrent_validations_share_one_budget_and_leave_no_reservations ... ok
+test fits_gzip_checks_edges_trailers_headers_and_shared_admission ... ok
+test native_generated_tiled_fits_supports_shared_bounded_validation ... ok
+test compressed::malformed_native_tile_streams_are_rejected_and_release_reservations ... ok
+test compressed::native_integer_float_quantized_and_fallback_tiles_use_managed_admission ... ok
+test compressed::controlled_codecs_reject_mutated_streams_without_panics_or_leaked_admission ... ok
+test fits_gzip_streams_large_tiles_with_a_small_shared_budget ... ok
+test compressed::bounded_random_hcompress_streams_and_geometry_never_panic ... ok
+test large_streamed_payloads_fit_small_shared_budgets_and_release_on_every_exit ... ok
+
+test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+
+running 16 tests
+test types::tests::test_field_of_view_calculation ... ok
+test types::tests::test_timezone_from_longitude ... ok
+test types::tests::test_plate_scale_calculation ... ok
+test fits_parser::tests::parse_exposure_rejects_out_of_range_right_ascension ... ok
+test types::tests::test_calculate_session_date ... ok
+test fits_parser::tests::parse_exposure_accepts_right_ascension_degree_boundaries ... ok
+test fits_parser::tests::test_parse_sexagesimal ... ok
+test fits_parser::tests::parse_exposure_rejects_out_of_range_declinations_from_both_sources ... ok
+test fits_parser::tests::parse_exposure_preserves_each_header_coordinate_pair_independently ... ok
+test fits_parser::tests::parse_exposure_preserves_numeric_ra_in_degrees ... ok
+test fits_parser::tests::parse_exposure_converts_high_sexagesimal_objctra_to_degrees ... ok
+test fits_parser::tests::parse_exposure_falls_back_to_sexagesimal_objctra_in_hours ... ok
+test xisf_parser::tests::test_coordinate_keyword_pairs_are_preserved_independently ... ok
+test xisf_parser::tests::test_missing_binning_defaults_to_one ... ok
+test xisf_parser::tests::test_creation_time_does_not_override_observation_date ... ok
+test fits_parser::tests::test_extract_metadata_preserves_duplicate_cards ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test concurrent_loaders_metadata_and_validation_use_independent_handles ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 6 tests
+test sep_detect::tests::test_detect_stars_sep ... ignored
+test quality_metrics::tests::test_calculate_overall_score ... ok
+test quality_metrics::tests::test_calculate_quality_scores ... ok
+test star_metrics::tests::test_calc_fwhm ... ok
+test star_metrics::tests::test_calc_eccentricity ... ok
+test star_metrics::tests::test_from_stars ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test test_crate_imports ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test metadata_stats::tests::variable_value_filter_matches_expected_per_exposure_fields ... ok
+test metadata_stats::tests::record_flattened_counts_values_once_per_file ... ok
+test metadata_stats::tests::record_flattened_does_not_store_variable_value_counts ... ok
+test metadata_stats::tests::parse_args_supports_count_before_or_after_path ... ok
+test metadata_stats::tests::csv_writers_emit_expected_headers_and_percentages ... ok
+test metadata_stats::tests::flatten_metadata_tracks_array_members_with_stable_paths ... ok
+test metadata_stats::tests::flatten_metadata_skips_raw_headers_and_temporal_value_counts ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 10 tests
+test sensor_temperature_qa::tests::preserves_source_relative_path_in_destination ... ok
+test sensor_temperature_qa::tests::recognizes_supported_extensions_case_insensitively ... ok
+test sensor_temperature_qa::tests::selects_only_temperature_differences_strictly_above_the_limit ... ok
+test sensor_temperature_qa::tests::skips_files_without_both_temperature_values ... ok
+test sensor_temperature_qa::tests::confirmation_defaults_to_yes_and_accepts_no ... ok
+test sensor_temperature_qa::tests::parses_decimal_maximum_difference_and_rejects_invalid_values ... ok
+test sensor_temperature_qa::tests::parse_args_accepts_partial_inputs_for_interactive_completion ... ok
+test sensor_temperature_qa::tests::interactive_paths_accept_matching_shell_style_quotes ... ok
+test sensor_temperature_qa::tests::moving_a_candidate_creates_parent_directories_and_preserves_the_file ... ok
+test sensor_temperature_qa::tests::cross_volume_rename_falls_back_to_copy_then_removes_the_source ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+   Compiling astro-io v0.6.0 ($RAVENSKY_ASTRO/astro-io)
+   Compiling astro-bench v0.6.0 ($RAVENSKY_ASTRO/astro-bench)
+   Compiling astro-metadata v0.6.0 ($RAVENSKY_ASTRO/astro-metadata)
+   Compiling astro-metrics v0.6.0 ($RAVENSKY_ASTRO/astro-metrics)
+   Compiling ravensky-astro v0.6.0 ($RAVENSKY_ASTRO)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.74s
+     Running unittests src/lib.rs (target/debug/deps/astro_bench-5249884c4df1ee19)
+     Running unittests src/main.rs (target/debug/deps/astro_bench-cd33ce215d4036ef)
+     Running tests/cli.rs (target/debug/deps/cli-9dffa453ea23597d)
+     Running tests/supplied_files.rs (target/debug/deps/supplied_files-f843d9019275023b)
+     Running tests/workloads.rs (target/debug/deps/workloads-34f5aca3b23470f5)
+     Running unittests examples/capture_probe.rs (target/debug/examples/capture_probe-e3d42c5125c2e52c)
+     Running unittests src/lib.rs (target/debug/deps/astro_io-19c4035877bec6cd)
+     Running tests/resources.rs (target/debug/deps/resources-f06374b287d33bc3)
+     Running tests/validation.rs (target/debug/deps/validation-46d6f3c6c4674f0e)
+     Running unittests src/lib.rs (target/debug/deps/astro_metadata-6a5186574a13fb21)
+     Running tests/fits_concurrency.rs (target/debug/deps/fits_concurrency-de17dfa4ed63eb79)
+     Running unittests src/lib.rs (target/debug/deps/astro_metrics-4158a695ea991d9f)
+     Running unittests src/lib.rs (target/debug/deps/ravensky_astro-9134b41470f86f7f)
+     Running tests/integration_test.rs (target/debug/deps/integration_test-369775c672f1d7ed)
+     Running unittests examples/basic_analysis.rs (target/debug/examples/basic_analysis-49b802c782776311)
+     Running unittests examples/dump_fits_metadata.rs (target/debug/examples/dump_fits_metadata-64c3cb36ed58fa7e)
+     Running unittests examples/dump_xisf_metadata.rs (target/debug/examples/dump_xisf_metadata-66e8a21e0e02296e)
+     Running unittests examples/metadata_stats.rs (target/debug/examples/metadata_stats-ce0791a9942fb2b7)
+     Running unittests examples/process_test_images.rs (target/debug/examples/process_test_images-59814f7c9b415afa)
+     Running unittests examples/sensor_temperature_qa.rs (target/debug/examples/sensor_temperature_qa-b3be0df3446041f6)

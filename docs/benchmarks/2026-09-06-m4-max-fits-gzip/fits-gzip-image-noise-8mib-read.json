@@ -1,0 +1,623 @@
+{
+  "schema_version": 1,
+  "provenance": {
+    "package_version": "0.5.0",
+    "build_profile": "release",
+    "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+    "source_revision": "28979fc3f92bbfbf2ba0f459337bc75ac1823908",
+    "source_sha256": "1b0a1b651e6c3a84b4a204268dfe9aa3eebf5556e0f754d5f268c16c3e7e4c1d",
+    "os": "macos",
+    "architecture": "aarch64",
+    "available_parallelism": 14,
+    "environment_note": "Apple M4 Max, 36 GiB RAM, 14 logical/physical cores; macOS 26.6.2 (25G83), arm64, rustc 1.94.0. Local APFS Data volume /dev/disk3s5, 626 GiB available at start. Uncontrolled desktop load and likely warm OS cache. No concurrent agent builds/tests during measurements. Bounded Rust GZIP validation, not native CFITSIO decoding.",
+    "cache_state": "uncontrolled / likely warm: generation and pre-sample fingerprint verification touch every file; fresh processes do not reset OS cache",
+    "rss_source": "process-lifetime getrusage(RUSAGE_SELF): macOS bytes, Linux KiB converted to bytes; null on other platforms; excludes parent generation but includes child setup",
+    "validator_limits": {
+      "max_decoded_bytes": 68719476736,
+      "max_header_bytes": 67108864,
+      "max_structures": 100000,
+      "max_working_bytes_per_call": 268435456,
+      "runner_max_estimated_working_bytes": 536870912,
+      "shared_validator_memory_bytes": 536870912
+    }
+  },
+  "manifest": {
+    "schema_version": 1,
+    "generator_version": 2,
+    "recipe": {
+      "width": 2048,
+      "height": 2048,
+      "frames": 8,
+      "encoding": "fits_gzip",
+      "tile_rows": 2048,
+      "pattern": "noise",
+      "seed": 42,
+      "max_disk_bytes": 536870912
+    },
+    "files": [
+      {
+        "name": "frame-0000.fits",
+        "stored_bytes": 8398080,
+        "decoded_bytes": 8388608,
+        "sha256": "9d97cb3bd3e8c990aee49d0a3500aa24228a56814ac709508eb53fe757566e6f"
+      },
+      {
+        "name": "frame-0001.fits",
+        "stored_bytes": 8398080,
+        "decoded_bytes": 8388608,
+        "sha256": "0d6f1ece3ca5e3ac5e15b9b3a728fde7d9ac0d9876954428f0349954f5b85058"
+      },
+      {
+        "name": "frame-0002.fits",
+        "stored_bytes": 8398080,
+        "decoded_bytes": 8388608,
+        "sha256": "06adcc5928688287ccfb4c857d89f1304a4c8fd038934d0a20896db4aae75569"
+      },
+      {
+        "name": "frame-0003.fits",
+        "stored_bytes": 8398080,
+        "decoded_bytes": 8388608,
+        "sha256": "2dcbfc8c2005136486ad17b58f3b5541c1d1a893e153e13cb52e924601c2afd6"
+      },
+      {
+        "name": "frame-0004.fits",
+        "stored_bytes": 8398080,
+        "decoded_bytes": 8388608,
+        "sha256": "413582919a452840ad9bd5c3710aad16d4cc96eb396d2b865ffd63a9305d6ee9"
+      },
+      {
+        "name": "frame-0005.fits",
+        "stored_bytes": 8398080,
+        "decoded_bytes": 8388608,
+        "sha256": "17ae8c008e2097f8a7931ee2db0f662ccfb911a21dd03165d1b0b6c7e1fbe836"
+      },
+      {
+        "name": "frame-0006.fits",
+        "stored_bytes": 8398080,
+        "decoded_bytes": 8388608,
+        "sha256": "c64184469f68edc22541e4163065575acbe044c467d7672eb2459e2a9e1dcbe8"
+      },
+      {
+        "name": "frame-0007.fits",
+        "stored_bytes": 8398080,
+        "decoded_bytes": 8388608,
+        "sha256": "04906cf9ef658c54495a016f861a93bfeeb895505185b119c4d24bba1c2cd32e"
+      }
+    ]
+  },
+  "finished_unix_seconds": 1788742666,
+  "preparation_seconds": 1.083769334,
+  "timeout_seconds": 120,
+  "samples": [
+    {
+      "peak_reserved_bytes": 0,
+      "workload": "read",
+      "workers": 1,
+      "completed_files": 8,
+      "stored_bytes": 67184640,
+      "decoded_bytes": 67108864,
+      "read_bytes": 67184640,
+      "wall_seconds": 0.003205291,
+      "cpu_seconds": 0.003240999999999994,
+      "peak_rss_bytes": 6537216,
+      "estimated_working_bytes": 16842752,
+      "files": [
+        {
+          "index": 0,
+          "seconds": 0.000417,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 1,
+          "seconds": 0.000406959,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 2,
+          "seconds": 0.00040075,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 3,
+          "seconds": 0.00039425,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 4,
+          "seconds": 0.00038825,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 5,
+          "seconds": 0.000383959,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 6,
+          "seconds": 0.000366709,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 7,
+          "seconds": 0.000361417,
+          "read_bytes": 8398080
+        }
+      ]
+    },
+    {
+      "peak_reserved_bytes": 0,
+      "workload": "read",
+      "workers": 1,
+      "completed_files": 8,
+      "stored_bytes": 67184640,
+      "decoded_bytes": 67108864,
+      "read_bytes": 67184640,
+      "wall_seconds": 0.003194875,
+      "cpu_seconds": 0.003233,
+      "peak_rss_bytes": 6537216,
+      "estimated_working_bytes": 16842752,
+      "files": [
+        {
+          "index": 0,
+          "seconds": 0.000409333,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 1,
+          "seconds": 0.000400625,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 2,
+          "seconds": 0.000399917,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 3,
+          "seconds": 0.000393667,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 4,
+          "seconds": 0.000389542,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 5,
+          "seconds": 0.000390208,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 6,
+          "seconds": 0.0003765,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 7,
+          "seconds": 0.00035775,
+          "read_bytes": 8398080
+        }
+      ]
+    },
+    {
+      "peak_reserved_bytes": 0,
+      "workload": "read",
+      "workers": 1,
+      "completed_files": 8,
+      "stored_bytes": 67184640,
+      "decoded_bytes": 67108864,
+      "read_bytes": 67184640,
+      "wall_seconds": 0.003188542,
+      "cpu_seconds": 0.003224999999999992,
+      "peak_rss_bytes": 6553600,
+      "estimated_working_bytes": 16842752,
+      "files": [
+        {
+          "index": 0,
+          "seconds": 0.000408292,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 1,
+          "seconds": 0.000401208,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 2,
+          "seconds": 0.000401917,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 3,
+          "seconds": 0.000391708,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 4,
+          "seconds": 0.00038825,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 5,
+          "seconds": 0.000386917,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 6,
+          "seconds": 0.000369625,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 7,
+          "seconds": 0.0003545,
+          "read_bytes": 8398080
+        }
+      ]
+    },
+    {
+      "peak_reserved_bytes": 0,
+      "workload": "read",
+      "workers": 2,
+      "completed_files": 8,
+      "stored_bytes": 67184640,
+      "decoded_bytes": 67108864,
+      "read_bytes": 67184640,
+      "wall_seconds": 0.001930458,
+      "cpu_seconds": 0.003853999999999996,
+      "peak_rss_bytes": 6635520,
+      "estimated_working_bytes": 33685504,
+      "files": [
+        {
+          "index": 0,
+          "seconds": 0.000484209,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 1,
+          "seconds": 0.000479542,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 2,
+          "seconds": 0.000470958,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 3,
+          "seconds": 0.000463375,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 4,
+          "seconds": 0.000457958,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 5,
+          "seconds": 0.000459959,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 6,
+          "seconds": 0.000441625,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 7,
+          "seconds": 0.000412083,
+          "read_bytes": 8398080
+        }
+      ]
+    },
+    {
+      "peak_reserved_bytes": 0,
+      "workload": "read",
+      "workers": 2,
+      "completed_files": 8,
+      "stored_bytes": 67184640,
+      "decoded_bytes": 67108864,
+      "read_bytes": 67184640,
+      "wall_seconds": 0.001970708,
+      "cpu_seconds": 0.003920000000000007,
+      "peak_rss_bytes": 6619136,
+      "estimated_working_bytes": 33685504,
+      "files": [
+        {
+          "index": 0,
+          "seconds": 0.000541,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 1,
+          "seconds": 0.000538375,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 2,
+          "seconds": 0.000456292,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 3,
+          "seconds": 0.000452,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 4,
+          "seconds": 0.000446583,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 5,
+          "seconds": 0.000443708,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 6,
+          "seconds": 0.000429625,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 7,
+          "seconds": 0.000419667,
+          "read_bytes": 8398080
+        }
+      ]
+    },
+    {
+      "peak_reserved_bytes": 0,
+      "workload": "read",
+      "workers": 2,
+      "completed_files": 8,
+      "stored_bytes": 67184640,
+      "decoded_bytes": 67108864,
+      "read_bytes": 67184640,
+      "wall_seconds": 0.001846125,
+      "cpu_seconds": 0.003685999999999995,
+      "peak_rss_bytes": 6619136,
+      "estimated_working_bytes": 33685504,
+      "files": [
+        {
+          "index": 0,
+          "seconds": 0.00046075,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 1,
+          "seconds": 0.000458291,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 2,
+          "seconds": 0.00045375,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 3,
+          "seconds": 0.000444833,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 4,
+          "seconds": 0.000434583,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 5,
+          "seconds": 0.0004365,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 6,
+          "seconds": 0.00042525,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 7,
+          "seconds": 0.000396083,
+          "read_bytes": 8398080
+        }
+      ]
+    },
+    {
+      "peak_reserved_bytes": 0,
+      "workload": "read",
+      "workers": 4,
+      "completed_files": 8,
+      "stored_bytes": 67184640,
+      "decoded_bytes": 67108864,
+      "read_bytes": 67184640,
+      "wall_seconds": 0.001129,
+      "cpu_seconds": 0.0043289999999999995,
+      "peak_rss_bytes": 6799360,
+      "estimated_working_bytes": 67371008,
+      "files": [
+        {
+          "index": 0,
+          "seconds": 0.000525041,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 1,
+          "seconds": 0.000521375,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 2,
+          "seconds": 0.000528208,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 3,
+          "seconds": 0.000506792,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 4,
+          "seconds": 0.000523459,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 5,
+          "seconds": 0.000515791,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 6,
+          "seconds": 0.000494667,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 7,
+          "seconds": 0.000461833,
+          "read_bytes": 8398080
+        }
+      ]
+    },
+    {
+      "peak_reserved_bytes": 0,
+      "workload": "read",
+      "workers": 4,
+      "completed_files": 8,
+      "stored_bytes": 67184640,
+      "decoded_bytes": 67108864,
+      "read_bytes": 67184640,
+      "wall_seconds": 0.001109917,
+      "cpu_seconds": 0.004295999999999994,
+      "peak_rss_bytes": 6782976,
+      "estimated_working_bytes": 67371008,
+      "files": [
+        {
+          "index": 0,
+          "seconds": 0.00053375,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 1,
+          "seconds": 0.000537333,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 2,
+          "seconds": 0.000522834,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 3,
+          "seconds": 0.000510084,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 4,
+          "seconds": 0.00051325,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 5,
+          "seconds": 0.00050925,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 6,
+          "seconds": 0.000502792,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 7,
+          "seconds": 0.000448875,
+          "read_bytes": 8398080
+        }
+      ]
+    },
+    {
+      "peak_reserved_bytes": 0,
+      "workload": "read",
+      "workers": 4,
+      "completed_files": 8,
+      "stored_bytes": 67184640,
+      "decoded_bytes": 67108864,
+      "read_bytes": 67184640,
+      "wall_seconds": 0.001141125,
+      "cpu_seconds": 0.004372000000000001,
+      "peak_rss_bytes": 6782976,
+      "estimated_working_bytes": 67371008,
+      "files": [
+        {
+          "index": 0,
+          "seconds": 0.0005345,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 1,
+          "seconds": 0.0005305,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 2,
+          "seconds": 0.000534667,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 3,
+          "seconds": 0.000524833,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 4,
+          "seconds": 0.000521584,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 5,
+          "seconds": 0.0005185,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 6,
+          "seconds": 0.000502208,
+          "read_bytes": 8398080
+        },
+        {
+          "index": 7,
+          "seconds": 0.000454166,
+          "read_bytes": 8398080
+        }
+      ]
+    }
+  ],
+  "summaries": [
+    {
+      "workers": 1,
+      "repetitions": 3,
+      "min_wall_seconds": 0.003188542,
+      "median_wall_seconds": 0.003194875,
+      "max_wall_seconds": 0.003205291,
+      "median_stored_mib_per_second": 20054.7018662702,
+      "file_p50_seconds": 0.000390958,
+      "file_p95_seconds": 0.000409333,
+      "maximum_peak_rss_bytes": 6553600
+    },
+    {
+      "workers": 2,
+      "repetitions": 3,
+      "min_wall_seconds": 0.001846125,
+      "median_wall_seconds": 0.001930458,
+      "max_wall_seconds": 0.001970708,
+      "median_stored_mib_per_second": 33190.18886968792,
+      "file_p50_seconds": 0.000452875,
+      "file_p95_seconds": 0.000538375,
+      "maximum_peak_rss_bytes": 6635520
+    },
+    {
+      "workers": 4,
+      "repetitions": 3,
+      "min_wall_seconds": 0.001109917,
+      "median_wall_seconds": 0.001129,
+      "max_wall_seconds": 0.001141125,
+      "median_stored_mib_per_second": 56751.342449069976,
+      "file_p50_seconds": 0.0005199375,
+      "file_p95_seconds": 0.000534667,
+      "maximum_peak_rss_bytes": 6799360
+    }
+  ]
+}

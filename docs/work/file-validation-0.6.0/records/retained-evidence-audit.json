@@ -1,0 +1,67 @@
+{
+  "audited_on": "2026-09-09",
+  "codec_samples": 54,
+  "codec_operations": 432,
+  "peak_rss_mib": 105.734375,
+  "four_worker_speedups": {
+    "hcompress-float-quantized": 3.310846788847931,
+    "hcompress-noise-32rows": 3.4473614114470514,
+    "hcompress-noise-whole": 3.463844664336949,
+    "plio-mask": 3.0453696845302036,
+    "rice-gradient": 3.478356248487933,
+    "rice-noise": 3.4958117954194847
+  },
+  "sigint_trials": 6,
+  "sigint_max_ms": 1.743541972246021,
+  "all_sources_unchanged": true,
+  "all_reservations_released": true,
+  "supplied_fixture_hashes_verified": 14,
+  "previous_completion_audit": {
+    "scaling": {
+      "reports": 48,
+      "samples": 960,
+      "file_operations": 7680
+    },
+    "contention": {
+      "reports": 8,
+      "samples": 40,
+      "file_operations": 5120
+    },
+    "profile-permitted": {
+      "reports": 2,
+      "samples": 2,
+      "file_operations": 512
+    },
+    "captures-local-diagnostic": {
+      "reports": 90,
+      "successful_samples": 60,
+      "rejected_samples": 30,
+      "file_operations": 5760,
+      "rejected_operations": 1440
+    },
+    "captures-hdd": {
+      "reports": 90,
+      "successful_samples": 90,
+      "rejected_samples": 0,
+      "file_operations": 5760,
+      "rejected_operations": 0
+    },
+    "captures-external-ssd": {
+      "reports": 90,
+      "successful_samples": 90,
+      "rejected_samples": 0,
+      "file_operations": 5760,
+      "rejected_operations": 0
+    },
+    "large-fits": {
+      "reports": 15,
+      "successful_samples": 15,
+      "rejected_samples": 0,
+      "file_operations": 45,
+      "rejected_operations": 0
+    }
+  },
+  "versions_consistent": true,
+  "benchmark_publish": false,
+  "summary_sha256": "271b06fa031fb6db3c64f37ec1b76e3f78e51cdea433fcdcee35a7a4ee0de938"
+}

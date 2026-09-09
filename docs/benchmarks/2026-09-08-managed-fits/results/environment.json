@@ -1,0 +1,12 @@
+{
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "python": "3.12.14",
+  "note": "Local M4 Max; release build; no concurrent build or test workloads",
+  "fpack_version": "1.7.0 (Dec 2013) CFITSIO version 4.070\n",
+  "script_sha256": "4e13d2d268a379dca615373c8fb7d92b5e2ea90331574f480e47571de740b3fa",
+  "binary_sha256": "74f5af78fc044f032ca9e80bee6a13f7d4c0f4be86630c4e1e8441b8089ea831",
+  "cache_state": "uncontrolled / likely warm; hashes precede each sample",
+  "target_peak_rss_bytes": 201326592,
+  "target_reserved_bytes": 536870912,
+  "started_unix_seconds": 1788858852.5466082
+}

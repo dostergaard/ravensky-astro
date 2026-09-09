@@ -20,3 +20,11 @@ serde.workspace = true
 log.workspace = true
 byteorder.workspace = true
 flate2.workspace = true
+
+# Validation codecs and digests; keep native codec features minimal.
+base64 = "0.22.1"
+lz4_flex = { version = "0.14.0", default-features = false, features = ["std", "safe-decode", "safe-encode", "checked-decode"] }
+zstd = { version = "0.14.0", default-features = false, features = ["vendored"] }
+sha1 = "0.10.6"
+sha2 = "0.10.9"
+sha3 = "0.10.8"

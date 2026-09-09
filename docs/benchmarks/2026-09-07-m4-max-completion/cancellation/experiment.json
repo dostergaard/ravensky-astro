@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "mode": "cancellation",
+  "note": "Apple M4 Max, 36 GiB RAM, macOS 26.6.2; release all-feature workspace build; local APFS. SIGINT to owned parent during preparation or sample-child lifetime, which includes fingerprint verification. No concurrent agent builds/tests. Process inspection requires execution outside the tool sandbox.",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "python": "3.12.14 (main, Aug 12 2026, 13:57:54) [Clang 21.0.0 (clang-2100.1.1.101)]",
+  "script_sha256": "1d9cc9be132832b2b8e51f48135fdb5fa8d8277efb9256996844e96ade46a439",
+  "binary_sha256": "2bd11fd0ddd1b2e084e3fb09844d5cc02e3cace0b44242e6fd539a4f227f5d0d",
+  "started_unix_seconds": 1788799345.790586,
+  "cache_state": "uncontrolled / likely warm"
+}

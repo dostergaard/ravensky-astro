@@ -1,0 +1,6 @@
+    Checking astro-io v0.6.0 ($RAVENSKY_ASTRO/astro-io)
+   Compiling astro-bench v0.6.0 ($RAVENSKY_ASTRO/astro-bench)
+    Checking astro-metadata v0.6.0 ($RAVENSKY_ASTRO/astro-metadata)
+    Checking astro-metrics v0.6.0 ($RAVENSKY_ASTRO/astro-metrics)
+    Checking ravensky-astro v0.6.0 ($RAVENSKY_ASTRO)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.09s

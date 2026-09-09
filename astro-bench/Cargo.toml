@@ -1,0 +1,29 @@
+[package]
+name = "astro-bench"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Synthetic benchmark workloads for RavenSky astronomy libraries"
+readme = "README.md"
+publish = false
+
+[dependencies]
+astro-io.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+flate2.workspace = true
+sha2 = "0.10.9"
+zstd = { version = "0.14.0", default-features = false, features = ["vendored"] }
+ctrlc = "3.5.2"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[build-dependencies]
+sha2 = "0.10.9"
+
+[dev-dependencies]
+fitsio.workspace = true

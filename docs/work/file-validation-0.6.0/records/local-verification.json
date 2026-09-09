@@ -1,0 +1,134 @@
+{
+  "started_utc": "2026-09-09T17:06:43.883895+00:00",
+  "base_revision": "2e9ba9505f0685839a14b5141d6faea20bbeb759",
+  "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)\nbinary: rustc\ncommit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db\ncommit-date: 2026-03-02\nhost: aarch64-apple-darwin\nrelease: 1.94.0\nLLVM version: 21.1.8\n",
+  "checks": [
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "rustdocflags": null,
+      "exit_code": 0,
+      "log": "format.log"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "--workspace",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "rustdocflags": null,
+      "exit_code": 0,
+      "log": "clippy.log"
+    },
+    {
+      "name": "tests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--workspace",
+        "--all-targets",
+        "--all-features"
+      ],
+      "rustdocflags": null,
+      "exit_code": 0,
+      "log": "tests.log"
+    },
+    {
+      "name": "doctests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--workspace",
+        "--all-features",
+        "--doc"
+      ],
+      "rustdocflags": null,
+      "exit_code": 0,
+      "log": "doctests.log"
+    },
+    {
+      "name": "release-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--release",
+        "--workspace",
+        "--all-features",
+        "--examples"
+      ],
+      "rustdocflags": null,
+      "exit_code": 0,
+      "log": "release-build.log"
+    },
+    {
+      "name": "rustdoc",
+      "command": [
+        "cargo",
+        "doc",
+        "--locked",
+        "--offline",
+        "--workspace",
+        "--all-features",
+        "--no-deps"
+      ],
+      "rustdocflags": "-D warnings",
+      "exit_code": 0,
+      "log": "rustdoc.log"
+    },
+    {
+      "name": "python-tests",
+      "command": [
+        "/Users/dean/projects-dev/RavenSky/.venv-tools/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "astro-bench/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "rustdocflags": null,
+      "exit_code": 0,
+      "log": "python-tests.log"
+    },
+    {
+      "name": "local-xisf",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "astro-io",
+        "test_load_xisf_real_sample",
+        "--",
+        "--ignored"
+      ],
+      "rustdocflags": null,
+      "exit_code": 0,
+      "log": "local-xisf.log"
+    }
+  ],
+  "tests_passed": 131,
+  "tests_ignored": 2,
+  "doctests_passed": 4
+}

@@ -1,0 +1,71 @@
+{
+  "backend": "/opt/homebrew/lib/libcfitsio.4.7.0.dylib",
+  "method": "read-only ffopen, ffthdu, ffmahd, ffvcks; -1 invalid, 0 absent, 1 valid; primary local capture HDUs independently checked",
+  "files": [
+    {
+      "index": 0,
+      "sha256": "9a7f983da028459e33d9558934b2175fdd2060afe5e9850e617e770c0490e6c9",
+      "hdus": [
+        {
+          "hdu": 1,
+          "data_checksum": 1,
+          "hdu_checksum": -1
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "sha256": "e9f64b9b00836609b4dc9485dd0778b3747a7988b74ea2029df06b0d74c51b03",
+      "hdus": [
+        {
+          "hdu": 1,
+          "data_checksum": 1,
+          "hdu_checksum": -1
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "sha256": "e0df6e95a7b2cf0998d66ae1f61c36c49052bcbbe1c2c6ed3f5180fc6f799c3b",
+      "hdus": [
+        {
+          "hdu": 1,
+          "data_checksum": 1,
+          "hdu_checksum": -1
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "sha256": "80a6eddb9b9a0b62ebc805f5e5c99dc7518c66e20a52669cbded3badb0d130a5",
+      "hdus": [
+        {
+          "hdu": 1,
+          "data_checksum": 1,
+          "hdu_checksum": 1
+        },
+        {
+          "hdu": 2,
+          "data_checksum": 1,
+          "hdu_checksum": 1
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "sha256": "dd05a0919709f92312d1713c8614c51eb4c58c3feaa6fd3969f2e614d5598436",
+      "hdus": [
+        {
+          "hdu": 1,
+          "data_checksum": -1,
+          "hdu_checksum": -1
+        },
+        {
+          "hdu": 2,
+          "data_checksum": -1,
+          "hdu_checksum": -1
+        }
+      ]
+    }
+  ]
+}

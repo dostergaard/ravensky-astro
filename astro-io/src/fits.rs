@@ -1,5 +1,7 @@
 //! FITS file loading and header extraction helpers.
 
+pub mod backend;
+
 use anyhow::{bail, Context, Result};
 use fitsio::errors::check_status;
 use fitsio::sys::{
@@ -35,86 +37,100 @@ pub struct FitsHeaderCard {
 
 /// Read a FITS file and return its pixel data, width, and height.
 pub fn load_fits(path: &Path) -> Result<(Vec<f32>, usize, usize)> {
-    // Open the FITS file.
-    let mut file = FitsFile::open(path)?;
-    // Access the primary HDU (header-data unit).
-    let hdu = file.primary_hdu()?;
+    backend::with_cfitsio(|| {
+        // Open the FITS file.
+        let mut file = FitsFile::open(path)?;
+        // Access the primary HDU (header-data unit).
+        let hdu = file.primary_hdu()?;
 
-    // Extract the image dimensions by borrowing hdu.info.
-    let (width, height) = if let fitsio::hdu::HduInfo::ImageInfo { shape, .. } = &hdu.info {
-        let h = shape[0];
-        let w = shape[1];
-        (w, h)
-    } else {
-        bail!("Primary HDU is not an image");
-    };
+        // Extract the image dimensions by borrowing hdu.info.
+        let (width, height) = if let fitsio::hdu::HduInfo::ImageInfo { shape, .. } = &hdu.info {
+            let h = shape[0];
+            let w = shape[1];
+            (w, h)
+        } else {
+            bail!("Primary HDU is not an image");
+        };
 
-    // Read the entire image into a Vec<f32>.
-    let pixels: Vec<f32> = hdu.read_image(&mut file)?;
+        // Read the entire image into a Vec<f32>.
+        let pixels: Vec<f32> = hdu.read_image(&mut file)?;
 
-    Ok((pixels, width, height))
+        Ok((pixels, width, height))
+    })
 }
 
 /// Read all header cards from the primary HDU in a FITS file.
 pub fn read_primary_header_cards_from_path(path: &Path) -> Result<Vec<FitsHeaderCard>> {
-    let mut file = FitsFile::open(path)?;
-    read_header_cards(&mut file, 0)
+    backend::with_cfitsio(|| {
+        let mut file = FitsFile::open(path)?;
+        read_header_cards(&mut file, 0)
+    })
 }
 
 /// Read all header cards from a specific HDU in an open FITS file.
+///
+/// Native calls participate in [`backend::with_cfitsio`]. On non-reentrant builds,
+/// enclose the caller-owned handle's complete lifetime in that same protocol.
 pub fn read_header_cards(
     fits_file: &mut FitsFile,
     hdu_index: usize,
 ) -> Result<Vec<FitsHeaderCard>> {
-    let _ = fits_file
-        .hdu(hdu_index)
-        .with_context(|| format!("Failed to access HDU {}", hdu_index))?;
+    backend::with_cfitsio(|| {
+        let _ = fits_file
+            .hdu(hdu_index)
+            .with_context(|| format!("Failed to access HDU {}", hdu_index))?;
 
-    let raw_fits = unsafe { fits_file.as_raw() };
-    let mut num_keys = 0;
-    let mut more_keys = 0;
-    let mut status = 0;
+        let raw_fits = unsafe { fits_file.as_raw() };
+        let mut num_keys = 0;
+        let mut more_keys = 0;
+        let mut status = 0;
 
-    unsafe {
-        fits_get_hdrspace(raw_fits, &mut num_keys, &mut more_keys, &mut status);
-    }
+        unsafe {
+            fits_get_hdrspace(raw_fits, &mut num_keys, &mut more_keys, &mut status);
+        }
 
-    check_status(status)
-        .with_context(|| format!("Failed to enumerate header cards for HDU {}", hdu_index))?;
+        check_status(status)
+            .with_context(|| format!("Failed to enumerate header cards for HDU {}", hdu_index))?;
 
-    let mut cards = Vec::with_capacity(num_keys as usize);
-    for card_index in 1..=num_keys {
-        let raw_card = read_raw_card(raw_fits, card_index).with_context(|| {
-            format!(
-                "Failed to read header card {} from HDU {}",
-                card_index, hdu_index
-            )
-        })?;
-        let (keyword, value, comment) = read_card_fields(raw_fits, card_index, &raw_card);
+        let mut cards = Vec::with_capacity(num_keys as usize);
+        for card_index in 1..=num_keys {
+            let raw_card = read_raw_card(raw_fits, card_index).with_context(|| {
+                format!(
+                    "Failed to read header card {} from HDU {}",
+                    card_index, hdu_index
+                )
+            })?;
+            let (keyword, value, comment) = read_card_fields(raw_fits, card_index, &raw_card);
 
-        cards.push(FitsHeaderCard {
-            hdu_index,
-            card_index: card_index as usize,
-            keyword,
-            value,
-            comment,
-            raw_card: Some(raw_card),
-        });
-    }
+            cards.push(FitsHeaderCard {
+                hdu_index,
+                card_index: card_index as usize,
+                keyword,
+                value,
+                comment,
+                raw_card: Some(raw_card),
+            });
+        }
 
-    Ok(cards)
+        Ok(cards)
+    })
 }
 
 /// Read all header cards from every HDU in an open FITS file.
+///
+/// On non-reentrant builds, enclose the caller-owned handle's complete lifetime
+/// in [`backend::with_cfitsio`], including open and close.
 pub fn read_all_header_cards(fits_file: &mut FitsFile) -> Result<Vec<FitsHeaderCard>> {
-    let num_hdus = read_num_hdus(fits_file)?;
-    let mut cards = Vec::new();
+    backend::with_cfitsio(|| {
+        let num_hdus = read_num_hdus(fits_file)?;
+        let mut cards = Vec::new();
 
-    for hdu_index in 0..num_hdus {
-        cards.extend(read_header_cards(fits_file, hdu_index)?);
-    }
+        for hdu_index in 0..num_hdus {
+            cards.extend(read_header_cards(fits_file, hdu_index)?);
+        }
 
-    Ok(cards)
+        Ok(cards)
+    })
 }
 
 /// Build a compatibility header map from lossless header cards.
@@ -324,58 +340,64 @@ mod tests {
 
     #[test]
     fn test_read_header_cards_preserves_duplicates() -> Result<()> {
-        let path = unique_temp_fits_path("header-cards");
-        let mut file = FitsFile::create(&path).open()?;
-        let hdu = file.primary_hdu()?;
+        crate::fits::backend::with_cfitsio(|| {
+            let path = unique_temp_fits_path("header-cards");
+            let mut file = FitsFile::create(&path).open()?;
+            let hdu = file.primary_hdu()?;
 
-        hdu.write_key(&mut file, "OBJECT", "M42".to_string())?;
-        hdu.write_key(&mut file, "EXPTIME", 120.5f32)?;
-        append_test_records(&mut file)?;
+            hdu.write_key(&mut file, "OBJECT", "M42".to_string())?;
+            hdu.write_key(&mut file, "EXPTIME", 120.5f32)?;
+            append_test_records(&mut file)?;
 
-        let cards = read_header_cards(&mut file, 0)?;
-        let duplicate_values: Vec<&str> = cards
-            .iter()
-            .filter(|card| card.keyword == "DUPKEY")
-            .filter_map(|card| card.value.as_deref())
-            .collect();
+            let cards = read_header_cards(&mut file, 0)?;
+            let duplicate_values: Vec<&str> = cards
+                .iter()
+                .filter(|card| card.keyword == "DUPKEY")
+                .filter_map(|card| card.value.as_deref())
+                .collect();
 
-        assert_eq!(duplicate_values, vec!["one", "two"]);
-        assert!(cards.iter().any(|card| {
-            card.keyword == "COMMENT"
-                && card
-                    .raw_card
-                    .as_deref()
-                    .is_some_and(|raw| raw.contains("first duplicate-preserving comment"))
-        }));
+            assert_eq!(duplicate_values, vec!["one", "two"]);
+            assert!(cards.iter().any(|card| {
+                card.keyword == "COMMENT"
+                    && card
+                        .raw_card
+                        .as_deref()
+                        .is_some_and(|raw| raw.contains("first duplicate-preserving comment"))
+            }));
 
-        fs::remove_file(path)?;
-        Ok(())
+            drop(file); // Windows requires the native handle closed before deletion.
+            fs::remove_file(path)?;
+            Ok(())
+        })
     }
 
     #[test]
     fn test_read_all_header_cards_across_hdus() -> Result<()> {
-        let path = unique_temp_fits_path("all-hdus");
-        let description = ImageDescription {
-            data_type: ImageType::Float,
-            dimensions: &[2, 2],
-        };
-        let mut file = FitsFile::create(&path).open()?;
-        let primary = file.primary_hdu()?;
-        primary.write_key(&mut file, "OBJECT", "M31".to_string())?;
+        crate::fits::backend::with_cfitsio(|| {
+            let path = unique_temp_fits_path("all-hdus");
+            let description = ImageDescription {
+                data_type: ImageType::Float,
+                dimensions: &[2, 2],
+            };
+            let mut file = FitsFile::create(&path).open()?;
+            let primary = file.primary_hdu()?;
+            primary.write_key(&mut file, "OBJECT", "M31".to_string())?;
 
-        let extension = file.create_image("SCI".to_string(), &description)?;
-        extension.write_key(&mut file, "EXTKEY", 42i64)?;
+            let extension = file.create_image("SCI".to_string(), &description)?;
+            extension.write_key(&mut file, "EXTKEY", 42i64)?;
 
-        let cards = read_all_header_cards(&mut file)?;
-        assert!(cards
-            .iter()
-            .any(|card| card.hdu_index == 0 && card.keyword == "OBJECT"));
-        assert!(cards.iter().any(|card| card.hdu_index == 1
-            && card.keyword == "EXTKEY"
-            && card.value.as_deref() == Some("42")));
+            let cards = read_all_header_cards(&mut file)?;
+            assert!(cards
+                .iter()
+                .any(|card| card.hdu_index == 0 && card.keyword == "OBJECT"));
+            assert!(cards.iter().any(|card| card.hdu_index == 1
+                && card.keyword == "EXTKEY"
+                && card.value.as_deref() == Some("42")));
 
-        fs::remove_file(path)?;
-        Ok(())
+            drop(file); // Keep close/drop inside the coordinated backend scope.
+            fs::remove_file(path)?;
+            Ok(())
+        })
     }
 
     #[test]

@@ -1,0 +1,39 @@
+{
+  "checked_utc": "2026-09-09T17:10:33.912221+00:00",
+  "isolation_path": "/private/tmp/ravensky-060-vendored-njtcrb7p",
+  "source_head": "2e9ba9505f0685839a14b5141d6faea20bbeb759",
+  "commands": [
+    {
+      "command": [
+        "cargo",
+        "update",
+        "--offline",
+        "-p",
+        "fitsio-sys",
+        "--precise",
+        "0.5.5"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "astro-io",
+        "-p",
+        "astro-metadata",
+        "-p",
+        "astro-bench",
+        "--all-targets",
+        "--target-dir",
+        "/Users/dean/projects-dev/RavenSky/ravensky-astro/target/vendored-closeout"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "tests_passed": 108,
+  "tests_ignored": 1
+}

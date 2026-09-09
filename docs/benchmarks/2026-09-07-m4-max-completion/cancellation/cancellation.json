@@ -1,0 +1,92 @@
+[
+  {
+    "phase": "preparation",
+    "repeat": 0,
+    "exit_seconds": 0.0012804160069208592,
+    "exit_code": 1,
+    "scratch_clean": true,
+    "children_reaped": true,
+    "within_two_seconds": true
+  },
+  {
+    "phase": "preparation",
+    "repeat": 1,
+    "exit_seconds": 0.0012871660001110286,
+    "exit_code": 1,
+    "scratch_clean": true,
+    "children_reaped": true,
+    "within_two_seconds": true
+  },
+  {
+    "phase": "preparation",
+    "repeat": 2,
+    "exit_seconds": 0.0012831250205636024,
+    "exit_code": 1,
+    "scratch_clean": true,
+    "children_reaped": true,
+    "within_two_seconds": true
+  },
+  {
+    "phase": "preparation",
+    "repeat": 3,
+    "exit_seconds": 0.0012876249966211617,
+    "exit_code": 1,
+    "scratch_clean": true,
+    "children_reaped": true,
+    "within_two_seconds": true
+  },
+  {
+    "phase": "preparation",
+    "repeat": 4,
+    "exit_seconds": 0.0013026249944232404,
+    "exit_code": 1,
+    "scratch_clean": true,
+    "children_reaped": true,
+    "within_two_seconds": true
+  },
+  {
+    "phase": "sample_child",
+    "repeat": 0,
+    "exit_seconds": 0.03882799998973496,
+    "exit_code": 1,
+    "scratch_clean": true,
+    "children_reaped": true,
+    "within_two_seconds": true
+  },
+  {
+    "phase": "sample_child",
+    "repeat": 1,
+    "exit_seconds": 0.008816749992547557,
+    "exit_code": 1,
+    "scratch_clean": true,
+    "children_reaped": true,
+    "within_two_seconds": true
+  },
+  {
+    "phase": "sample_child",
+    "repeat": 2,
+    "exit_seconds": 0.03883541701361537,
+    "exit_code": 1,
+    "scratch_clean": true,
+    "children_reaped": true,
+    "within_two_seconds": true
+  },
+  {
+    "phase": "sample_child",
+    "repeat": 3,
+    "exit_seconds": 0.03884200000902638,
+    "exit_code": 1,
+    "scratch_clean": true,
+    "children_reaped": true,
+    "within_two_seconds": true
+  },
+  {
+    "phase": "sample_child",
+    "repeat": 4,
+    "exit_seconds": 0.038817041990114376,
+    "exit_code": 1,
+    "scratch_clean": true,
+    "children_reaped": true,
+    "within_two_seconds": true
+  }
+]

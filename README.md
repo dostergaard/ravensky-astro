@@ -25,20 +25,37 @@ RavenSky Astro is intentionally modular. Each crate has a focused responsibility
 * **astro-io** → image file loading and saving
 * **astro-metadata** → structured metadata extraction
 * **astro-metrics** → statistical and quality analysis
+* **astro-bench** → optional synthetic workloads and repeatable performance measurements
 
 These crates are designed to be used independently or together, depending on your application’s needs.
 
 Planned format-layer refactoring and migration details are documented in the [Format Architecture Plan](docs/FormatArchitecturePlan.md).
 
+Start with the [standalone benchmark guide](docs/BenchmarkGuide.md) for setup,
+commands, report interpretation, real captures and use from a separate Rust project.
+No RavenSky application is required.
+
+The [benchmark runner](astro-bench/README.md) provides generated FITS/XISF validator
+and raw-I/O workloads, explicit concurrency, and JSON reports. It is separate from
+production dependencies and does not change application defaults. See the
+[benchmark and calibration design](docs/BenchmarkAndCalibrationDesign.md) for scope
+and the path toward application-driven calibration.
+
 ---
 
 ## Windows FITS Path-Length Note
+
+Windows GNU CI covers `astro-io`, `astro-metadata` and the unpublished benchmark
+tools. `astro-metrics` and the root facade depend on `sep-sys 1.3.0`, whose POSIX
+`rand_r` call currently prevents Windows compilation. See
+[release verification and platform scope](RELEASING.md) before choosing a target.
 
 On Windows, FITS file access in AstroMuninn and the ravensky-astro FITS APIs depends on CFITSIO (via `fitsio` / `fitsio-sys`). CFITSIO currently opens disk files using its `fopen`-based path handling (`file_openfile`), which in this environment follows the classic Windows path-length boundary.
 
 Use full FITS paths shorter than 260 characters (`< 260`). At 260 or more, FITS open calls may fail.
 
-This limitation is specific to FITS access through CFITSIO. XISF handling is not affected.
+This limitation is specific to FITS loading and metadata access through CFITSIO.
+Managed FITS validation and XISF handling do not use that path implementation.
 
 ---
 
@@ -123,11 +140,11 @@ Add only the crates you need:
 
 ```toml
 [dependencies]
-astro-io = "0.5.0"
-astro-metadata = "0.5.0"
-astro-metrics = "0.5.0"
+astro-io = "0.6.0"
+astro-metadata = "0.6.0"
+astro-metrics = "0.6.0"
 # Optional meta crate that re-exports all three:
-ravensky-astro = "0.5.0"
+ravensky-astro = "0.6.0"
 ```
 
 Each crate can be used independently.

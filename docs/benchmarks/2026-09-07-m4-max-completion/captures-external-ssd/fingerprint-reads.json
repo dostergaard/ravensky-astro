@@ -1,0 +1,102 @@
+{
+  "kind": "sequential_read_plus_sha256",
+  "samples": [
+    {
+      "repeat": 0,
+      "index": 0,
+      "stored_bytes": 187254720,
+      "sha256": "15f4782df5aa66f12e9047587cc6560289b6ca130ab878071962785d40b95fdc",
+      "wall_seconds": 0.21405658399453387,
+      "cpu_seconds": 0.08468
+    },
+    {
+      "repeat": 0,
+      "index": 1,
+      "stored_bytes": 280146240,
+      "sha256": "fba36ead90bbc7e5ff99ce641c3018663f5c94b8d5e066c1fbe69bef8716d888",
+      "wall_seconds": 0.3274772500153631,
+      "cpu_seconds": 0.12730400000000003
+    },
+    {
+      "repeat": 0,
+      "index": 2,
+      "stored_bytes": 187254720,
+      "sha256": "284c624bd567064d1906785b4f7689841fdf161ebf5c5e2730e13cabc39a0785",
+      "wall_seconds": 0.21343575001810677,
+      "cpu_seconds": 0.08313200000000004
+    },
+    {
+      "repeat": 0,
+      "index": 3,
+      "stored_bytes": 16947328,
+      "sha256": "a6495fadfa1b75ef42a19ccd91fbd80515362379ba916537eb695aa7307d11e5",
+      "wall_seconds": 0.020322416006820276,
+      "cpu_seconds": 0.0072770000000000334
+    },
+    {
+      "repeat": 0,
+      "index": 4,
+      "stored_bytes": 16947328,
+      "sha256": "26ac922c465d0c1eae82b706100aef2709b4f27e1fd75cafe63a43b5b970cb52",
+      "wall_seconds": 0.02029129202128388,
+      "cpu_seconds": 0.007518999999999998
+    },
+    {
+      "repeat": 0,
+      "index": 5,
+      "stored_bytes": 16947328,
+      "sha256": "86b9a5b47161e442a42f4b2bc01da65f8c19db43359521a7003abc1b77dfafa2",
+      "wall_seconds": 0.021046250010840595,
+      "cpu_seconds": 0.007886000000000004
+    },
+    {
+      "repeat": 1,
+      "index": 0,
+      "stored_bytes": 187254720,
+      "sha256": "15f4782df5aa66f12e9047587cc6560289b6ca130ab878071962785d40b95fdc",
+      "wall_seconds": 0.06324891600525007,
+      "cpu_seconds": 0.06323799999999996
+    },
+    {
+      "repeat": 1,
+      "index": 1,
+      "stored_bytes": 280146240,
+      "sha256": "fba36ead90bbc7e5ff99ce641c3018663f5c94b8d5e066c1fbe69bef8716d888",
+      "wall_seconds": 0.09475491699413396,
+      "cpu_seconds": 0.09475600000000006
+    },
+    {
+      "repeat": 1,
+      "index": 2,
+      "stored_bytes": 187254720,
+      "sha256": "284c624bd567064d1906785b4f7689841fdf161ebf5c5e2730e13cabc39a0785",
+      "wall_seconds": 0.06313025002600625,
+      "cpu_seconds": 0.06309399999999998
+    },
+    {
+      "repeat": 1,
+      "index": 3,
+      "stored_bytes": 16947328,
+      "sha256": "a6495fadfa1b75ef42a19ccd91fbd80515362379ba916537eb695aa7307d11e5",
+      "wall_seconds": 0.005765082983998582,
+      "cpu_seconds": 0.005766999999999967
+    },
+    {
+      "repeat": 1,
+      "index": 4,
+      "stored_bytes": 16947328,
+      "sha256": "26ac922c465d0c1eae82b706100aef2709b4f27e1fd75cafe63a43b5b970cb52",
+      "wall_seconds": 0.005741833010688424,
+      "cpu_seconds": 0.005740999999999996
+    },
+    {
+      "repeat": 1,
+      "index": 5,
+      "stored_bytes": 16947328,
+      "sha256": "86b9a5b47161e442a42f4b2bc01da65f8c19db43359521a7003abc1b77dfafa2",
+      "wall_seconds": 0.005699083994841203,
+      "cpu_seconds": 0.00569900000000001
+    }
+  ],
+  "cache_state": "first observed read and immediate repeat; OS cache uncontrolled, no eviction"
+}

@@ -1,0 +1,6 @@
+   Compiling astro-io v0.6.0 ($RAVENSKY_ASTRO/astro-io)
+   Compiling astro-bench v0.6.0 ($RAVENSKY_ASTRO/astro-bench)
+   Compiling astro-metadata v0.6.0 ($RAVENSKY_ASTRO/astro-metadata)
+   Compiling astro-metrics v0.6.0 ($RAVENSKY_ASTRO/astro-metrics)
+   Compiling ravensky-astro v0.6.0 ($RAVENSKY_ASTRO)
+    Finished `release` profile [optimized] target(s) in 1.89s

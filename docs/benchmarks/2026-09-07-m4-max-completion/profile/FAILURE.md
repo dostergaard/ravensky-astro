@@ -1,0 +1,1 @@
+The first profiling attempt stopped before sampling because the tool sandbox blocked `pgrep` child-process inspection. No successful timing report was produced. The separately authorized rerun in `../profile-permitted/` completed. This is an environment failure, not a validator result.

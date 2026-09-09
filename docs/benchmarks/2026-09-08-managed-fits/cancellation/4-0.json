@@ -1,0 +1,8 @@
+{
+  "workers": 4,
+  "repeat": 0,
+  "shutdown_seconds": 0.001603208016604185,
+  "returncode": 1,
+  "stdout": "",
+  "stderr": "Error: capture probe cancelled\n"
+}

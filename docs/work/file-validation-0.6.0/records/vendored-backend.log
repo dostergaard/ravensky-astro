@@ -1,0 +1,245 @@
+      Adding cmake v0.1.58
+      Adding fitsio-sys v0.5.5 (/Users/dean/projects-dev/RavenSky/astromuninn/vendor/fitsio-sys)
+    Removing fitsio-sys v0.5.7
+note: pass `--verbose` to see 39 unchanged dependencies behind latest
+
+running 2 tests
+test fixtures::tests::pixel_stream_stops_between_chunks_when_cancelled ... ok
+test fixtures::tests::gzip_writes_cannot_exceed_remaining_scratch_quota ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 1 test
+test tests::timeout_stops_and_reaps_child_before_scratch_cleanup ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test cli_rejects_excessive_work_before_generating ... ok
+test cli_runs_isolated_samples_and_preserves_existing_outputs ... ok
+test cli_records_compressed_fits_tile_recipe_and_rejects_misplaced_option ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+
+running 3 tests
+test supplied_rice_files_validate_with_shared_budgets ... ok
+test supplied_xisf_missing_thumbnails_are_incomplete_at_both_levels ... ok
+test supplied_valid_fits_and_false_checksum_follow_level_contracts ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 10 tests
+test invalid_budgets_and_cancellation_do_not_create_fixtures ... ok
+test tile_options_and_expansion_overhead_are_checked_before_generation ... ok
+test symlink_fixtures_are_rejected ... ok
+test manifest_tampering_and_changed_content_are_rejected_without_deleting_owned_files ... ok
+test noise_changes_with_seed_and_raw_io_counts_bytes ... ok
+test fits_and_xisf_store_the_same_logical_pixels_and_workers_visit_each_file_once ... ok
+test cancellation_and_file_failures_are_not_successful_samples ... ok
+test fixtures_are_reproducible_valid_and_removed_on_drop ... ok
+test compressed_fits_fixtures_match_native_pixels_and_are_reproducible ... ok
+test original_generator_bytes_and_manifest_version_are_preserved ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.18s
+
+
+running 4 tests
+test tests::reject_invalid_work_bounds_before_file_access ... ok
+test tests::invalid_capture_is_diagnostic_not_successful_throughput ... ok
+test tests::reject_symlinks_and_duplicate_capture_paths ... ok
+test tests::mixed_captures_are_counted_and_preserved_across_passes ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+
+running 28 tests
+test fits::tests::test_header_cards_to_map_uses_last_duplicate_value ... ok
+test fits::tests::test_normalize_pixels ... ok
+test fits::tests::test_extract_dimensions ... ok
+test validation::tests::disappearance_is_a_changed_source ... ok
+test fits::backend::tests::serial_gate_releases_after_unwinding ... ok
+test validation::tests::cancellation_between_read_chunks_does_not_read_the_rest ... ok
+test fits::tests::test_read_all_header_cards_across_hdus ... ok
+test fits::tests::test_read_header_cards_preserves_duplicates ... ok
+test validation::xisf::streaming::tests::frame_history_sizes_cover_single_segment_dictionary_and_window_forms ... ok
+test fits::backend::tests::serial_gate_rejects_other_threads_but_allows_nested_calls ... ok
+test fits::backend::tests::waiting_caller_enters_after_owner_releases ... ok
+test fits::backend::tests::reentrant_gate_allows_simultaneous_callers ... ok
+test validation::fits::hcompress::tests::lossy_transform_matches_native_and_observes_cancellation ... ok
+test xisf::tests::test_load_xisf_real_sample ... ignored, requires the local capture in tests/data; run explicitly where available
+test xisf::tests::test_extract_xml_content ... ok
+test xisf::tests::test_extract_attribute ... ok
+test xisf::tests::test_read_pixel_data ... ok
+test xisf::tests::test_read_pixel_data_rejects_truncated_buffer ... ok
+test xisf::tests::test_load_xisf_reads_valid_uint16_payload ... ok
+test validation::tests::payload_input_checks_cancellation_even_with_buffered_bytes ... ok
+test xisf::tests::test_load_xisf_rejects_missing_location ... ok
+test xisf::tests::test_load_xisf_rejects_unsupported_sample_format ... ok
+test xisf::tests::test_load_xisf_rejects_missing_geometry ... ok
+test validation::tests::mutation_during_a_read_invalidates_the_observation ... ok
+test xisf::tests::test_load_xisf_rejects_truncated_payload ... ok
+test validation::tests::path_replacement_with_matching_length_and_mtime_is_detected ... ok
+test validation::fits::rice::tests::streaming_rice_matches_native_signed_and_wrapping_pixels ... ok
+test validation::fits::hcompress::tests::native_hcompress_roundtrips_signed_samples_and_odd_geometry ... ok
+
+test result: ok. 27 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+running 2 tests
+test reservations_distinguish_busy_from_impossible_and_release_on_unwind ... ok
+test simultaneous_callers_cannot_overbook_and_clones_share_capacity ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 39 tests
+test checksum_failure_is_reported_before_attempting_decompression ... ok
+test cancellation_is_a_distinct_outcome ... ok
+test binary_tform_optional_suffix_is_legal_and_not_reinterpreted ... ok
+test configurable_limits_and_oversized_lengths_fail_explicitly ... ok
+test bad_heap_descriptor_and_invalid_tform_are_rejected ... ok
+test embedded_hex_and_multiple_compression_subblocks_are_supported ... ok
+test checksum_validation_distinguishes_same_length_corruption ... ok
+test embedded_zlib_example_from_xisf_specification_validates ... ok
+test fits_checksums_are_verified_before_compressed_payload_decode ... ok
+test compressed_corruption_and_unknown_codecs_cannot_be_full_success ... ok
+test fits_ascii_and_binary_extensions_are_validated ... ok
+test fits_is_valid_at_both_levels_and_not_modified ... ok
+test local_references_are_checked_and_target_blocks_are_validated ... ok
+test fits_extended_dispatch_checks_payload_codec_and_accepts_extra_columns ... ok
+test malformed_compression_and_unknown_checksum_are_distinct ... ok
+test all_xisf_capture_codecs_and_shuffling_validate ... ok
+test mandatory_fits_card_order_is_checked ... ok
+test missing_image_bytes_are_incomplete_even_with_readable_header ... ok
+test misplaced_data_descriptors_are_not_silently_ignored ... ok
+test all_standard_sample_widths_and_image_extensions_are_supported ... ok
+test malformed_xml_reserved_bytes_and_external_blocks_do_not_pass ... ok
+test preallocation_and_absent_checksums_do_not_prove_original_pixel_integrity ... ok
+test unknown_codec_is_structural_only_and_never_full_success ... ok
+test xisf_auxiliary_truncation_prevents_success ... ok
+test published_sha_vectors_validate_inline_payloads ... ok
+test xisf_rgb_float_layout_is_supported_without_using_narrow_pixel_loader ... ok
+test zstd_concatenated_and_skippable_frames_are_accounted_independently ... ok
+test compressed::named_fallbacks_null_masks_and_conflicting_payloads_are_checked ... ok
+test streaming_rejects_truncated_footers_and_trailing_bytes ... ok
+test concurrent_validations_share_one_budget_and_leave_no_reservations ... ok
+test compressed::busy_admission_cancellation_and_concurrent_codecs_release_shared_resources ... ok
+test native_generated_tiled_fits_supports_shared_bounded_validation ... ok
+test fits_gzip_checks_edges_trailers_headers_and_shared_admission ... ok
+test compressed::malformed_native_tile_streams_are_rejected_and_release_reservations ... ok
+test compressed::native_integer_float_quantized_and_fallback_tiles_use_managed_admission ... ok
+test compressed::controlled_codecs_reject_mutated_streams_without_panics_or_leaked_admission ... ok
+test fits_gzip_streams_large_tiles_with_a_small_shared_budget ... ok
+test compressed::bounded_random_hcompress_streams_and_geometry_never_panic ... ok
+test large_streamed_payloads_fit_small_shared_budgets_and_release_on_every_exit ... ok
+
+test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+
+running 16 tests
+test types::tests::test_plate_scale_calculation ... ok
+test types::tests::test_field_of_view_calculation ... ok
+test types::tests::test_timezone_from_longitude ... ok
+test fits_parser::tests::parse_exposure_rejects_out_of_range_right_ascension ... ok
+test fits_parser::tests::parse_exposure_rejects_out_of_range_declinations_from_both_sources ... ok
+test types::tests::test_calculate_session_date ... ok
+test fits_parser::tests::parse_exposure_converts_high_sexagesimal_objctra_to_degrees ... ok
+test fits_parser::tests::parse_exposure_falls_back_to_sexagesimal_objctra_in_hours ... ok
+test fits_parser::tests::parse_exposure_accepts_right_ascension_degree_boundaries ... ok
+test fits_parser::tests::parse_exposure_preserves_numeric_ra_in_degrees ... ok
+test fits_parser::tests::parse_exposure_preserves_each_header_coordinate_pair_independently ... ok
+test fits_parser::tests::test_parse_sexagesimal ... ok
+test xisf_parser::tests::test_coordinate_keyword_pairs_are_preserved_independently ... ok
+test xisf_parser::tests::test_missing_binning_defaults_to_one ... ok
+test xisf_parser::tests::test_creation_time_does_not_override_observation_date ... ok
+test fits_parser::tests::test_extract_metadata_preserves_duplicate_cards ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test concurrent_loaders_metadata_and_validation_use_independent_handles ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+   Compiling libc v0.2.189
+   Compiling find-msvc-tools v0.1.9
+   Compiling shlex v1.3.0
+   Compiling version_check v0.9.5
+   Compiling typenum v1.20.1
+   Compiling pkg-config v0.3.32
+   Compiling proc-macro2 v1.0.106
+   Compiling cfg-if v1.0.4
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.44
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling zstd-safe v8.0.0
+   Compiling crc32fast v1.5.0
+   Compiling simd-adler32 v0.3.8
+   Compiling adler2 v2.0.1
+   Compiling memchr v2.8.0
+   Compiling anyhow v1.0.102
+   Compiling thiserror v1.0.69
+   Compiling generic-array v0.14.7
+   Compiling miniz_oxide v0.8.9
+   Compiling byteorder v1.5.0
+   Compiling quick-xml v0.30.0
+   Compiling log v0.4.29
+   Compiling base64 v0.22.1
+   Compiling lz4_flex v0.14.0
+   Compiling objc2 v0.6.4
+   Compiling cfg_aliases v0.2.2
+   Compiling objc2-encode v4.1.0
+   Compiling bitflags v2.13.1
+   Compiling nix v0.31.3
+   Compiling zmij v1.0.21
+   Compiling serde_json v1.0.149
+   Compiling itoa v1.0.17
+   Compiling flate2 v1.1.9
+   Compiling autocfg v1.5.0
+   Compiling core-foundation-sys v0.8.7
+   Compiling num-traits v0.2.19
+   Compiling iana-time-zone v0.1.65
+   Compiling syn v2.0.117
+   Compiling cpufeatures v0.2.17
+   Compiling keccak v0.1.6
+   Compiling jobserver v0.1.35
+   Compiling cc v1.2.56
+   Compiling serde_derive v1.0.228
+   Compiling thiserror-impl v1.0.69
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling sha3 v0.10.9
+   Compiling sha1 v0.10.7
+   Compiling astro-bench v0.6.0 ($ISOLATED_WORKSPACE/astro-bench)
+   Compiling cmake v0.1.58
+   Compiling autotools v0.2.7
+   Compiling zstd-sys v2.1.0+zstd.1.5.7
+   Compiling fitsio-sys v0.5.5 (/Users/dean/projects-dev/RavenSky/astromuninn/vendor/fitsio-sys)
+   Compiling block2 v0.6.2
+   Compiling dispatch2 v0.3.1
+   Compiling ctrlc v3.5.2
+   Compiling chrono v0.4.44
+   Compiling zstd v0.14.0
+   Compiling fitsio v0.21.9
+   Compiling astro-io v0.6.0 ($ISOLATED_WORKSPACE/astro-io)
+   Compiling astro-metadata v0.6.0 ($ISOLATED_WORKSPACE/astro-metadata)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.07s
+     Running unittests src/lib.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/deps/astro_bench-b528a6072f5bebf7)
+     Running unittests src/main.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/deps/astro_bench-4ab07ccf2bbfacf3)
+     Running tests/cli.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/deps/cli-33a838c0f63991b6)
+     Running tests/supplied_files.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/deps/supplied_files-9464ca00b8e428c8)
+     Running tests/workloads.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/deps/workloads-5941516124d49213)
+     Running unittests examples/capture_probe.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/examples/capture_probe-80255db87b7c5d5a)
+     Running unittests src/lib.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/deps/astro_io-abc1917caca1379e)
+     Running tests/resources.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/deps/resources-67756638d693efc4)
+     Running tests/validation.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/deps/validation-0266b8ea36814a6c)
+     Running unittests src/lib.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/deps/astro_metadata-3704d3607976bfd6)
+     Running tests/fits_concurrency.rs ($RAVENSKY_ASTRO/target/vendored-closeout/debug/deps/fits_concurrency-fa24ecf17c7e3113)

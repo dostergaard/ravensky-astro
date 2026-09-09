@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - Unreleased
+
+### Added
+- Managed compressed-FITS validation for Rice, PLIO, HCOMPRESS, floating-point,
+  quantized, fallback-column and null-mask layouts. Streaming or admitted tile
+  buffers replace the validator's estimated CFITSIO path; both entry points now
+  share the same bounded behavior. Includes native-oracle and malformed-input tests.
+- Standalone benchmark guide covering setup, runnable CLI and external-project
+  Rust examples, real captures, report interpretation and investigation suites.
+- Extended benchmark investigation: worker-order/tile/size matrices, sampled
+  profiles, bounded contention and cancellation checks, plus read-only real-capture
+  measurements with preserved source hashes and explicit rejected-sample records.
+  Recorded local SSD/HDD/external-SSD evidence and supplied format regression fixtures.
+- Compressed FITS benchmark recipes for GZIP_1/GZIP_2 with configurable tile rows,
+  bounded generation, quota checks, native pixel-parity tests and a repeatable
+  isolated measurement matrix. Original fixture versions and bytes are preserved.
+- Bounded full validation of integer GZIP_1/GZIP_2 FITS tiles in a single
+  COMPRESSED_DATA P/Q byte column, available with shared memory admission.
+  Stream decoded bytes with CRC/size/end checks and a 64 KiB optional-header cap.
+- Shared CFITSIO admission across FITS loaders and metadata helpers,
+  with runtime reentrancy detection and public wrappers for direct
+  native callers. Reentrant builds retain parallelism; non-reentrant builds
+  serialize participating callers. Managed validation does not use this gate.
+- Caller-owned `MemoryBudget` and nonblocking `validate_file_with_budget`, with
+  automatic reservation release, distinct `ResourceBusy` outcomes and peak
+  reservation telemetry.
+- Optional `astro-bench` library/CLI with bounded deterministic FITS/XISF fixtures,
+  read/structural/full workloads, fixed concurrency, cancellation, isolated repeated
+  samples, peak-memory/CPU telemetry and versioned JSON reports. Application
+  calibration and adaptive scheduling remain separate follow-up work.
+- Read-only `astro_io::validation` API for structural and full FITS/XISF checks,
+  with typed failures, configurable resource limits, cooperative cancellation,
+  source observations and checksum/decode coverage reports.
+- Complete supported HDU/block traversal, FITS heap and tiled-image validation,
+  and XISF local blocks/references, zlib/LZ4/LZ4HC/Zstandard decompression and
+  SHA-1/SHA-2/SHA-3 verification. Existing image-loader contracts are unchanged.
+- Generated regression fixtures for truncation, corruption, supported variants,
+  limits, source mutation and cancellation. Documented support boundaries and
+  remaining real-capture/platform rollout checks in the `astro-io` README.
+
+### Changed
+- Verify FITS stored-data/HDU checksums before compressed payload decoding,
+  preserving declared-size preflight before checksum I/O. Reuse one bounded input
+  reader across FITS GZIP and XISF streamed codecs.
+- Stream XISF zlib/Zstandard input and discard decoded chunks, preserving checksum,
+  frame, trailing-data and exact-output checks. Reserve parser/inline/LZ4/FITS
+  working data before allocation. Truncated zlib trailers now fail explicitly.
+
 ## [0.5.0] - 2026-08-25
 
 ### Added
