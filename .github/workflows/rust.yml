@@ -51,8 +51,12 @@ jobs:
       - name: Install native build dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential
+          # Hosted runners already provide these tools. Avoid refreshing unrelated
+          # apt repositories unless this build actually needs an installation.
+          if [[ "$(dpkg-query -W -f='${Status}' build-essential 2>/dev/null || true)" != 'install ok installed' ]]; then
+            sudo apt-get update
+            sudo apt-get install -y build-essential
+          fi
 
       - name: Install native build dependencies (Windows GNU)
         if: runner.os == 'Windows'

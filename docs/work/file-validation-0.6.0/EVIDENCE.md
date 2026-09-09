@@ -187,5 +187,11 @@ python3 docs/work/file-validation-0.6.0/verify_archives.py \
   e294ba542960c1d780a5dc072e1f86bb6e823c2f
 ```
 
+Closeout CI run `34385778028` passed macOS and Windows GNU, but both Linux
+attempts failed before compilation because the runner's unrelated Google Chrome
+apt repository returned a hash mismatch. The smallest workflow correction checks
+whether `build-essential` is already installed and only updates/installs when
+needed. Installation failures still fail CI; no Rust checks were relaxed.
+
 Merge, actual release archives, publication and clean-consumer results follow
 after execution; successful review checks do not imply publication.
