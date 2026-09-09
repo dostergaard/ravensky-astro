@@ -1,12 +1,9 @@
 # RavenSky validation release → AstroMuninn handoff
 
-Status: **0.6.1 REPAIR IN PROGRESS** as of 2026-09-09. PR #2 is merged and all
-four 0.6.0 crates are published and independently usable. Their only failed gate
-is hosted API documentation. A coordinated 0.6.1 candidate on
-`release/0.6.1-docs-rs` now contains the smallest RavenSky-owned configuration
-repair and has passed a fresh read-only-dependency-source documentation probe.
-It is not yet committed, reviewed by CI, published, or verified on docs.rs. No
-release tag or GitHub release exists, and no AstroMuninn files were changed.
+Status: **RELEASE COMPLETE — READY FOR ASTROMUNINN** as of 2026-09-09. All four
+0.6.1 crates are published, registry-verified and documented successfully on
+docs.rs. Tag `v0.6.1` and its GitHub release identify the exact published source
+commit. No AstroMuninn files were changed.
 
 Read [PLAN.md](PLAN.md) for the settled architecture,
 [EVIDENCE.md](EVIDENCE.md) for verified observations, and
@@ -14,21 +11,23 @@ Read [PLAN.md](PLAN.md) for the settled architecture,
 
 ## Release identity
 
-- Approved PR: [#2](https://github.com/dostergaard/ravensky-astro/pull/2), target `master`.
-- Approved implementation head: `2e9ba9505f0685839a14b5141d6faea20bbeb759`.
+- Repair PR: [#3](https://github.com/dostergaard/ravensky-astro/pull/3), merged to
+  `master` after all configured CI jobs passed in
+  [run 34410913809](https://github.com/dostergaard/ravensky-astro/actions/runs/34410913809).
+- Published source and merge commit:
+  `4bc4660ccdfd607611eb998019e93eda399f69d1`.
 - Published coordinated versions: `astro-io`, `astro-metadata`, `astro-metrics`,
-  `ravensky-astro` 0.6.0, in that dependency order on 2026-09-09.
-- `astro-bench` 0.6.0 is intentionally unpublished (`publish = false`). Clone the
+  and `ravensky-astro` 0.6.1, in dependency order on 2026-09-09.
+- `astro-bench` 0.6.1 is intentionally unpublished (`publish = false`). Clone the
   repository for its library/CLI; installing the facade does not install it.
-- Merge commit: `67491721de5fd95eece5456886f259efb74c1165` (PR #2, 18:10:24 UTC).
-- Published source commit: `84a0f9eeb3e588bc0d27978e717a15add962af52` on `master`.
-  All downloaded crate VCS identities and Rust sources match this clean commit.
-- Release CI: [34387421495](https://github.com/dostergaard/ravensky-astro/actions/runs/34387421495),
-  all three configured jobs passed. [Publication evidence](EVIDENCE.md#actual-publication-and-remaining-gate)
-  retains timestamps, registry identifiers/checksums, downloaded-archive audits and
-  a passing clean registry-only consumer.
-- Post-publication commits preserve evidence only; find their exact current
-  identity with `git log -1 master`. They do not change published 0.6.0 source.
+- Annotated tag: [`v0.6.1`](https://github.com/dostergaard/ravensky-astro/tree/v0.6.1),
+  peeled to `4bc4660`; [GitHub release](https://github.com/dostergaard/ravensky-astro/releases/tag/v0.6.1)
+  published at 22:23:41 UTC.
+- [Release evidence](EVIDENCE.md#061-publication-hosted-docs-and-closeout)
+  retains archive hashes, registry identifiers and timestamps, docs.rs build IDs,
+  and the registry-only consumer result.
+- The earlier 0.6.0 source commit remains `84a0f9e`; do not republish, yank, or
+  retrospectively tag that superseded release.
 
 ## Hosted-documentation repair
 
@@ -42,7 +41,7 @@ source trees are writable. This is not a validator correctness failure.
 The earlier isolated [CMake diagnostic](records/docs-cmake-probe.log) successfully built
 documentation, with warnings denied, for all four published crates using the
 existing `fitsio/src-cmake` feature and a read-only copy of `fitsio-sys 0.5.7`.
-This is evidence for a repair direction, not a deployed fix or a docs.rs result.
+This was pre-deployment evidence; the actual 0.6.1 docs.rs builds now confirm it.
 The diagnostic's manifest/lock are retained beside its log. No dependency code
 or production build defaults were changed to run it.
 
@@ -77,20 +76,20 @@ tree, made that tree recursively read-only, and built docs for each publishable
 crate with `DOCS_RS=1`, warnings denied, offline mode, and its production feature
 selector. All four succeeded without any third-party modification. See
 [EVIDENCE.md](EVIDENCE.md#061-hosted-documentation-repair) for commands and graph
-results.
+results. CI then passed on Linux GNU, macOS ARM64 and the documented Windows GNU
+subset. Clean packages from the merged commit were audited and matched the
+downloaded registry archives byte-for-byte. A fresh registry-only consumer also
+passed the public validation, metadata, I/O, metrics and facade smoke test.
 
-Next action: finish the local release matrix and isolated AstroMuninn backend
-check, create and audit fresh 0.6.1 packages, update these records, commit/push,
-and require clean CI. Publish in dependency order only after those gates pass;
-then verify actual docs.rs builds before creating `v0.6.1` and its GitHub release.
+Hosted builds [4395656](https://docs.rs/crate/astro-io/0.6.1/builds/4395656),
+[4395657](https://docs.rs/crate/astro-metadata/0.6.1/builds/4395657),
+[4395664](https://docs.rs/crate/astro-metrics/0.6.1/builds/4395664), and
+[4395675](https://docs.rs/crate/ravensky-astro/0.6.1/builds/4395675) all succeeded.
+Every versioned API page returned HTTP 200. This closes the only 0.6.0 blocker.
 
-Do not try to republish 0.6.0, create a retrospective 0.6.0 release tag, or request
-repeated builds without changing the failing conditions.
-Only after hosted documentation is verified should the remaining tag/release
-steps run. The current 0.6.0 publication does not need repeating or yanking.
-Local API docs remain available with `cargo doc --workspace --all-features --no-deps`.
-AstroMuninn can resolve the published crates now, but the agreed closeout gate
-remains incomplete; resolve it before starting the planned application phase.
+Do not try to republish or yank 0.6.0 or 0.6.1, move `v0.6.1`, or create a
+retrospective 0.6.0 release tag. AstroMuninn integration may now begin from the
+published 0.6.1 registry dependencies.
 
 Workspace housekeeping: the merged `feature/file-validation` branch was deleted
 locally and on origin after the user explicitly approved deletion. Its history
@@ -220,7 +219,7 @@ Initial commands, from the RavenSky workspace (inspect before updating):
 
 ```sh
 git -C ravensky-astro status --short --branch
-git -C ravensky-astro show 84a0f9e --stat
+git -C ravensky-astro show v0.6.1 --stat
 git -C ravensky-astro tag --list 'v0.6.*'
 git -C astromuninn status --short --branch
 cd astromuninn

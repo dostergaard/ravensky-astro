@@ -1,0 +1,14 @@
+2026-09-09 registry-only consumer verification
+
+Fresh project: /private/tmp/ravensky-published-061.QPU9vo
+Dependencies: astro-io, astro-metadata, astro-metrics, ravensky-astro, each =0.6.1
+Path/workspace patches: none
+Command: cargo run --release
+Resolution: crates.io registry; fitsio 0.21.10; fitsio-sys 0.5.7
+Result: success
+Output: Published 0.6.1 chain passed
+
+The program created a tiny FITS file with create_new, performed Full validation
+through the facade, confirmed the shared budget returned to zero, extracted
+metadata, loaded and checked all four pixels, referenced the metrics API, checked
+the source bytes were unchanged, and removed the fixture.

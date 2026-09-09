@@ -193,7 +193,7 @@ apt repository returned a hash mismatch. The smallest workflow correction checks
 whether `build-essential` is already installed and only updates/installs when
 needed. Installation failures still fail CI; no Rust checks were relaxed.
 
-## Actual publication and remaining gate
+## Original 0.6.0 publication and documentation blocker
 
 PR #2 merged on 2026-09-09 at 18:10:24 UTC as
 `67491721de5fd95eece5456886f259efb74c1165`; see [merge record](records/merged-pr.json).
@@ -297,15 +297,9 @@ cross-platform verification. The probe's patch path and writable build output
 are intentional and separate from the unpatched published-consumer verification.
 
 Because published 0.6.0 manifests are immutable, applying documentation feature
-metadata requires a new approved patch release, or an external compatible backend
-fix and rebuild of existing documentation. Neither has happened. `RELEASING.md`
-places tag/release creation after documentation verification, so `v0.6.0` and the
-GitHub release remain absent. This is the only remaining release gate; see
-[HANDOFF.md](HANDOFF.md#resolve-the-release-gate-first) for the next action.
-
-Final status: **RELEASE INCOMPLETE — BLOCKED**. Post-publication records are
-committed on `master`; their commit does not alter the released source identity.
-AstroMuninn remains unchanged at `5215a5bf5aae839db4615c628959c35f2245f145`.
+metadata required a new patch release. This section records the superseded
+0.6.0-only state; the 0.6.1 evidence below closes that blocker. No `v0.6.0` tag
+or release was created, and 0.6.0 was neither republished nor yanked.
 
 ## 0.6.1 hosted-documentation repair
 
@@ -326,7 +320,7 @@ Investigation on 2026-09-09 established:
   `fitsio/src-cmake` for a package with a direct `fitsio` edge. It rejects that
   selector from `astro-metrics` or the facade without such an edge.
 
-The candidate adds docs.rs metadata to all four publishable packages and
+The release adds docs.rs metadata to all four publishable packages and
 configuration-only direct `fitsio` edges to `astro-metrics` and the facade. The
 following graph checks passed:
 
@@ -380,7 +374,7 @@ package named `cmake`.” The final fresh probe explicitly synchronized that
 unchanged registry dependency before making the source tree read-only. This was
 a probe-setup correction, not a repair to third-party source.
 
-Patch-release package, CI, registry and hosted docs results remain pending.
+Patch-release package, CI, registry and hosted docs results are recorded below.
 
 ### Local candidate matrix and vendored-backend compatibility
 
@@ -431,5 +425,62 @@ Inspection of every normalized archive manifest confirmed version 0.6.1,
 internal requirements 0.6.1, `package.metadata.docs.rs.features =
 ["fitsio/src-cmake"]`, the single Linux GNU docs target, and direct configured
 `fitsio` dependencies where required. Cargo verified each archive in dependency
-order through its temporary registry. Final clean-commit archive verification is
-still required; these precommit archives must not be published.
+order through its temporary registry. These precommit archives were not
+published; the following section records the clean merged-commit packages.
+
+### 0.6.1 publication, hosted docs and closeout
+
+PR [#3](https://github.com/dostergaard/ravensky-astro/pull/3) merged at
+2026-09-09 22:14:44 UTC as
+`4bc4660ccdfd607611eb998019e93eda399f69d1`. Its head `431d4c6` passed all three
+configured jobs in [CI run 34410913809](https://github.com/dostergaard/ravensky-astro/actions/runs/34410913809):
+Linux x86-64 GNU, macOS ARM64, and the documented Windows x86-64 GNU subset.
+
+From clean merged `master`, `cargo package --locked --workspace --exclude
+astro-bench --target-dir target/package-061-release` passed. The generalized
+`verify_archives.py` audit confirmed complete gzip streams, clean VCS identity,
+matching Rust and notice bytes, no path dependencies, no vendored CFITSIO source,
+0.6.1 internal requirements and the intended docs.rs metadata. Final archive
+hashes were:
+
+| crate | SHA-256 | bytes |
+| --- | --- | ---: |
+| `astro-io` | `26beeb3388e7a3cbb1b5b49fe609839ee9c24c4a169694d039d14b731fd3ee00` | 69,758 |
+| `astro-metadata` | `6be3e3f0cab87e516b22d61c5bdf72e087f48f3cac51d67ac763bbcb9f75dade` | 24,428 |
+| `astro-metrics` | `9177453b81858939307106a1d94d92aaa58b8f0c57987593804e5fd870ac9d16` | 16,553 |
+| `ravensky-astro` | `722be74b2a4e755b2111ac8d7d92a256908d3b1bd27484610577a9c43753433a` | 212,068 |
+
+The crates were published in dependency order. crates.io assigned version IDs
+3199637, 3199638, 3199643 and 3199652 respectively, between 22:16:56 and
+22:18:32 UTC. Each was non-yanked, exposed Rust 1.94, and its downloaded archive
+matched the corresponding prepublication archive byte-for-byte. Registry
+dependency records showed the expected `^0.6.1` internal requirements.
+
+A fresh external project with exact `=0.6.1` requirements and no path/workspace
+patches ran successfully in release mode. It resolved all four RavenSky crates
+from crates.io and exercised Full FITS validation, shared-budget release,
+metadata extraction, pixel loading, the metrics API, facade use, and source-byte
+preservation. See the retained [consumer log](records/published-consumer-061.log).
+
+Actual hosted documentation then succeeded:
+
+| crate | docs.rs build | versioned API |
+| --- | --- | --- |
+| `astro-io` | [4395656](https://docs.rs/crate/astro-io/0.6.1/builds/4395656) | [HTTP 200](https://docs.rs/astro-io/0.6.1/astro_io/) |
+| `astro-metadata` | [4395657](https://docs.rs/crate/astro-metadata/0.6.1/builds/4395657) | [HTTP 200](https://docs.rs/astro-metadata/0.6.1/astro_metadata/) |
+| `astro-metrics` | [4395664](https://docs.rs/crate/astro-metrics/0.6.1/builds/4395664) | [HTTP 200](https://docs.rs/astro-metrics/0.6.1/astro_metrics/) |
+| `ravensky-astro` | [4395675](https://docs.rs/crate/ravensky-astro/0.6.1/builds/4395675) | [HTTP 200](https://docs.rs/ravensky-astro/0.6.1/ravensky_astro/) |
+
+All four builds used rustc 1.100.0-nightly (2026-09-08) and docsrs commit
+`bbe8284d494398efa390829fb7f0bf2364bcdf59`. The successful hosted results confirm
+the read-only-source repair under the real service, beyond the local probe.
+
+Annotated tag `v0.6.1` peels to the exact published source commit `4bc4660`. The
+[GitHub release](https://github.com/dostergaard/ravensky-astro/releases/tag/v0.6.1)
+was published at 22:23:41 UTC. The compact machine-readable
+[release record](records/release-061.json) retains the PR, CI, registry, docs.rs,
+tag and release identifiers.
+
+Final status: **RELEASE COMPLETE — READY FOR ASTROMUNINN**. AstroMuninn remains
+unchanged at `5215a5bf5aae839db4615c628959c35f2245f145`; its integration is the next
+task, not part of this release closeout.

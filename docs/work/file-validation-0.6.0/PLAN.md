@@ -5,15 +5,15 @@ implementation documents describe useful checkpoints, not competing current
 contracts. [HANDOFF.md](HANDOFF.md) owns release state and downstream actions;
 [EVIDENCE.md](EVIDENCE.md) distinguishes observations from guarantees.
 
-Closeout result: the approved PR is merged and four 0.6.0 crates are published
-from `84a0f9e`. Local, CI, archive and independent-consumer verification passed.
-Hosted documentation failed on the native backend's write to read-only sources;
-tagging/release completion is blocked. See the handoff for the precise repair
-direction and actual identifiers. No AstroMuninn implementation was started.
+Closeout result: the original 0.6.0 documentation failure was repaired by the
+coordinated 0.6.1 patch release. Local, CI, archive, registry-only consumer and
+actual docs.rs verification all passed. `v0.6.1` and its GitHub release identify
+published source commit `4bc4660`. RavenSky is ready for AstroMuninn integration;
+no AstroMuninn implementation was started during this closeout.
 
 ## 0.6.1 hosted-documentation repair
 
-The approved continuation uses a coordinated 0.6.1 patch release. Each
+The completed repair uses a coordinated 0.6.1 patch release. Each
 publishable manifest supplies docs.rs metadata that passes
 `fitsio/src-cmake` directly to Cargo and builds only the supported Linux GNU
 documentation target. `astro-metrics` and the facade add configuration-only

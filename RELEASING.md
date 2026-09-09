@@ -6,9 +6,11 @@ Actual publication and handoff status are recorded in
 [`docs/work/file-validation-0.6.0/HANDOFF.md`](docs/work/file-validation-0.6.0/HANDOFF.md).
 All four 0.6.0 crates were published from `84a0f9e` on 2026-09-09, but docs.rs
 failed in the bundled CFITSIO autotools build because its source directory is
-read-only. Do not republish or alter 0.6.0. The coordinated 0.6.1 candidate uses
+read-only. Do not republish or alter 0.6.0. The coordinated 0.6.1 release uses
 RavenSky-owned docs.rs metadata to select the existing CMake source-build path
-only for hosted documentation. No release tag/GitHub release has been made.
+only for hosted documentation. All four crates, hosted documentation, `v0.6.1`,
+and the [GitHub release](https://github.com/dostergaard/ravensky-astro/releases/tag/v0.6.1)
+were verified on 2026-09-09.
 The version introduces the additive file-validation
 and resource-control APIs. Existing image-loader contracts remain unchanged.
 `astro-bench` is a repository library/CLI with `publish = false`; it is not one
@@ -88,9 +90,9 @@ workspace's normal registry `0.5.7` dependency before application integration.
 6. Implement the shared AstroMuninn monitor/resource scheduler under its approved
    design. Configuration remains manually editable until an editor is developed.
 
-## Evidence for this release candidate
+## Evidence for this release
 
-The 0.6.1 candidate changes only versions, dependency configuration, docs.rs
+The 0.6.1 release changes only versions, dependency configuration, docs.rs
 metadata, release documentation and package-audit tooling. Default and
 `--all-features` graphs retain the existing bundled autotools backend. The
 docs.rs selector adds `fitsio/src-cmake` only to hosted documentation commands;
@@ -101,8 +103,11 @@ matrix (108 tests, one intentional ignore). Precommit 0.6.1 packages passed Carg
 verification and contained the intended normalized metadata. See the durable
 [evidence record](docs/work/file-validation-0.6.0/EVIDENCE.md#061-hosted-documentation-repair).
 
-Final clean packages, CI, registry publication and hosted docs are still pending.
-Do not publish the precommit archives.
+Final clean packages from `4bc4660` passed audit, CI run 34410913809 passed all
+configured jobs, all four registry archives matched their prepublication hashes,
+and docs.rs builds 4395656, 4395657, 4395664 and 4395675 succeeded. The tag and
+GitHub release point to that published commit. Do not publish the precommit
+archives or attempt to republish an existing version.
 
 Local 0.6.0 checks passed: 131 workspace tests, four doctests, formatting, Clippy
 with warnings denied, release builds and rustdoc. Two tests are explicitly ignored

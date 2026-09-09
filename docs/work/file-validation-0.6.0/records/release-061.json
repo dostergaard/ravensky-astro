@@ -1,0 +1,73 @@
+{
+  "checked_at_utc": "2026-09-09T22:24:25Z",
+  "version": "0.6.1",
+  "pull_request": {
+    "number": 3,
+    "url": "https://github.com/dostergaard/ravensky-astro/pull/3",
+    "head": "431d4c6196b8b8de0de0eba407245f3d14b90bba",
+    "merge_commit": "4bc4660ccdfd607611eb998019e93eda399f69d1",
+    "merged_at": "2026-09-09T22:14:44Z"
+  },
+  "ci": {
+    "run_id": 34410913809,
+    "url": "https://github.com/dostergaard/ravensky-astro/actions/runs/34410913809",
+    "head": "431d4c6196b8b8de0de0eba407245f3d14b90bba",
+    "conclusion": "success",
+    "jobs": {
+      "aarch64-apple-darwin": "success",
+      "x86_64-unknown-linux-gnu": "success",
+      "x86_64-pc-windows-gnu": "success"
+    }
+  },
+  "packages": [
+    {
+      "name": "astro-io",
+      "registry_version_id": 3199637,
+      "published_at": "2026-09-09T22:16:56.869334Z",
+      "sha256": "26beeb3388e7a3cbb1b5b49fe609839ee9c24c4a169694d039d14b731fd3ee00",
+      "yanked": false,
+      "docs_rs_build": 4395656
+    },
+    {
+      "name": "astro-metadata",
+      "registry_version_id": 3199638,
+      "published_at": "2026-09-09T22:17:29.347470Z",
+      "sha256": "6be3e3f0cab87e516b22d61c5bdf72e087f48f3cac51d67ac763bbcb9f75dade",
+      "yanked": false,
+      "docs_rs_build": 4395657
+    },
+    {
+      "name": "astro-metrics",
+      "registry_version_id": 3199643,
+      "published_at": "2026-09-09T22:18:02.647342Z",
+      "sha256": "9177453b81858939307106a1d94d92aaa58b8f0c57987593804e5fd870ac9d16",
+      "yanked": false,
+      "docs_rs_build": 4395664
+    },
+    {
+      "name": "ravensky-astro",
+      "registry_version_id": 3199652,
+      "published_at": "2026-09-09T22:18:32.105058Z",
+      "sha256": "722be74b2a4e755b2111ac8d7d92a256908d3b1bd27484610577a9c43753433a",
+      "yanked": false,
+      "docs_rs_build": 4395675
+    }
+  ],
+  "docs_rs": {
+    "all_builds_succeeded": true,
+    "all_versioned_api_pages_http_200": true,
+    "rustc": "1.100.0-nightly (4aa1fbcf4 2026-09-08)",
+    "docsrs": "bbe8284d494398efa390829fb7f0bf2364bcdf59"
+  },
+  "tag": {
+    "name": "v0.6.1",
+    "object": "feaa53cf2e093a4111469b5bc79eb0f44f3a749e",
+    "peeled_commit": "4bc4660ccdfd607611eb998019e93eda399f69d1"
+  },
+  "github_release": {
+    "url": "https://github.com/dostergaard/ravensky-astro/releases/tag/v0.6.1",
+    "published_at": "2026-09-09T22:23:41Z",
+    "draft": false,
+    "prerelease": false
+  }
+}
