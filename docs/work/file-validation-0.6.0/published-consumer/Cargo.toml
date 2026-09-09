@@ -1,0 +1,10 @@
+[package]
+name = "ravensky-published-smoke"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+astro-io = "=0.6.0"
+astro-metadata = "=0.6.0"
+astro-metrics = "=0.6.0"
+ravensky-astro = "=0.6.0"

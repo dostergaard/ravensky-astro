@@ -1,0 +1,20 @@
+    Updating crates.io index
+   Packaging astro-metadata v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-metadata)
+    Updating crates.io index
+    Packaged 11 files, 97.2KiB (23.8KiB compressed)
+   Verifying astro-metadata v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-metadata)
+ Downloading crates ...
+  Downloaded astro-io v0.6.0
+   Compiling autocfg v1.5.0
+   Compiling core-foundation-sys v0.8.7
+   Compiling astro-io v0.6.0
+   Compiling iana-time-zone v0.1.65
+   Compiling num-traits v0.2.19
+   Compiling chrono v0.4.44
+   Compiling astro-metadata v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/target/publish-060-closeout/package/astro-metadata-0.6.0)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.59s
+   Uploading astro-metadata v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-metadata)
+    Uploaded astro-metadata v0.6.0 to registry `crates-io`
+note: waiting for astro-metadata v0.6.0 to be available at registry `crates-io`
+help: you may press ctrl-c to skip waiting; the crate should be available shortly
+   Published astro-metadata v0.6.0 at registry `crates-io`

@@ -5,6 +5,12 @@ implementation documents describe useful checkpoints, not competing current
 contracts. [HANDOFF.md](HANDOFF.md) owns release state and downstream actions;
 [EVIDENCE.md](EVIDENCE.md) distinguishes observations from guarantees.
 
+Closeout result: the approved PR is merged and four 0.6.0 crates are published
+from `84a0f9e`. Local, CI, archive and independent-consumer verification passed.
+Hosted documentation failed on the native backend's write to read-only sources;
+tagging/release completion is blocked. See the handoff for the precise repair
+direction and actual identifiers. No AstroMuninn implementation was started.
+
 ## Problem, goals and boundaries
 
 AstroMuninn's separate CLI/Lite monitor loops inferred readiness from unchanged

@@ -3,6 +3,11 @@
 The coordinated release line is **0.6.0**, approved for closeout on 2026-09-09.
 Actual publication and handoff status are recorded in
 [`docs/work/file-validation-0.6.0/HANDOFF.md`](docs/work/file-validation-0.6.0/HANDOFF.md).
+All four crates were published from `84a0f9e` on 2026-09-09. Closeout is currently
+blocked at step 4: docs.rs fails in the bundled CFITSIO autotools build because
+its source directory is read-only. No release tag/GitHub release has been made.
+Do not repeat step 3 or republish 0.6.0. Follow the handoff's repair prerequisite
+before tagging or beginning downstream work.
 The version introduces the additive file-validation
 and resource-control APIs. Existing image-loader contracts remain unchanged.
 `astro-bench` is a repository library/CLI with `publish = false`; it is not one

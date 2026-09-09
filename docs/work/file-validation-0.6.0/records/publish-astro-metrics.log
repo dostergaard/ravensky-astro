@@ -1,0 +1,23 @@
+    Updating crates.io index
+   Packaging astro-metrics v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-metrics)
+    Updating crates.io index
+    Packaged 11 files, 66.5KiB (16.0KiB compressed)
+   Verifying astro-metrics v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-metrics)
+ Downloading crates ...
+  Downloaded astro-metadata v0.6.0
+   Compiling num-traits v0.2.19
+   Compiling matrixmultiply v0.3.10
+   Compiling rawpointer v0.2.1
+   Compiling sep-sys v1.3.0
+   Compiling num-integer v0.1.46
+   Compiling chrono v0.4.44
+   Compiling num-complex v0.4.6
+   Compiling ndarray v0.15.6
+   Compiling astro-metadata v0.6.0
+   Compiling astro-metrics v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/target/publish-060-closeout/package/astro-metrics-0.6.0)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.52s
+   Uploading astro-metrics v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-metrics)
+    Uploaded astro-metrics v0.6.0 to registry `crates-io`
+note: waiting for astro-metrics v0.6.0 to be available at registry `crates-io`
+help: you may press ctrl-c to skip waiting; the crate should be available shortly
+   Published astro-metrics v0.6.0 at registry `crates-io`

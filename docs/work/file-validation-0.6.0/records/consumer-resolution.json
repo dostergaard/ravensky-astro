@@ -1,0 +1,76 @@
+{
+  "checked_at_utc": "2026-09-09T18:21:46.945159+00:00",
+  "packages": [
+    {
+      "name": "astro-io",
+      "version": "0.6.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "b4f6109b045fbcee84ead3f86a61a5781bf4874e236cac25e7f5edb088348f9a",
+      "dependencies": [
+        "anyhow",
+        "base64",
+        "byteorder",
+        "fitsio",
+        "flate2",
+        "log",
+        "lz4_flex",
+        "quick-xml",
+        "serde",
+        "sha1",
+        "sha2",
+        "sha3",
+        "thiserror",
+        "zstd"
+      ]
+    },
+    {
+      "name": "astro-metadata",
+      "version": "0.6.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "06230e6f11e929deaa8c467497ec55de8ecb1f5a8970ae56b0f6ca518a9628a7",
+      "dependencies": [
+        "anyhow",
+        "astro-io",
+        "chrono",
+        "fitsio",
+        "log",
+        "serde",
+        "thiserror"
+      ]
+    },
+    {
+      "name": "astro-metrics",
+      "version": "0.6.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "b6d743d38b25267d879aff6d4b3a735b50a67007b09fba587d98c59339a69994",
+      "dependencies": [
+        "anyhow",
+        "astro-io",
+        "astro-metadata",
+        "ndarray",
+        "sep-sys",
+        "serde",
+        "thiserror"
+      ]
+    },
+    {
+      "name": "ravensky-astro",
+      "version": "0.6.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "6d991e04f510b9bd33b9026e59fc62a5defdc6fd495e77c33c2272354ffc74fe",
+      "dependencies": [
+        "anyhow",
+        "astro-io",
+        "astro-metadata",
+        "astro-metrics",
+        "chrono",
+        "csv",
+        "rayon",
+        "serde_json",
+        "walkdir"
+      ]
+    }
+  ],
+  "no_path_overrides": true,
+  "smoke_exit_code": 0
+}

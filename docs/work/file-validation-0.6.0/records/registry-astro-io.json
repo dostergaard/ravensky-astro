@@ -1,0 +1,251 @@
+{
+  "checked_at_utc": "2026-09-09T18:14:40.632003+00:00",
+  "version": {
+    "id": 3197865,
+    "crate": "astro-io",
+    "num": "0.6.0",
+    "dl_path": "/api/v1/crates/astro-io/0.6.0/download",
+    "readme_path": "/api/v1/crates/astro-io/0.6.0/readme",
+    "updated_at": "2026-09-09T18:14:30.734969Z",
+    "created_at": "2026-09-09T18:14:30.734969Z",
+    "downloads": 0,
+    "features": {},
+    "yanked": false,
+    "yank_message": null,
+    "lib_links": null,
+    "license": "MIT OR Apache-2.0",
+    "links": {
+      "dependencies": "/api/v1/crates/astro-io/0.6.0/dependencies",
+      "version_downloads": "/api/v1/crates/astro-io/0.6.0/downloads",
+      "authors": "/api/v1/crates/astro-io/0.6.0/authors"
+    },
+    "crate_size": 69712,
+    "published_by": {
+      "id": 336074,
+      "login": "dostergaard",
+      "name": "Dean Ostergaard",
+      "avatar": "https://avatars.githubusercontent.com/u/8951950?v=4",
+      "url": "https://github.com/dostergaard",
+      "github_username_matches": true,
+      "created_at": "2014-09-29T00:42:44Z"
+    },
+    "audit_actions": [
+      {
+        "action": "publish",
+        "user": {
+          "id": 336074,
+          "login": "dostergaard",
+          "name": "Dean Ostergaard",
+          "avatar": "https://avatars.githubusercontent.com/u/8951950?v=4",
+          "url": "https://github.com/dostergaard",
+          "github_username_matches": true,
+          "created_at": "2014-09-29T00:42:44Z"
+        },
+        "time": "2026-09-09T18:14:30.734969Z"
+      }
+    ],
+    "checksum": "b4f6109b045fbcee84ead3f86a61a5781bf4874e236cac25e7f5edb088348f9a",
+    "rust_version": "1.94",
+    "has_lib": true,
+    "bin_names": [],
+    "edition": "2021",
+    "description": "I/O operations for astronomical image formats",
+    "homepage": "https://github.com/dostergaard/ravensky-astro",
+    "documentation": "https://docs.rs/astro-io",
+    "repository": "https://github.com/dostergaard/ravensky-astro",
+    "trustpub_data": null,
+    "linecounts": {
+      "languages": {
+        "Rust": {
+          "code_lines": 4847,
+          "comment_lines": 84,
+          "files": 15
+        }
+      },
+      "total_code_lines": 4847,
+      "total_comment_lines": 84
+    }
+  },
+  "dependencies": [
+    {
+      "id": 35940147,
+      "version_id": 3197865,
+      "crate_id": "anyhow",
+      "req": "^1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940148,
+      "version_id": 3197865,
+      "crate_id": "base64",
+      "req": "^0.22.1",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940149,
+      "version_id": 3197865,
+      "crate_id": "byteorder",
+      "req": "^1.5",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940150,
+      "version_id": 3197865,
+      "crate_id": "fitsio",
+      "req": "^0.21.2",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "fitsio-src"
+      ],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940151,
+      "version_id": 3197865,
+      "crate_id": "flate2",
+      "req": "^1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940152,
+      "version_id": 3197865,
+      "crate_id": "log",
+      "req": "^0.4",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940153,
+      "version_id": 3197865,
+      "crate_id": "lz4_flex",
+      "req": "^0.14.0",
+      "optional": false,
+      "default_features": false,
+      "features": [
+        "std",
+        "safe-decode",
+        "safe-encode",
+        "checked-decode"
+      ],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940154,
+      "version_id": 3197865,
+      "crate_id": "quick-xml",
+      "req": "^0.30",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940155,
+      "version_id": 3197865,
+      "crate_id": "serde",
+      "req": "^1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "derive"
+      ],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940156,
+      "version_id": 3197865,
+      "crate_id": "sha1",
+      "req": "^0.10.6",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940157,
+      "version_id": 3197865,
+      "crate_id": "sha2",
+      "req": "^0.10.9",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940158,
+      "version_id": 3197865,
+      "crate_id": "sha3",
+      "req": "^0.10.8",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940159,
+      "version_id": 3197865,
+      "crate_id": "thiserror",
+      "req": "^1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940160,
+      "version_id": 3197865,
+      "crate_id": "zstd",
+      "req": "^0.14.0",
+      "optional": false,
+      "default_features": false,
+      "features": [
+        "vendored"
+      ],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    }
+  ],
+  "download_checksum_verified": true
+}

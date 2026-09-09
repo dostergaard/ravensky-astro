@@ -1,0 +1,162 @@
+{
+  "checked_at_utc": "2026-09-09T18:15:17.214028+00:00",
+  "version": {
+    "id": 3197868,
+    "crate": "astro-metadata",
+    "num": "0.6.0",
+    "dl_path": "/api/v1/crates/astro-metadata/0.6.0/download",
+    "readme_path": "/api/v1/crates/astro-metadata/0.6.0/readme",
+    "updated_at": "2026-09-09T18:14:43.703995Z",
+    "created_at": "2026-09-09T18:14:43.703995Z",
+    "downloads": 0,
+    "features": {},
+    "yanked": false,
+    "yank_message": null,
+    "lib_links": null,
+    "license": "MIT OR Apache-2.0",
+    "links": {
+      "dependencies": "/api/v1/crates/astro-metadata/0.6.0/dependencies",
+      "version_downloads": "/api/v1/crates/astro-metadata/0.6.0/downloads",
+      "authors": "/api/v1/crates/astro-metadata/0.6.0/authors"
+    },
+    "crate_size": 24364,
+    "published_by": {
+      "id": 336074,
+      "login": "dostergaard",
+      "name": "Dean Ostergaard",
+      "avatar": "https://avatars.githubusercontent.com/u/8951950?v=4",
+      "url": "https://github.com/dostergaard",
+      "github_username_matches": true,
+      "created_at": "2014-09-29T00:42:44Z"
+    },
+    "audit_actions": [
+      {
+        "action": "publish",
+        "user": {
+          "id": 336074,
+          "login": "dostergaard",
+          "name": "Dean Ostergaard",
+          "avatar": "https://avatars.githubusercontent.com/u/8951950?v=4",
+          "url": "https://github.com/dostergaard",
+          "github_username_matches": true,
+          "created_at": "2014-09-29T00:42:44Z"
+        },
+        "time": "2026-09-09T18:14:43.703995Z"
+      }
+    ],
+    "checksum": "06230e6f11e929deaa8c467497ec55de8ecb1f5a8970ae56b0f6ca518a9628a7",
+    "rust_version": "1.94",
+    "has_lib": true,
+    "bin_names": [],
+    "edition": "2021",
+    "description": "Metadata handling for astronomical images",
+    "homepage": "https://github.com/dostergaard/ravensky-astro",
+    "documentation": "https://docs.rs/astro-metadata",
+    "repository": "https://github.com/dostergaard/ravensky-astro",
+    "trustpub_data": null,
+    "linecounts": {
+      "languages": {
+        "Rust": {
+          "code_lines": 1368,
+          "comment_lines": 137,
+          "files": 5
+        }
+      },
+      "total_code_lines": 1368,
+      "total_comment_lines": 137
+    }
+  },
+  "dependencies": [
+    {
+      "id": 35940177,
+      "version_id": 3197868,
+      "crate_id": "anyhow",
+      "req": "^1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940178,
+      "version_id": 3197868,
+      "crate_id": "astro-io",
+      "req": "^0.6.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940179,
+      "version_id": 3197868,
+      "crate_id": "chrono",
+      "req": "^0.4",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "serde"
+      ],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940180,
+      "version_id": 3197868,
+      "crate_id": "fitsio",
+      "req": "^0.21.2",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "fitsio-src"
+      ],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940181,
+      "version_id": 3197868,
+      "crate_id": "log",
+      "req": "^0.4",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940182,
+      "version_id": 3197868,
+      "crate_id": "serde",
+      "req": "^1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "derive"
+      ],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940183,
+      "version_id": 3197868,
+      "crate_id": "thiserror",
+      "req": "^1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    }
+  ],
+  "download_checksum_verified": true
+}

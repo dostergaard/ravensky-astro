@@ -1,8 +1,11 @@
 # RavenSky validation release → AstroMuninn handoff
 
-Status: approved closeout in progress on 2026-09-09. No AstroMuninn feature work
-is authorized in this closeout. This document will be finalized with actual
-merge/publication identifiers; do not interpret a prepared version as published.
+Status: **RELEASE INCOMPLETE — BLOCKED** as of 2026-09-09. PR #2 is merged and
+all four 0.6.0 crates are published and independently usable. The remaining gate
+is hosted API documentation: docs.rs cannot build the bundled CFITSIO autotools
+backend in its read-only source sandbox. The `v0.6.0` tag and GitHub release are
+not created, following the documentation-verification gate in `RELEASING.md`.
+No AstroMuninn implementation or dependency changes were made.
 
 Read [PLAN.md](PLAN.md) for the settled architecture,
 [EVIDENCE.md](EVIDENCE.md) for verified observations, and
@@ -12,12 +15,62 @@ Read [PLAN.md](PLAN.md) for the settled architecture,
 
 - Approved PR: [#2](https://github.com/dostergaard/ravensky-astro/pull/2), target `master`.
 - Approved implementation head: `2e9ba9505f0685839a14b5141d6faea20bbeb759`.
-- Intended coordinated versions: `astro-io`, `astro-metadata`, `astro-metrics`,
-  `ravensky-astro` 0.6.0, published in that dependency order.
+- Published coordinated versions: `astro-io`, `astro-metadata`, `astro-metrics`,
+  `ravensky-astro` 0.6.0, in that dependency order on 2026-09-09.
 - `astro-bench` 0.6.0 is intentionally unpublished (`publish = false`). Clone the
   repository for its library/CLI; installing the facade does not install it.
-- Merge/release commit, `v0.6.0`, publication identities and verification: pending
-  actual execution; final state belongs here and in `records/`.
+- Merge commit: `67491721de5fd95eece5456886f259efb74c1165` (PR #2, 18:10:24 UTC).
+- Published source commit: `84a0f9eeb3e588bc0d27978e717a15add962af52` on `master`.
+  All downloaded crate VCS identities and Rust sources match this clean commit.
+- Release CI: [34387421495](https://github.com/dostergaard/ravensky-astro/actions/runs/34387421495),
+  all three configured jobs passed. [Publication evidence](EVIDENCE.md#actual-publication-and-remaining-gate)
+  retains timestamps, registry identifiers/checksums, downloaded-archive audits and
+  a passing clean registry-only consumer.
+- Post-publication commits preserve evidence only; find their exact current
+  identity with `git log -1 master`. They do not change published 0.6.0 source.
+
+## Resolve the release gate first
+
+`fitsio-sys 0.5.7` calls autotools with `.insource(true)`; `autotools 0.2.7`
+then attempts to create `ext/cfitsio/configure.prev`. docs.rs mounts crate sources
+read-only, so this fails with `ReadOnlyFilesystem` (OS error 30). Both the direct
+I/O and facade build logs confirm this cause; all four versioned API pages were
+unavailable at the final check. Local rustdoc and Linux CI pass because their
+source trees are writable. This is not a validator correctness failure.
+
+The isolated [CMake diagnostic](records/docs-cmake-probe.log) successfully built
+documentation, with warnings denied, for all four published crates using the
+existing `fitsio/src-cmake` feature and a read-only copy of `fitsio-sys 0.5.7`.
+This is evidence for a repair direction, not a deployed fix or a docs.rs result.
+The diagnostic's manifest/lock are retained beside its log. No dependency code
+or production build defaults were changed to run it.
+
+Next action: obtain direction for a patch release (normally coordinated 0.6.1),
+then implement a documentation build option that selects the existing CMake
+backend, propagate it through the crate graph, configure docs.rs and validate
+against read-only sources and the existing platform/backend matrix. Keep the
+ordinary backend behavior unchanged. Feature unification and all-features builds
+must be assessed, including AstroMuninn's older vendored backend. An alternative
+is a compatible upstream backend fix followed by docs.rs rebuilds of 0.6.0;
+that depends on an external release and has not been arranged.
+
+Do not try to republish 0.6.0, move a release tag, silently publish an unapproved
+version, or request repeated builds without changing the failing conditions.
+Only after hosted documentation is verified should the remaining tag/release
+steps run. The current 0.6.0 publication does not need repeating or yanking.
+Local API docs remain available with `cargo doc --workspace --all-features --no-deps`.
+AstroMuninn can resolve the published crates now, but the agreed closeout gate
+remains incomplete; resolve it before starting the planned application phase.
+
+Workspace housekeeping: the merged `feature/file-validation` branch is retained
+locally and on origin. Automatic approval review rejected its deletion because
+it required explicit branch-deletion authorization. No history was removed;
+optional branch cleanup is separate from the documentation release gate.
+Unrelated branches are retained. Intentionally ignored local material
+remains: `target/`, private `tests/data/` captures, `docs/fits_standard40aa-le.pdf`,
+Python `__pycache__` directories and Finder `.DS_Store` files. These are not release
+changes. The workspace-level tooling venv and user-maintained `AGENTS.md` remain
+outside this repository's changes.
 
 ## Components and APIs
 
@@ -137,7 +190,8 @@ Initial commands, from the RavenSky workspace (inspect before updating):
 
 ```sh
 git -C ravensky-astro status --short --branch
-git -C ravensky-astro show v0.6.0 --stat
+git -C ravensky-astro show 84a0f9e --stat
+git -C ravensky-astro tag --list 'v0.6.*'
 git -C astromuninn status --short --branch
 cd astromuninn
 cargo tree -i fitsio-sys

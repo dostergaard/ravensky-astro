@@ -193,5 +193,116 @@ apt repository returned a hash mismatch. The smallest workflow correction checks
 whether `build-essential` is already installed and only updates/installs when
 needed. Installation failures still fail CI; no Rust checks were relaxed.
 
-Merge, actual release archives, publication and clean-consumer results follow
-after execution; successful review checks do not imply publication.
+## Actual publication and remaining gate
+
+PR #2 merged on 2026-09-09 at 18:10:24 UTC as
+`67491721de5fd95eece5456886f259efb74c1165`; see [merge record](records/merged-pr.json).
+The corrected [premerge CI](records/premerge-ci.json), run `34386857280`, passed
+all three jobs on `ad40e2f`. Release metadata commit
+`84a0f9eeb3e588bc0d27978e717a15add962af52` dates the changelog and changes no
+production source. Its [release CI](records/release-ci.json), run `34387421495`,
+also passed all three configured jobs. Their Windows scope remains as above.
+
+Fresh final packages passed:
+
+```sh
+cargo package --locked --workspace --exclude astro-bench \
+  --target-dir target/package-060-release
+python3 docs/work/file-validation-0.6.0/verify_archives.py \
+  target/package-060-release/package target/release-packages.json \
+  84a0f9eeb3e588bc0d27978e717a15add962af52
+```
+
+Retained [package log](records/package-060-release.log) and
+[archive audit](records/release-packages.json) confirm all four versions, dependency
+requirements, clean VCS identity, matching Rust sources, complete gzip archives,
+decoder notices and raw benchmark exclusion. The checkout stayed clean throughout
+publication; evidence was staged under ignored `target/` until publication finished.
+
+Each command below used the additional argument
+`--target-dir target/publish-060-closeout`, a fresh publication directory:
+
+| Command | Registry creation time (UTC, 2026-09-09) | Retained evidence |
+| --- | --- | --- |
+| `cargo publish --locked -p astro-io` | 18:14:30.734969 | [log](records/publish-astro-io.log), [registry](records/registry-astro-io.json) |
+| `cargo publish --locked -p astro-metadata` | 18:14:43.703995 | [log](records/publish-astro-metadata.log), [registry](records/registry-astro-metadata.json) |
+| `cargo publish --locked -p astro-metrics` | 18:15:21.184354 | [log](records/publish-astro-metrics.log), [registry](records/registry-astro-metrics.json) |
+| `cargo publish --locked -p ravensky-astro` | 18:15:36.634674 | [log](records/publish-ravensky-astro.log), [registry](records/registry-ravensky-astro.json) |
+
+All commands exited successfully. Each version was confirmed visible before its
+dependent was published. All four downloaded 0.6.0 archives match the registry
+SHA-256 checksums **and** the final prepublication archives byte for byte; see
+[published archive inspection](records/published-packages.json).
+[verify-ravensky-registry.py](verify-ravensky-registry.py) reproduces the registry,
+dependency and download-checksum inspection:
+
+```sh
+python3 docs/work/file-validation-0.6.0/verify-ravensky-registry.py \
+  /path/to/ravensky-astro astro-io
+# Repeat for astro-metadata, astro-metrics, ravensky-astro.
+```
+
+`astro-bench` was intentionally not published. No crate was yanked, republished
+or given an unapproved new version.
+
+### Independent published consumer
+
+A fresh external Cargo project pinned all four dependencies to `=0.6.0`, with
+no workspace/path patches, built in release mode and ran successfully. Its
+[manifest](published-consumer/Cargo.toml), [lockfile](published-consumer/Cargo.lock),
+[source](published-consumer/src/main.rs), [log](records/published-consumer.log) and
+[resolution audit](records/consumer-resolution.json) are retained. The lockfile
+selects only registry sources for the four crates and matches the downloaded
+archive checksums. The smoke test checks Full FITS validation through the facade,
+shared-budget release, metadata extraction, known loaded pixels and unchanged
+source bytes. It references the metrics API and compiles/links that dependency;
+it does not execute the ignored SEP initialization test.
+
+To reproduce, copy `published-consumer/` to a fresh directory outside this Cargo
+workspace, enter it and run `cargo run --release --locked`. Its small FITS fixture
+uses `create_new` and is removed only after successful source-preservation checks.
+This exact retained example also passed from another fresh directory with
+`cargo run --release --locked --offline`; see [reproduction log](records/consumer-reproduction.log).
+The first sandboxed attempt was denied the native backend's write to the Cargo
+source cache; rerunning with that required filesystem access passed. It is the
+same source-write requirement exposed more strictly by docs.rs, not a test failure
+in validation logic.
+
+### Hosted documentation blocker
+
+[Final versioned-page check](records/docs-rs-060.json) found all four API paths
+redirected to crate landing pages rather than rustdoc. The direct I/O build
+[4392698](https://docs.rs/crate/astro-io/0.6.0/builds/4392698) and facade build
+[4392717](https://docs.rs/crate/ravensky-astro/0.6.0/builds/4392717) both failed in
+`fitsio-sys 0.5.7` / `autotools 0.2.7` with `ReadOnlyFilesystem`, OS error 30.
+Retained [I/O log](records/docs-rs-astro-io-failure.log) and
+[facade log](records/docs-rs-facade-failure.log) preserve the failure details.
+
+Inspection of the exact dependency source identifies `.insource(true)` in
+`fitsio-sys`'s `build.rs`, then `File::create(configure.prev)` at autotools line
+643. This conflicts with the documented [docs.rs read-only source sandbox](https://docs.rs/about/builds).
+Local writable-source rustdoc success does not establish hosted success. The
+crate versions are usable and published, but hosted documentation remains failed.
+
+A focused diagnostic copied `fitsio-sys 0.5.7` under a fresh temporary directory,
+removed write permissions recursively, patched only that diagnostic consumer to
+the copy, and enabled the existing `fitsio` `src-cmake` feature. With
+`RUSTDOCFLAGS='-D warnings' cargo doc`, documentation for all four published crates
+built successfully. The [diagnostic log](records/docs-cmake-probe.log),
+[manifest](records/docs-cmake-probe.Cargo.toml.txt) and
+[lockfile](records/docs-cmake-probe.Cargo.lock.txt) preserve the exact setup. It
+ran on this macOS machine, not inside docs.rs; no production manifests or backend
+defaults changed. This supports a repair direction without claiming hosted or
+cross-platform verification. The probe's patch path and writable build output
+are intentional and separate from the unpatched published-consumer verification.
+
+Because published 0.6.0 manifests are immutable, applying documentation feature
+metadata requires a new approved patch release, or an external compatible backend
+fix and rebuild of existing documentation. Neither has happened. `RELEASING.md`
+places tag/release creation after documentation verification, so `v0.6.0` and the
+GitHub release remain absent. This is the only remaining release gate; see
+[HANDOFF.md](HANDOFF.md#resolve-the-release-gate-first) for the next action.
+
+Final status: **RELEASE INCOMPLETE — BLOCKED**. Post-publication records are
+committed on `master`; their commit does not alter the released source identity.
+AstroMuninn remains unchanged at `5215a5bf5aae839db4615c628959c35f2245f145`.

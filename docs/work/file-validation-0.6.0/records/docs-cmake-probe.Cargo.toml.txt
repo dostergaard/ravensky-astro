@@ -1,0 +1,14 @@
+[package]
+name = "ravensky-docs-probe"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ravensky-astro = "=0.6.0"
+fitsio = { version = "=0.21.9", features = ["fitsio-src", "src-cmake"] }
+
+[patch.crates-io]
+fitsio-sys = { path = "fitsio-sys" }
+
+[lib]
+path = "lib.rs"

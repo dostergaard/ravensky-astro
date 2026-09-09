@@ -1,0 +1,29 @@
+{
+  "checked_at_utc": "2026-09-09T18:18:45.753808+00:00",
+  "pages": [
+    {
+      "url": "https://docs.rs/astro-io/0.6.0/astro_io/validation/",
+      "final_url": "https://docs.rs/crate/astro-io/0.6.0",
+      "http_status": 200,
+      "versioned_rustdoc_verified": false
+    },
+    {
+      "url": "https://docs.rs/astro-metadata/0.6.0/astro_metadata/",
+      "final_url": "https://docs.rs/crate/astro-metadata/0.6.0",
+      "http_status": 200,
+      "versioned_rustdoc_verified": false
+    },
+    {
+      "url": "https://docs.rs/astro-metrics/0.6.0/astro_metrics/",
+      "final_url": "https://docs.rs/crate/astro-metrics/0.6.0",
+      "http_status": 200,
+      "versioned_rustdoc_verified": false
+    },
+    {
+      "url": "https://docs.rs/ravensky-astro/0.6.0/ravensky_astro/",
+      "final_url": "https://docs.rs/crate/ravensky-astro/0.6.0",
+      "http_status": 200,
+      "versioned_rustdoc_verified": false
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+   Packaging astro-io v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-io)
+    Updating crates.io index
+    Packaged 26 files, 276.8KiB (68.1KiB compressed)
+   Packaging astro-metadata v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-metadata)
+    Updating crates.io index
+    Packaged 11 files, 97.2KiB (23.8KiB compressed)
+   Packaging astro-metrics v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-metrics)
+    Updating crates.io index
+    Packaged 11 files, 66.5KiB (16.0KiB compressed)
+   Packaging ravensky-astro v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro)
+    Updating crates.io index
+    Packaged 65 files, 449.5KiB (183.2KiB compressed)
+   Verifying astro-io v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-io)
+   Compiling libc v0.2.189
+   Compiling shlex v1.3.0
+   Compiling find-msvc-tools v0.1.9
+   Compiling pkg-config v0.3.32
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.106
+   Compiling typenum v1.20.1
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.44
+   Compiling cfg-if v1.0.4
+   Compiling zstd-safe v8.0.0
+   Compiling serde_core v1.0.228
+   Compiling crc32fast v1.5.0
+   Compiling thiserror v1.0.69
+   Compiling serde v1.0.228
+   Compiling simd-adler32 v0.3.8
+   Compiling anyhow v1.0.102
+   Compiling adler2 v2.0.1
+   Compiling memchr v2.8.0
+   Compiling generic-array v0.14.7
+   Compiling miniz_oxide v0.8.9
+   Compiling base64 v0.22.1
+   Compiling byteorder v1.5.0
+   Compiling log v0.4.29
+   Compiling quick-xml v0.30.0
+   Compiling lz4_flex v0.14.0
+   Compiling flate2 v1.1.9
+   Compiling syn v2.0.117
+   Compiling jobserver v0.1.35
+   Compiling cpufeatures v0.2.17
+   Compiling keccak v0.1.6
+   Compiling cc v1.2.56
+   Compiling thiserror-impl v1.0.69
+   Compiling serde_derive v1.0.228
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling sha3 v0.10.9
+   Compiling sha1 v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling autotools v0.2.7
+   Compiling zstd-sys v2.1.0+zstd.1.5.7
+   Compiling fitsio-sys v0.5.7
+   Compiling zstd v0.14.0
+   Compiling fitsio v0.21.9
+   Compiling astro-io v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/target/package-060-release/package/astro-io-0.6.0)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.65s
+   Verifying astro-metadata v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-metadata)
+    Updating crates.io index
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Unpacking astro-io v0.6.0 (registry `/Users/dean/projects-dev/RavenSky/ravensky-astro/target/package-060-release/package/tmp-registry`)
+    Blocking waiting for file lock on package cache
+   Compiling autocfg v1.5.0
+   Compiling core-foundation-sys v0.8.7
+   Compiling astro-io v0.6.0
+   Compiling iana-time-zone v0.1.65
+   Compiling num-traits v0.2.19
+   Compiling chrono v0.4.44
+   Compiling astro-metadata v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/target/package-060-release/package/astro-metadata-0.6.0)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.24s
+   Verifying astro-metrics v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/astro-metrics)
+    Updating crates.io index
+   Unpacking astro-metadata v0.6.0 (registry `/Users/dean/projects-dev/RavenSky/ravensky-astro/target/package-060-release/package/tmp-registry`)
+   Compiling num-traits v0.2.19
+   Compiling matrixmultiply v0.3.10
+   Compiling rawpointer v0.2.1
+   Compiling sep-sys v1.3.0
+   Compiling chrono v0.4.44
+   Compiling num-integer v0.1.46
+   Compiling num-complex v0.4.6
+   Compiling ndarray v0.15.6
+   Compiling astro-metadata v0.6.0
+   Compiling astro-metrics v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/target/package-060-release/package/astro-metrics-0.6.0)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 14.51s
+   Verifying ravensky-astro v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro)
+    Updating crates.io index
+   Unpacking astro-metrics v0.6.0 (registry `/Users/dean/projects-dev/RavenSky/ravensky-astro/target/package-060-release/package/tmp-registry`)
+   Compiling serde_core v1.0.228
+   Compiling crossbeam-utils v0.8.21
+   Compiling rayon-core v1.13.0
+   Compiling zmij v1.0.21
+   Compiling serde_json v1.0.149
+   Compiling itoa v1.0.17
+   Compiling csv-core v0.1.13
+   Compiling ryu v1.0.23
+   Compiling same-file v1.0.6
+   Compiling either v1.15.0
+   Compiling walkdir v2.5.0
+   Compiling crossbeam-epoch v0.9.18
+   Compiling crossbeam-deque v0.8.6
+   Compiling rayon v1.11.0
+   Compiling serde v1.0.228
+   Compiling csv v1.4.0
+   Compiling chrono v0.4.44
+   Compiling astro-io v0.6.0
+   Compiling astro-metadata v0.6.0
+   Compiling astro-metrics v0.6.0
+   Compiling ravensky-astro v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/target/package-060-release/package/ravensky-astro-0.6.0)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 17.55s

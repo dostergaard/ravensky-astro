@@ -1,0 +1,187 @@
+{
+  "checked_at_utc": "2026-09-09T18:16:36.806774+00:00",
+  "version": {
+    "id": 3197884,
+    "crate": "ravensky-astro",
+    "num": "0.6.0",
+    "dl_path": "/api/v1/crates/ravensky-astro/0.6.0/download",
+    "readme_path": "/api/v1/crates/ravensky-astro/0.6.0/readme",
+    "updated_at": "2026-09-09T18:15:36.634674Z",
+    "created_at": "2026-09-09T18:15:36.634674Z",
+    "downloads": 0,
+    "features": {},
+    "yanked": false,
+    "yank_message": null,
+    "lib_links": null,
+    "license": "MIT OR Apache-2.0",
+    "links": {
+      "dependencies": "/api/v1/crates/ravensky-astro/0.6.0/dependencies",
+      "version_downloads": "/api/v1/crates/ravensky-astro/0.6.0/downloads",
+      "authors": "/api/v1/crates/ravensky-astro/0.6.0/authors"
+    },
+    "crate_size": 187628,
+    "published_by": {
+      "id": 336074,
+      "login": "dostergaard",
+      "name": "Dean Ostergaard",
+      "avatar": "https://avatars.githubusercontent.com/u/8951950?v=4",
+      "url": "https://github.com/dostergaard",
+      "github_username_matches": true,
+      "created_at": "2014-09-29T00:42:44Z"
+    },
+    "audit_actions": [
+      {
+        "action": "publish",
+        "user": {
+          "id": 336074,
+          "login": "dostergaard",
+          "name": "Dean Ostergaard",
+          "avatar": "https://avatars.githubusercontent.com/u/8951950?v=4",
+          "url": "https://github.com/dostergaard",
+          "github_username_matches": true,
+          "created_at": "2014-09-29T00:42:44Z"
+        },
+        "time": "2026-09-09T18:15:36.634674Z"
+      }
+    ],
+    "checksum": "6d991e04f510b9bd33b9026e59fc62a5defdc6fd495e77c33c2272354ffc74fe",
+    "rust_version": "1.94",
+    "has_lib": true,
+    "bin_names": [],
+    "edition": "2021",
+    "description": "Core libraries for astronomical image file analysis and manipulation.",
+    "homepage": "https://github.com/dostergaard/ravensky-astro",
+    "documentation": "https://docs.rs/ravensky-astro",
+    "repository": "https://github.com/dostergaard/ravensky-astro",
+    "trustpub_data": null,
+    "linecounts": {
+      "languages": {
+        "Python": {
+          "code_lines": 31,
+          "comment_lines": 3,
+          "files": 1
+        },
+        "Rust": {
+          "code_lines": 3,
+          "comment_lines": 1,
+          "files": 1
+        }
+      },
+      "total_code_lines": 34,
+      "total_comment_lines": 4
+    }
+  },
+  "dependencies": [
+    {
+      "id": 35940378,
+      "version_id": 3197884,
+      "crate_id": "anyhow",
+      "req": "^1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940379,
+      "version_id": 3197884,
+      "crate_id": "astro-io",
+      "req": "^0.6.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940380,
+      "version_id": 3197884,
+      "crate_id": "astro-metadata",
+      "req": "^0.6.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940381,
+      "version_id": 3197884,
+      "crate_id": "astro-metrics",
+      "req": "^0.6.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940382,
+      "version_id": 3197884,
+      "crate_id": "chrono",
+      "req": "^0.4",
+      "optional": false,
+      "default_features": true,
+      "features": [
+        "serde"
+      ],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940383,
+      "version_id": 3197884,
+      "crate_id": "csv",
+      "req": "^1.4",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940384,
+      "version_id": 3197884,
+      "crate_id": "rayon",
+      "req": "^1.11",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940385,
+      "version_id": 3197884,
+      "crate_id": "serde_json",
+      "req": "^1.0",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    },
+    {
+      "id": 35940386,
+      "version_id": 3197884,
+      "crate_id": "walkdir",
+      "req": "^2.5",
+      "optional": false,
+      "default_features": true,
+      "features": [],
+      "target": null,
+      "kind": "normal",
+      "downloads": 0
+    }
+  ],
+  "download_checksum_verified": true
+}

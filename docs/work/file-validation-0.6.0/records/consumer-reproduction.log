@@ -1,0 +1,19 @@
+   Compiling fitsio-sys v0.5.7
+   Compiling zstd-sys v2.1.0+zstd.1.5.7
+   Compiling zstd-safe v8.0.0
+   Compiling sep-sys v1.3.0
+   Compiling chrono v0.4.45
+   Compiling zmij v1.0.23
+   Compiling rayon-core v1.13.0
+   Compiling serde_json v1.0.151
+   Compiling rayon v1.12.0
+   Compiling zstd v0.14.0
+   Compiling fitsio v0.21.10
+   Compiling astro-io v0.6.0
+   Compiling astro-metadata v0.6.0
+   Compiling astro-metrics v0.6.0
+   Compiling ravensky-astro v0.6.0
+   Compiling ravensky-published-smoke v0.1.0 (/private/var/folders/8n/vn519pk97_qc4ysx3m5mbb7m0000gn/T/ravensky-smoke-reproduction-qwsezj3e)
+    Finished `release` profile [optimized] target(s) in 3.97s
+     Running `target/release/ravensky-published-smoke`
+Published 0.6.0 chain passed: full validation, shared budget released, metadata, pixel loading, facade, source preservation

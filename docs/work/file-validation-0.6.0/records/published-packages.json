@@ -1,0 +1,60 @@
+{
+  "checked_at_utc": "2026-09-09T18:16:36.863924+00:00",
+  "source_commit": "84a0f9eeb3e588bc0d27978e717a15add962af52",
+  "directory": "target/registry-060",
+  "packages": [
+    {
+      "name": "astro-io",
+      "version": "0.6.0",
+      "sha256": "b4f6109b045fbcee84ead3f86a61a5781bf4874e236cac25e7f5edb088348f9a",
+      "archive_bytes": 69712,
+      "files": 26,
+      "rust_files_matched": 18,
+      "internal_dependencies": {},
+      "clean_vcs": true,
+      "complete_gzip": true
+    },
+    {
+      "name": "astro-metadata",
+      "version": "0.6.0",
+      "sha256": "06230e6f11e929deaa8c467497ec55de8ecb1f5a8970ae56b0f6ca518a9628a7",
+      "archive_bytes": 24364,
+      "files": 11,
+      "rust_files_matched": 6,
+      "internal_dependencies": {
+        "astro-io": "0.6.0"
+      },
+      "clean_vcs": true,
+      "complete_gzip": true
+    },
+    {
+      "name": "astro-metrics",
+      "version": "0.6.0",
+      "sha256": "b6d743d38b25267d879aff6d4b3a735b50a67007b09fba587d98c59339a69994",
+      "archive_bytes": 16404,
+      "files": 11,
+      "rust_files_matched": 6,
+      "internal_dependencies": {
+        "astro-io": "0.6.0",
+        "astro-metadata": "0.6.0"
+      },
+      "clean_vcs": true,
+      "complete_gzip": true
+    },
+    {
+      "name": "ravensky-astro",
+      "version": "0.6.0",
+      "sha256": "6d991e04f510b9bd33b9026e59fc62a5defdc6fd495e77c33c2272354ffc74fe",
+      "archive_bytes": 187628,
+      "files": 65,
+      "rust_files_matched": 11,
+      "internal_dependencies": {
+        "astro-io": "0.6.0",
+        "astro-metadata": "0.6.0",
+        "astro-metrics": "0.6.0"
+      },
+      "clean_vcs": true,
+      "complete_gzip": true
+    }
+  ]
+}

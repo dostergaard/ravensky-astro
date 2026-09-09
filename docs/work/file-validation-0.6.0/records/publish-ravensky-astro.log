@@ -1,0 +1,34 @@
+    Updating crates.io index
+   Packaging ravensky-astro v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro)
+    Updating crates.io index
+    Packaged 65 files, 449.5KiB (183.2KiB compressed)
+   Verifying ravensky-astro v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro)
+ Downloading crates ...
+  Downloaded astro-metrics v0.6.0
+   Compiling serde_core v1.0.228
+   Compiling crossbeam-utils v0.8.21
+   Compiling rayon-core v1.13.0
+   Compiling zmij v1.0.21
+   Compiling itoa v1.0.17
+   Compiling serde_json v1.0.149
+   Compiling csv-core v0.1.13
+   Compiling either v1.15.0
+   Compiling ryu v1.0.23
+   Compiling same-file v1.0.6
+   Compiling walkdir v2.5.0
+   Compiling crossbeam-epoch v0.9.18
+   Compiling crossbeam-deque v0.8.6
+   Compiling rayon v1.11.0
+   Compiling serde v1.0.228
+   Compiling csv v1.4.0
+   Compiling chrono v0.4.44
+   Compiling astro-io v0.6.0
+   Compiling astro-metadata v0.6.0
+   Compiling astro-metrics v0.6.0
+   Compiling ravensky-astro v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro/target/publish-060-closeout/package/ravensky-astro-0.6.0)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.88s
+   Uploading ravensky-astro v0.6.0 (/Users/dean/projects-dev/RavenSky/ravensky-astro)
+    Uploaded ravensky-astro v0.6.0 to registry `crates-io`
+note: waiting for ravensky-astro v0.6.0 to be available at registry `crates-io`
+help: you may press ctrl-c to skip waiting; the crate should be available shortly
+   Published ravensky-astro v0.6.0 at registry `crates-io`
