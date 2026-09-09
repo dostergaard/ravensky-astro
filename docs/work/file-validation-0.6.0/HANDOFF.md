@@ -62,10 +62,10 @@ Local API docs remain available with `cargo doc --workspace --all-features --no-
 AstroMuninn can resolve the published crates now, but the agreed closeout gate
 remains incomplete; resolve it before starting the planned application phase.
 
-Workspace housekeeping: the merged `feature/file-validation` branch is retained
-locally and on origin. Automatic approval review rejected its deletion because
-it required explicit branch-deletion authorization. No history was removed;
-optional branch cleanup is separate from the documentation release gate.
+Workspace housekeeping: the merged `feature/file-validation` branch was deleted
+locally and on origin after the user explicitly approved deletion. Its history
+remains reachable from `master`. The initial automatic approval rejection was
+resolved by that explicit authorization; no cleanup approval remains pending.
 Unrelated branches are retained. Intentionally ignored local material
 remains: `target/`, private `tests/data/` captures, `docs/fits_standard40aa-le.pdf`,
 Python `__pycache__` directories and Finder `.DS_Store` files. These are not release
