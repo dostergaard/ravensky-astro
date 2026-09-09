@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-09-09
+
+### Fixed
+
+- Configure docs.rs builds to use `fitsio`'s existing CMake source-build path,
+  which supports read-only dependency source trees. Normal consumer builds and
+  public Rust APIs are unchanged.
+
 ## [0.6.0] - 2026-09-09
 
 ### Added

@@ -1,13 +1,14 @@
 # Releasing RavenSky Astro
 
-The coordinated release line is **0.6.0**, approved for closeout on 2026-09-09.
+The coordinated release line is **0.6.1**, a hosted-documentation repair for the
+0.6.0 crates approved for closeout on 2026-09-09.
 Actual publication and handoff status are recorded in
 [`docs/work/file-validation-0.6.0/HANDOFF.md`](docs/work/file-validation-0.6.0/HANDOFF.md).
-All four crates were published from `84a0f9e` on 2026-09-09. Closeout is currently
-blocked at step 4: docs.rs fails in the bundled CFITSIO autotools build because
-its source directory is read-only. No release tag/GitHub release has been made.
-Do not repeat step 3 or republish 0.6.0. Follow the handoff's repair prerequisite
-before tagging or beginning downstream work.
+All four 0.6.0 crates were published from `84a0f9e` on 2026-09-09, but docs.rs
+failed in the bundled CFITSIO autotools build because its source directory is
+read-only. Do not republish or alter 0.6.0. The coordinated 0.6.1 candidate uses
+RavenSky-owned docs.rs metadata to select the existing CMake source-build path
+only for hosted documentation. No release tag/GitHub release has been made.
 The version introduces the additive file-validation
 and resource-control APIs. Existing image-loader contracts remain unchanged.
 `astro-bench` is a repository library/CLI with `publish = false`; it is not one
@@ -30,7 +31,7 @@ cargo test --locked --workspace --all-targets --all-features
 cargo test --locked --workspace --all-features --doc
 cargo build --locked --release --workspace --all-features --examples
 RUSTDOCFLAGS='-D warnings' cargo doc --locked --workspace --all-features --no-deps
-cargo package --locked --workspace --exclude astro-bench --target-dir target/package-060-final
+cargo package --locked --workspace --exclude astro-bench --target-dir target/package-061-final
 ```
 
 The package command verifies all four archives with a temporary registry for the
@@ -63,7 +64,7 @@ workspace's normal registry `0.5.7` dependency before application integration.
 1. Confirm all PR checks pass and the user approves the final diff. Merge into
    `master`, fetch and fast-forward the local branch. Keep rollback commits and
    evidence; delete the feature branch only after the merged result is verified.
-2. Set the 0.6.0 changelog date to the actual release date, verify all workspace
+2. Set the 0.6.1 changelog date to the actual release date, verify all workspace
    and internal dependency versions, and commit that release metadata. Repeat
    the clean package check above.
 3. Publish in dependency order, allowing each version to appear in the registry
@@ -76,11 +77,11 @@ workspace's normal registry `0.5.7` dependency before application integration.
    cargo publish --locked -p ravensky-astro
    ```
 
-4. Verify the four registry versions and docs.rs documentation. Tag the reviewed
-   release commit `v0.6.0`, push the tag and publish release notes linking the
+4. Verify the four 0.6.1 registry versions and docs.rs documentation. Tag the reviewed
+   release commit `v0.6.1`, push the tag and publish release notes linking the
    public API, support limitations and benchmark guide. Do not move an existing
    release tag or attempt to republish an existing crate version.
-5. Update AstroMuninn's registry dependency requirements and lockfile to 0.6.0;
+5. Update AstroMuninn's registry dependency requirements and lockfile to 0.6.1;
    add its direct `astro-io` dependency when integrating validation. Test core,
    CLI and Lite with the vendored FITS backend and the actual release targets.
    Release jobs must resolve published versions without workspace path patches.
@@ -88,6 +89,20 @@ workspace's normal registry `0.5.7` dependency before application integration.
    design. Configuration remains manually editable until an editor is developed.
 
 ## Evidence for this release candidate
+
+The 0.6.1 candidate changes only versions, dependency configuration, docs.rs
+metadata, release documentation and package-audit tooling. Default and
+`--all-features` graphs retain the existing bundled autotools backend. The
+docs.rs selector adds `fitsio/src-cmake` only to hosted documentation commands;
+a fresh read-only dependency-source probe passed for all four public crates.
+The complete local release matrix passed (131 tests, two intentional ignores,
+four doctests), as did the isolated AstroMuninn `fitsio-sys 0.5.5` compatibility
+matrix (108 tests, one intentional ignore). Precommit 0.6.1 packages passed Cargo
+verification and contained the intended normalized metadata. See the durable
+[evidence record](docs/work/file-validation-0.6.0/EVIDENCE.md#061-hosted-documentation-repair).
+
+Final clean packages, CI, registry publication and hosted docs are still pending.
+Do not publish the precommit archives.
 
 Local 0.6.0 checks passed: 131 workspace tests, four doctests, formatting, Clippy
 with warnings denied, release builds and rustdoc. Two tests are explicitly ignored
