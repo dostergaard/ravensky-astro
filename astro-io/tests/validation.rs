@@ -553,6 +553,10 @@ fn xisf(xml: &str, data: &[u8]) -> Vec<u8> {
     bytes
 }
 
+// Build the defective historical form: XML starting immediately after the
+// 8+4-byte signature/length with the four reserved bytes consumed as XML.
+// A negative fixture — the 12-byte prefix must never be accepted as a
+// compatibility form.
 fn legacy_twelve_byte_xisf(xml: &str, data: &[u8]) -> Vec<u8> {
     let mut bytes = b"XISF0100".to_vec();
     bytes.extend((xml.len() as u32).to_le_bytes());

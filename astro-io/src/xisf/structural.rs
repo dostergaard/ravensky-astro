@@ -1,10 +1,56 @@
+//! Private structural foundation for the monolithic XISF format.
+//!
+//! This module is the single implementation of the safe structural
+//! interpretation of XISF shared by `super::load_xisf` and
+//! `crate::validation::xisf`: the 16-byte file prefix, checked byte ranges,
+//! strict XML syntax events, and image/storage descriptors.
+//!
+//! It stops at the parsing-versus-policy boundary. Every check here exists
+//! only to make the result unambiguous and bounded: overflow, out-of-range
+//! extents, invalid UTF-8, and malformed XML are *structural* failures and
+//! fail every consumer identically. Conformance *policy* — which elements
+//! are mandatory or unique, where they may appear, checksum and codec rules,
+//! resource budgets — is deliberately absent from this module; the validator
+//! layers that policy onto the same events and descriptors, and the loader
+//! enforces its own narrower capability subset.
+//!
+//! The XML surface is a streaming event/descriptor layer, not a document
+//! model: `visit_xml` hands owned events to a consumer one at a time, so no
+//! consumer materializes an intermediate event vector or a general XISF AST,
+//! and `quick-xml` types never escape this module. This stage intentionally
+//! adds no public XISF parser API; the raw-record handoff to
+//! `astro-metadata` is a later stage.
+
 use quick_xml::{events::Event, name::ResolveResult, reader::NsReader};
 use std::{collections::BTreeMap, fmt, ops::Range};
 
+/// The 8-byte signature of the XISF 1.00 monolithic prefix: `XISF` plus two
+/// major and two minor version digits.
 pub(crate) const SIGNATURE: &[u8; 8] = b"XISF0100";
+
+/// Total prefix size: signature, a 4-byte little-endian XML-header length,
+/// and 4 reserved bytes that must read zero. The historical 12-byte prefix
+/// (XML beginning at offset 12) is a format defect, not an alternate legacy
+/// form: files written with it are rejected here and must not receive a
+/// compatibility path.
 pub(crate) const PREFIX_LEN: u64 = 16;
+
+/// The canonical XISF namespace. Unprefixed names are also treated as core
+/// by `Namespace::is_core` to stay compatible with common producers and
+/// existing fixtures.
 const CORE_NAMESPACE: &[u8] = b"http://www.pixinsight.com/xisf";
 
+/// Failure categories of structural interpretation.
+///
+/// `Incomplete` means bytes a declaration requires are absent (truncated
+/// prefix, range past the source, unclosed document); `Invalid` means the
+/// bytes that are present contradict the format (signature, malformed XML,
+/// overflow); `Unsupported` means the input is well-formed but outside what
+/// a structural reader interprets (DTDs, unknown sample formats).
+/// Keeping the categories distinct is part of the diagnostic contract:
+/// consumers must tell malformed input apart from merely unsupported input,
+/// and `crate::validation::xisf` maps these one-to-one onto
+/// `ValidationErrorKind`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum ErrorKind {
     Incomplete,
@@ -12,6 +58,7 @@ pub(crate) enum ErrorKind {
     Unsupported,
 }
 
+/// A structural failure: a stable `kind` plus a human-readable message.
 #[derive(Debug)]
 pub(crate) struct Error {
     kind: ErrorKind,
@@ -53,12 +100,26 @@ impl fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
+/// The checked layout of a monolithic XISF file: the XML header's range in
+/// the observed source.
+///
+/// This is the single place where the 16-byte prefix is interpreted, so the
+/// loader and the validator share one prefix dialect. Parsing is
+/// stage-by-stage and each missing stage is reported by name — signature,
+/// XML-header length, reserved area — instead of a vague "short file".
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct MonolithicEnvelope {
     xml: Range<u64>,
 }
 
 impl MonolithicEnvelope {
+    /// Parse the monolithic prefix against the observed source length.
+    ///
+    /// `source_len` is the file's actual size, so the returned XML range is
+    /// always within the file: a declared length that runs past it is
+    /// `Incomplete`, and a short prefix is `Incomplete` with the specific
+    /// stage named. Only a prefix that is present but contradictory is
+    /// `Invalid`.
     pub(crate) fn parse(prefix: &[u8], source_len: u64) -> Result<Self, Error> {
         if prefix.len() < SIGNATURE.len() {
             return Err(Error::incomplete("truncated XISF signature"));
@@ -72,6 +133,9 @@ impl MonolithicEnvelope {
         if prefix.len() < PREFIX_LEN as usize {
             return Err(Error::incomplete("truncated XISF reserved prefix area"));
         }
+        // The reserved area must read zero. This check is also what makes
+        // the defective 12-byte prefix fail loudly: a file that packed XML
+        // directly after the length field has XML text, not zeros, here.
         if prefix[12..16] != [0; 4] {
             return Err(Error::invalid("XISF reserved prefix bytes must be zero"));
         }
@@ -97,6 +161,14 @@ impl MonolithicEnvelope {
     }
 }
 
+/// Build a checked `start..start + length` range bounded to the observed
+/// source length.
+///
+/// An arithmetic overflow is `Invalid` (the declared range is
+/// self-contradictory) while a range running past the source is `Incomplete`
+/// (the file is missing bytes it declares). These are parsing checks even
+/// though they reject input: they exist so that no consumer repeats unchecked
+/// offset arithmetic or reads out-of-range bytes.
 pub(crate) fn checked_range(
     start: u64,
     length: u64,
@@ -114,6 +186,14 @@ pub(crate) fn checked_range(
     Ok(start..end)
 }
 
+/// The namespace of an XML name, reduced to the only facts consumers need.
+///
+/// `Unbound` (unprefixed) and `Core` (bound to the canonical namespace) are
+/// both accepted as core: unprefixed names inherit only a *default* namespace
+/// in XML, so a bare `Image` under a qualified root is still core and remains
+/// a supported producer form. `Foreign` carries the resolved URI as a fact;
+/// the structural layer neither accepts nor rejects foreign namespaces —
+/// extension acceptance is consumer policy.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Namespace {
     Unbound,
@@ -122,11 +202,19 @@ pub(crate) enum Namespace {
 }
 
 impl Namespace {
+    /// Whether this namespace is part of the core vocabulary (see the type
+    /// documentation for why unbound names count).
     pub(crate) fn is_core(&self) -> bool {
         matches!(self, Self::Unbound | Self::Core)
     }
 }
 
+/// A start or empty element: local name, resolved namespace, attribute map,
+/// depth, and self-closing flag.
+///
+/// Duplicate attributes are a structural error at parse time (XML 1.0
+/// forbids them); the map is sorted so consumers iterate in deterministic
+/// order, and the strings are owned so they outlive the reader.
 #[derive(Debug)]
 pub(crate) struct Element {
     pub(crate) name: String,
@@ -142,6 +230,8 @@ impl Element {
     }
 }
 
+/// The owned, format-specific events emitted by `visit_xml`, delivered one
+/// at a time with no document tree in between.
 #[derive(Debug)]
 pub(crate) enum XmlEvent {
     Element(Element),
@@ -149,12 +239,24 @@ pub(crate) enum XmlEvent {
     End { name: String, depth: usize },
 }
 
+/// A failure while consuming a `visit_xml` stream.
+///
+/// `Structural` is produced by the reader (UTF-8, well-formedness, namespaces,
+/// roots) and is identical for every consumer; `Consumer` carries the caller's
+/// own policy error. The split lets each consumer map shared structural
+/// failures onto its own error type without losing the structural taxonomy.
 #[derive(Debug)]
 pub(crate) enum VisitError<E> {
     Structural(Error),
     Consumer(E),
 }
 
+/// Reduce a `quick-xml` resolved namespace to `Namespace`.
+///
+/// `Unbound` is the common producer form and stays valid. `Unknown` — a
+/// prefixed name with no corresponding `xmlns:prefix` declaration — is not
+/// well-formed XML and is invalid; this is in particular what makes a
+/// mistyped prefix fail here instead of being silently reinterpreted as core.
 fn namespace(result: ResolveResult<'_>) -> Result<Namespace, Error> {
     match result {
         ResolveResult::Unbound => Ok(Namespace::Unbound),
@@ -166,10 +268,35 @@ fn namespace(result: ResolveResult<'_>) -> Result<Namespace, Error> {
     }
 }
 
+/// Visit the XISF XML header as a strict, streaming, namespace-aware event
+/// stream.
+///
+/// The whole header must be valid UTF-8 before any event is emitted — the
+/// format forbids the lossy fallbacks older readers used — and the document
+/// must contain exactly one core `xisf` root. Events are handed to `consumer`
+/// one at a time with no intermediate vector, so a consumer can enforce its
+/// own budgets and cancellation between events, and a huge but well-formed
+/// document is rejected at the first violating event rather than after being
+/// materialized as a tree.
+///
+/// Structural rules enforced here, independently of any consumer:
+/// well-formedness (stray or mismatched closing tags), duplicate attributes,
+/// significant text or CDATA outside the root (whitespace-only text outside
+/// the root is insignificant and is skipped), CDATA folded into `Text`
+/// events, and DTD/entity declarations reported as `Unsupported` rather than
+/// `Invalid` — a `DOCTYPE` is well-formed XML, just a feature this reader
+/// does not interpret, and the diagnostic must say so.
+///
+/// What this deliberately does *not* check — element presence, placement,
+/// `version`, `uid` uniqueness, checksums, codecs, and resource limits — is
+/// conformance policy that belongs to the consumer.
 pub(crate) fn visit_xml<E>(
     xml: &[u8],
     mut consumer: impl FnMut(XmlEvent) -> Result<(), E>,
 ) -> Result<(), VisitError<E>> {
+    // Strict UTF-8 over the whole header, checked once before any event. A
+    // per-event check would let invalid bytes earlier in the document
+    // generate events before the failure is reported.
     std::str::from_utf8(xml).map_err(|error| {
         VisitError::Structural(Error::invalid(format!(
             "invalid XISF XML UTF-8 at byte {}",
@@ -193,6 +320,10 @@ pub(crate) fn visit_xml<E>(
                 let depth = stack.len();
                 if depth == 0 {
                     roots += 1;
+                    // Exactly one core `xisf` root: a second root, a root
+                    // with another name, or a root bound to a foreign
+                    // namespace is an invalid document, not an extension
+                    // point (root extension acceptance is a later stage).
                     if roots != 1 || name != "xisf" || !namespace.is_core() {
                         return Err(VisitError::Structural(Error::invalid(
                             "expected one core xisf XML root",
@@ -267,6 +398,9 @@ pub(crate) fn visit_xml<E>(
                     })?
                     .into_owned();
                 if stack.is_empty() {
+                    // Text outside the root is insignificant only while it is
+                    // whitespace; significant text there is a structural
+                    // error.
                     if !value.trim().is_empty() {
                         return Err(VisitError::Structural(Error::invalid(
                             "text outside XML root",
@@ -304,6 +438,8 @@ pub(crate) fn visit_xml<E>(
             _ => {}
         }
     }
+    // A complete document has exactly one root and an empty element stack
+    // at EOF; either failure means the header is truncated or unbalanced.
     if roots != 1 || !stack.is_empty() {
         return Err(VisitError::Structural(Error::invalid(
             "incomplete XISF XML document",
@@ -312,6 +448,12 @@ pub(crate) fn visit_xml<E>(
     Ok(())
 }
 
+/// An image's dimension vector in declared order (conventionally
+/// `width:height:channels`).
+///
+/// The structural layer only requires at least two dimensions — at least one
+/// spatial and one channel; consumers may impose stricter shapes (the loader
+/// requires exactly three).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Geometry {
     dimensions: Vec<u64>,
@@ -323,6 +465,11 @@ impl Geometry {
     }
 }
 
+/// Where a block's bytes come from, as a location *descriptor* rather than
+/// materialized bytes: `Attachment` is a byte range in the same file,
+/// `Inline` is encoded text in the element, `Embedded` is a child `Data`
+/// element, and `Other` records an unrecognized location spelling as a raw
+/// fact so consumers can report it unsupported instead of guessing.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum BlockLocation {
     Attachment { offset: u64, size: u64 },
@@ -331,6 +478,13 @@ pub(crate) enum BlockLocation {
     Other(String),
 }
 
+/// A parsed `Image` or `Thumbnail` descriptor: geometry, sample format,
+/// optional byte order, storage location, and optional compression.
+///
+/// Parsing is syntax-complete but policy-light: it requires only what any
+/// image consumer needs, and `byte_order` is preserved verbatim — Stage 1
+/// consumers deliberately do not decode with it, and byte-order-correct
+/// decoding is a later stage.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ImageDescriptor {
     pub(crate) geometry: Geometry,
@@ -386,6 +540,9 @@ impl ImageDescriptor {
         })
     }
 
+    /// The raw byte count the geometry and sample format require, with
+    /// checked multiplication, so a hostile dimension such as 2^64 − 1 is an
+    /// `Invalid` error rather than a wrapped allocation size.
     pub(crate) fn expected_bytes(&self) -> Result<u64, Error> {
         let mut samples = 1u64;
         for dimension in self.geometry.dimensions() {
@@ -424,6 +581,11 @@ impl BlockLocation {
     }
 }
 
+/// Bytes per sample for the standard sample formats.
+///
+/// Unknown spellings are `Unsupported` rather than `Invalid`: the value is a
+/// well-formed descriptor, and whether a given consumer can decode it is a
+/// capability decision that this shared layer only surfaces.
 fn sample_size(value: &str) -> Result<u64, Error> {
     match value {
         "UInt8" => Ok(1),
@@ -439,6 +601,9 @@ fn sample_size(value: &str) -> Result<u64, Error> {
 mod tests {
     use super::*;
 
+    /// Build the *correct* 16-byte prefix for a header of the given length.
+    /// There is deliberately no 12-byte variant: that form is a defect and
+    /// must not become a fixture convention.
     fn prefix(xml_len: u32) -> [u8; 16] {
         let mut prefix = [0; 16];
         prefix[..8].copy_from_slice(SIGNATURE);
