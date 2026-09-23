@@ -7,6 +7,18 @@
 //! uncompressed, single-channel, attachment-backed `UInt16` images.
 //! Malformed or unsupported files return an error instead of producing
 //! placeholder image data.
+//!
+//! The monolithic prefix, XML syntax, and image/storage descriptors are
+//! interpreted by the shared `structural` module — the same source the full
+//! validator uses — so the loader has no second prefix dialect or
+//! string-scanning parser of its own. This module only layers the loader's
+//! capability policy on top: anything it cannot load exactly is rejected with
+//! an explicit error.
+//!
+//! Two limits are deliberately deferred and should not be silently "fixed":
+//! the pixel decoder is little-endian only (it does not yet honor the
+//! `byteOrder` the shared descriptor preserves, so a big-endian image decodes
+//! silently wrong), and compressed payloads are rejected rather than decoded.
 
 pub(crate) mod structural;
 
@@ -23,6 +35,12 @@ use structural::{
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
+/// A resolved image data block: pixel dimensions plus the payload's extent in
+/// the source file.
+///
+/// `data_offset`/`data_size` describe the attachment extent, and a block is
+/// only produced after the descriptor's geometry required exactly
+/// `data_size` bytes of payload.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct ImageDataBlock {
     width: usize,
@@ -35,6 +53,11 @@ struct ImageDataBlock {
 ///
 /// The current implementation supports uncompressed, single-channel,
 /// attachment-backed `UInt16` XISF images.
+///
+/// Pixels are returned as `f32` values normalized to [0, 1]
+/// (raw 16-bit sample / 65535). The deferred capability limits —
+/// little-endian decode only, compressed payloads rejected — are documented
+/// in the module docs.
 pub fn load_xisf(path: &Path) -> Result<(Vec<f32>, usize, usize)> {
     debug!("Loading XISF file: {}", path.display());
     let file = File::open(path).context("Failed to open XISF file")?;
@@ -50,6 +73,10 @@ fn load_xisf_from_reader<R: Read + Seek>(reader: &mut R) -> Result<(Vec<f32>, us
     reader
         .seek(SeekFrom::Start(0))
         .context("Failed to seek to XISF prefix")?;
+    // A source shorter than the 16-byte prefix passes the available bytes to
+    // `MonolithicEnvelope::parse`, which names the specific missing stage.
+    // Pre-checking the length here would duplicate that check in a second
+    // dialect of the prefix.
     let prefix_len = source_len.min(PREFIX_LEN) as usize;
     let mut prefix = vec![0u8; prefix_len];
     reader
@@ -101,6 +128,9 @@ fn parse_image_data_block(xml: &[u8], source_len: u64, xml_end: u64) -> Result<I
         let XmlEvent::Element(element) = event else {
             return Ok(());
         };
+        // The loader interprets only the core vocabulary. Revision 1's
+        // root-namespace extension elements are a later stage, so a foreign
+        // element here is an explicit error.
         if !element.namespace.is_core() {
             return Err(anyhow!("Unsupported XML namespace on {}", element.name));
         }
@@ -147,6 +177,10 @@ fn parse_image_data_block(xml: &[u8], source_len: u64, xml_end: u64) -> Result<I
 
     let (data_offset, data_size) = match descriptor.location {
         BlockLocation::Attachment { offset, size } => {
+            // `xml_end` is the single source of the header boundary: the
+            // envelope parse checks the declared XML range, not whether an
+            // attachment overlaps it, and an attachment starting inside the
+            // header would re-read header bytes as payload.
             if offset < xml_end {
                 bail!("XISF attachment overlaps the XML header");
             }
@@ -168,6 +202,9 @@ fn parse_image_data_block(xml: &[u8], source_len: u64, xml_end: u64) -> Result<I
         ),
     };
 
+    // The declared payload extent must match the geometry exactly: a shorter
+    // extent is a truncated capture, and a longer one would silently drop
+    // trailing bytes. Neither is zero-filled or trimmed.
     let expected = descriptor.expected_bytes().map_err(anyhow::Error::new)?;
     if (data_size as u64) < expected {
         bail!(
@@ -188,7 +225,14 @@ fn parse_image_data_block(xml: &[u8], source_len: u64, xml_end: u64) -> Result<I
     })
 }
 
-/// Read pixel data from a byte buffer
+/// Read little-endian `UInt16` samples and normalize them to [0, 1]
+/// (raw value / 65535).
+///
+/// The shared descriptor preserves the image's `byteOrder` attribute, but
+/// this loader does not yet honor it: big-endian samples are decoded
+/// little-endian and silently wrong, and an unknown value is not rejected.
+/// Byte-order-correct decoding is an explicitly separate later stage, not an
+/// oversight to patch ad hoc here.
 fn read_pixel_data(data: &[u8], width: usize, height: usize) -> Result<Vec<f32>> {
     let pixel_count = width
         .checked_mul(height)
@@ -442,6 +486,9 @@ mod tests {
         ))
     }
 
+    /// Well-formed fixture with the full 16-byte prefix. The XML header is
+    /// zero-padded so the payload always begins at the fixed 512-byte
+    /// `attachment` offset the XML declares.
     fn build_xisf_bytes(xml: &str, payload: &[u8]) -> Vec<u8> {
         const DATA_OFFSET: usize = 512;
         const PREFIX_LEN: usize = 16;
@@ -459,6 +506,10 @@ mod tests {
         bytes
     }
 
+    /// The defective historical form: XML starting immediately after the
+    /// 8+4-byte signature/length with the four reserved bytes consumed as
+    /// XML. A negative fixture — the 12-byte prefix is a format defect, and
+    /// a loader that accepts it would be wrong, not more compatible.
     fn build_legacy_twelve_byte_xisf(xml: &str, payload: &[u8]) -> Vec<u8> {
         const DATA_OFFSET: usize = 512;
         let mut bytes = Vec::with_capacity(DATA_OFFSET + payload.len());

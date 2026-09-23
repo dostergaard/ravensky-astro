@@ -1,3 +1,24 @@
+//! XISF conformance policy layered on the shared `xisf::structural`
+//! foundation.
+//!
+//! `structural` owns the syntax: the 16-byte monolithic prefix, checked byte
+//! ranges, strict XML events, namespaces, and image/storage descriptors. This
+//! module owns the conformance policy that syntax alone cannot express:
+//! element presence and placement, `uid` uniqueness and `Reference` targets,
+//! checksums, compression framing, byte-length agreement between layout and
+//! geometry, and byte-order spelling.
+//!
+//! Every allocation is admitted through the shared memory account and every
+//! loop boundary passes a cancellation checkpoint, so a hostile file fails
+//! with a resource or cancellation error at the offending construct.
+//!
+//! `Node` is validation-only state rebuilt from the shared event stream,
+//! deliberately not a shared XISF AST: conformance, reference, embedded-data,
+//! and checksum policy need a completed document topology, while the loader's
+//! narrower job streams the same events without materializing one.
+//! `visit_xml` is the single syntax seam, and `quick-xml` types never escape
+//! `structural`.
+
 use super::*;
 use crate::xisf::structural::{
     visit_xml, BlockLocation, Error as StructuralError, ErrorKind as StructuralErrorKind,
@@ -8,9 +29,14 @@ use sha2::Digest;
 use std::{collections::BTreeMap, io::BufRead};
 mod streaming;
 
-// Validation keeps topology and accumulated text for conformance/checksum
-// policy. Syntax, namespaces, attributes, and image/storage descriptors come
-// from `xisf::structural`; this tree is deliberately not a shared XISF AST.
+/// Validation-only element state: local name, sorted attributes, accumulated
+/// text, child/parent indices, and the image descriptor parsed once at element
+/// time.
+///
+/// Conformance, embedded-data, reference, and checksum policy need this
+/// completed topology; it must not be promoted to a shared XISF AST. Every
+/// allocation into it is admitted under the shared memory reservation (see
+/// `parse`).
 #[derive(Default)]
 struct Node {
     name: String,
@@ -30,6 +56,10 @@ fn attr<'a>(n: &'a Node, key: &str) -> Result<&'a str> {
         .map(String::as_str)
         .ok_or_else(|| invalid(format!("{} missing {key}", n.name)))
 }
+/// Maps shared structural failures onto the validation taxonomy one-to-one,
+/// keeping the categories stable now that syntax is shared: incomplete bytes
+/// stay incomplete, contradictory bytes become invalid structure, and
+/// well-formed-but-uninterpreted input stays unsupported.
 fn structural(error: StructuralError) -> ValidationError {
     match error.kind() {
         StructuralErrorKind::Incomplete => {
@@ -39,6 +69,16 @@ fn structural(error: StructuralError) -> ValidationError {
         StructuralErrorKind::Unsupported => unsupported(error.to_string()),
     }
 }
+/// Rebuilds the validation `Node` tree from the shared XML event stream.
+///
+/// Every event passes a cancellation checkpoint. Every element admits a
+/// structure count plus a 1 KiB working-memory allowance (repeated per
+/// attribute), and every push into the tree, the element stack, or the text
+/// reserves capacity under the same memory reservation, so a hostile header
+/// fails with a resource limit instead of a panic or an unbounded tree. The
+/// depth checks below re-assert invariants that `visit_xml` already
+/// guarantees; they turn a regression in the shared layer into a diagnostic
+/// rather than a corrupt tree.
 fn parse(c: &mut Context<'_>, xml: &[u8], metadata: &mut Reservation) -> Result<Vec<Node>> {
     let mut nodes: Vec<Node> = Vec::new();
     let mut stack = Vec::new();
@@ -124,6 +164,10 @@ fn parse(c: &mut Context<'_>, xml: &[u8], metadata: &mut Reservation) -> Result<
     }
     Ok(nodes)
 }
+/// Byte count derivable from the node's own descriptors — image geometry
+/// times sample size, or a property's element size times its length or
+/// rows-by-columns — or `None` where no byte count is derivable (strings and
+/// other non-numeric types), in which case only the location is checked.
 fn expected(n: &Node) -> Result<Option<u64>> {
     if n.name == "Image" || n.name == "Thumbnail" {
         let descriptor = n
@@ -153,6 +197,8 @@ fn expected(n: &Node) -> Result<Option<u64>> {
     }
     Ok(None)
 }
+/// A parsed compression descriptor: codec, declared decoded size, optional
+/// shuffle item size, and the subblock `(input, output)` table.
 struct Compression {
     codec: String,
     decoded: u64,
@@ -207,6 +253,9 @@ fn compression(c: &mut Context<'_>, n: &Node, stored: u64) -> Result<Option<Comp
     } else {
         parts.push((stored, decoded));
     }
+    // The subblock table must account for the stored bytes and the declared
+    // decoded size exactly. Checked addition makes a hostile table an error
+    // rather than a wrapped sum.
     let (mut input, mut output) = (0, 0);
     for &(a, b) in &parts {
         input = add(input, a)?;
@@ -227,6 +276,11 @@ fn compression(c: &mut Context<'_>, n: &Node, stored: u64) -> Result<Option<Comp
         parts,
     }))
 }
+/// A resolved-but-not-materialized data block: an attachment extent in the
+/// source file, or a decoded inline buffer.
+///
+/// All reads route through `Context` so extent, working-memory, byte-read,
+/// and cancellation accounting apply identically to both forms.
 enum Storage {
     Attached(u64, u64),
     Inline(Buffer),
@@ -310,6 +364,9 @@ fn inline(c: &Context<'_>, node: &Node, encoding: &str) -> Result<Buffer> {
     let text = &packed[..length];
     match encoding {
         "base64" => {
+            // The buffer is sized to the maximum possible decoded length for
+            // a base64 text of this length, so the working-memory reservation
+            // tracks the attribute and `decode_slice` is guaranteed to fit.
             let mut output = c.memory.buffer((length / 4 + 1) * 3)?;
             let n = base64::engine::general_purpose::STANDARD
                 .decode_slice(text, &mut output)
@@ -363,6 +420,11 @@ fn hash<D: Digest + Default>(storage: &Storage, c: &mut Context<'_>) -> Result<V
     storage.stream(c, |b| d.update(b))?;
     Ok(d.finalize().to_vec())
 }
+/// Check a checksum declared on a block, if any.
+///
+/// At the structural level the descriptor is only syntax-checked (algorithm
+/// spelling, bounded and hex-valid digest) and counted as present; the block
+/// bytes are never read. Full validation re-hashes the block and compares.
 fn checksum(c: &mut Context<'_>, n: &Node, s: &Storage) -> Result<()> {
     let Some(value) = n.attrs.get("checksum") else {
         return Ok(());
@@ -371,9 +433,14 @@ fn checksum(c: &mut Context<'_>, n: &Node, s: &Storage) -> Result<()> {
     let (algorithm, digest) = value
         .split_once(':')
         .ok_or_else(|| invalid("invalid checksum descriptor"))?;
+    // The digest is hex text; bounding its length keeps the decoded-digest
+    // allocation proportional to the attribute so a hostile descriptor
+    // cannot reserve unbounded working memory before the hex check fails.
     if digest.len() > 256 {
         return Err(invalid("checksum digest too long"));
     }
+    // The digest is parsed before the level check on purpose: a malformed
+    // digest is a structural error even when the hash is not computed.
     let expected = hex(digest.as_bytes())?;
     if c.options.level == ValidationLevel::Structural {
         return Ok(());
@@ -392,6 +459,16 @@ fn checksum(c: &mut Context<'_>, n: &Node, s: &Storage) -> Result<()> {
     c.checksums.verified += 1;
     Ok(())
 }
+/// Validate a monolithic XISF container at the requested level.
+///
+/// The shared envelope is parsed from the first 16 bytes and the XML header
+/// is admitted under the header budget. Parsing holds a conservative working
+/// reservation proportional to the header, released once the tree is built.
+/// `uid`s must then be unique, and each data block's placement, exact length,
+/// checksum, and decoding is checked interleaved with the per-block
+/// extent/decoded/undecoded admission and cancellation checkpoints, so a
+/// budget or cancellation failure stops at the offending block rather than
+/// at the end of the file.
 pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
     let prefix_len = c.stamp.size.min(PREFIX_LEN);
     let prefix = c.bytes(0, prefix_len)?;
@@ -406,6 +483,8 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
     let nodes = parse(c, &xml, &mut metadata)?;
     drop(xml);
     let mut identifiers = BTreeMap::new();
+    // A `Reference` registers no `uid` of its own: it has no data block, and
+    // its `ref` attribute is how it *consumes* another element's `uid`.
     for (index, node) in nodes.iter().enumerate() {
         if let Some(uid) = node.attrs.get("uid") {
             if uid.is_empty()
@@ -439,6 +518,9 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
         let has_descriptor = ["checksum", "compression", "subblocks"]
             .iter()
             .any(|key| node.attrs.contains_key(*key));
+        // Byte-order spelling is validated but not applied: the validator never
+        // reconstructs pixels, and decoding with `byteOrder` is a later consumer
+        // stage.
         if node.name == "Data" {
             let parent = node
                 .parent
@@ -460,6 +542,9 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
         c.structure()?;
         let (description, storage) = match BlockLocation::parse(location).map_err(structural)? {
             BlockLocation::Attachment { offset, size: len } => {
+                // `xml_end` is the single source of the header boundary: an
+                // attachment starting inside the XML header would re-read
+                // header bytes as payload.
                 if offset < envelope.xml_end() {
                     return Err(invalid("attachment overlaps header"));
                 }
@@ -516,6 +601,8 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
             .map_err(|e| e.context(format!("{} block {blocks} ({location})", node.name)))?;
         if c.options.level == ValidationLevel::Structural {
             if let Some(comp) = &comp {
+                // Compressed blocks are not decoded at the structural level; the
+                // codec is recorded in the report, never assumed to be supported.
                 c.undecoded(&comp.codec)?;
             }
         }
@@ -533,6 +620,12 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
     }
     Ok(())
 }
+/// Verify compressed blocks at the full level.
+///
+/// `zlib` and `zstd` streams flow from the block's storage through bounded
+/// working memory via `streaming`. Raw `lz4`/`lz4hc` instead need the complete
+/// input subblock plus a budgeted output buffer sized to the declared decoded
+/// length, which the decoder must fill exactly.
 fn decode(c: &mut Context<'_>, storage: &Storage, compression: &Compression) -> Result<()> {
     if !["zlib", "lz4", "lz4hc", "zstd"].contains(&compression.codec.as_str()) {
         return Err(unsupported(format!(
