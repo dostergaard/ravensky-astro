@@ -5,3 +5,6 @@ __pycache__/
 tests/data
 # External reference material, maintained outside this repository.
 docs/fits_standard40aa-le.pdf
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

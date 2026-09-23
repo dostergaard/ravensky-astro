@@ -1,0 +1,97 @@
+@startuml Recommended_Format_Architecture
+title Recommended format-ingestion architecture
+
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+left to right direction
+
+legend left
+  |= Mark |= Meaning |
+  | <<existing public>> | Existing public API remains |
+  | <<proposed internal>> | Private implementation boundary |
+  | <<minimal additive boundary>> | Small cross-crate raw-data contract |
+endlegend
+
+package "astro-io" {
+  package "shared safety" {
+    [checked ranges / extents and byte counts] as safe <<proposed internal>>
+    [bounded input / reservations / cancellation checkpoints] as resources <<proposed internal>>
+  }
+
+  package "FITS-specific" {
+    [CFITSIO adapter + gate] as fits_native <<proposed internal>>
+    [pure structural validator kernel] as fits_kernel <<proposed internal>>
+    [FitsHeaderCard] as fits_card <<existing public>>
+    [fits::load_fits] as fits_api <<existing public>>
+  }
+
+  package "XISF-specific" {
+    [monolithic envelope reader] as xisf_envelope <<proposed internal>>
+    [namespace-aware event parser] as xisf_events <<proposed internal>>
+    [image/block/compression descriptors] as xisf_desc <<proposed internal>>
+    [format-specific codec/sample decode] as xisf_decode <<proposed internal>>
+    [raw XISF inspection view without XML-library types] as xisf_raw <<minimal additive boundary>>
+    [xisf::load_xisf] as xisf_api <<existing public>>
+  }
+
+  [FITS validation policy] as fits_policy <<proposed internal>>
+  [XISF validation policy] as xisf_policy <<proposed internal>>
+  [validation entry points] as validation_api <<existing public>>
+}
+
+package "astro-metadata" {
+  [raw FITS-card interpretation] as meta_fits
+  [raw XISF-record interpretation] as meta_xisf
+  [AstroMetadata normalization / precedence / derived semantics] as meta_semantics <<existing public>>
+}
+
+package "astro-metrics" {
+  [validated f32 plane/slice + dimensions] as metric_input
+  [star/background/quality analysis] as metric_engine <<existing public>>
+}
+
+package "applications" {
+  [validation/monitor policy] as app_validate
+  [organization/path planning] as app_workflow
+}
+
+safe --> fits_kernel
+safe --> xisf_envelope
+safe --> xisf_desc
+resources --> fits_kernel
+resources --> xisf_decode
+
+fits_native --> fits_card : raw cards
+fits_native --> fits_api : decoded primary image
+fits_kernel --> fits_policy
+fits_policy --> validation_api
+
+xisf_envelope --> xisf_events
+xisf_events --> xisf_desc
+xisf_desc --> xisf_decode
+xisf_events --> xisf_raw : FITSKeyword / Property records
+xisf_desc --> xisf_raw : image descriptors
+xisf_desc --> xisf_policy
+xisf_policy --> validation_api
+xisf_decode --> xisf_api : resolved f32 samples
+
+fits_card --> meta_fits
+xisf_raw --> meta_xisf
+meta_fits --> meta_semantics
+meta_xisf --> meta_semantics
+fits_api --> metric_input
+xisf_api --> metric_input
+metric_input --> metric_engine
+validation_api --> app_validate
+meta_semantics --> app_workflow
+
+note bottom of fits_kernel
+  FITS and XISF remain separate implementations.
+  No generic multi-format AST is introduced.
+end note
+
+note bottom of xisf_raw
+  Only the cross-crate facts needed by metadata are exposed.
+  Parser events, native handles, validation state, and codecs stay private.
+end note
+@enduml

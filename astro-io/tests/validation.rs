@@ -552,6 +552,79 @@ fn xisf(xml: &str, data: &[u8]) -> Vec<u8> {
     bytes.extend(data);
     bytes
 }
+
+fn legacy_twelve_byte_xisf(xml: &str, data: &[u8]) -> Vec<u8> {
+    let mut bytes = b"XISF0100".to_vec();
+    bytes.extend((xml.len() as u32).to_le_bytes());
+    bytes.extend(xml.as_bytes());
+    bytes.resize(4096, 0);
+    bytes.extend(data);
+    bytes
+}
+
+#[test]
+fn loader_and_validator_agree_on_valid_monolithic_image_facts() {
+    let xml = r#"<xisf version="1.0"><Image geometry="2:2:1" sampleFormat="UInt16" location="attachment:4096:8"/></xisf>"#;
+    let file = Fixture::new(&xisf(xml, &[0, 0, 1, 0, 2, 0, 3, 0]));
+
+    let (_, width, height) = astro_io::xisf::load_xisf(&file.0).unwrap();
+    let report = validate_file(&file.0, &ValidationOptions::default(), None).unwrap();
+
+    assert_eq!((width, height), (2, 2));
+    assert_eq!(report.image_count(), 1);
+}
+
+#[test]
+fn loader_and_validator_reject_legacy_twelve_byte_prefix() {
+    let xml = r#"<xisf version="1.0"><Image geometry="2:2:1" sampleFormat="UInt16" location="attachment:4096:8"/></xisf>"#;
+    let file = Fixture::new(&legacy_twelve_byte_xisf(xml, &[0; 8]));
+
+    assert!(astro_io::xisf::load_xisf(&file.0).is_err());
+    assert_eq!(
+        validate_file(&file.0, &ValidationOptions::default(), None)
+            .unwrap_err()
+            .kind(),
+        ValidationErrorKind::InvalidStructure
+    );
+}
+
+#[test]
+fn shared_monolithic_prefix_and_utf8_failures_keep_validation_categories() {
+    for length in [0, 7, 11, 15] {
+        let file = Fixture::new(&b"XISF0100\x01\0\0\0\0\0\0\0"[..length]);
+        assert_eq!(
+            validate_file(&file.0, &ValidationOptions::default(), None)
+                .unwrap_err()
+                .kind(),
+            ValidationErrorKind::Incomplete,
+            "prefix length {length}"
+        );
+    }
+
+    let mut truncated_xml = b"XISF0100".to_vec();
+    truncated_xml.extend(u32::MAX.to_le_bytes());
+    truncated_xml.extend([0; 4]);
+    let file = Fixture::new(&truncated_xml);
+    assert_eq!(
+        validate_file(&file.0, &ValidationOptions::default(), None)
+            .unwrap_err()
+            .kind(),
+        ValidationErrorKind::Incomplete
+    );
+
+    let mut invalid_utf8 = xisf(
+        r#"<xisf version="1.0"><Image geometry="1:1:1" sampleFormat="UInt16" location="attachment:4096:2"/></xisf>"#,
+        &[0; 2],
+    );
+    invalid_utf8[16] = 0xff;
+    let file = Fixture::new(&invalid_utf8);
+    assert_eq!(
+        validate_file(&file.0, &ValidationOptions::default(), None)
+            .unwrap_err()
+            .kind(),
+        ValidationErrorKind::InvalidStructure
+    );
+}
 #[test]
 fn xisf_rgb_float_layout_is_supported_without_using_narrow_pixel_loader() {
     let file = Fixture::new(&xisf(

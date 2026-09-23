@@ -8,11 +8,18 @@
 //! Malformed or unsupported files return an error instead of producing
 //! placeholder image data.
 
-use anyhow::{bail, Context, Result};
+pub(crate) mod structural;
+
+use anyhow::{anyhow, bail, Context, Result};
 use log::debug;
 use std::fs::File;
 use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
+
+use structural::{
+    checked_range, visit_xml, BlockLocation, ImageDescriptor, MonolithicEnvelope, VisitError,
+    XmlEvent, PREFIX_LEN,
+};
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
@@ -37,23 +44,20 @@ pub fn load_xisf(path: &Path) -> Result<(Vec<f32>, usize, usize)> {
 }
 
 fn load_xisf_from_reader<R: Read + Seek>(reader: &mut R) -> Result<(Vec<f32>, usize, usize)> {
-    let mut signature = [0u8; 8];
+    let source_len = reader
+        .seek(SeekFrom::End(0))
+        .context("Failed to determine XISF source extent")?;
     reader
-        .read_exact(&mut signature)
-        .context("Failed to read XISF signature")?;
-
-    if &signature != b"XISF0100" {
-        bail!("Invalid XISF signature");
-    }
-
-    let mut header_size_bytes = [0u8; 4];
+        .seek(SeekFrom::Start(0))
+        .context("Failed to seek to XISF prefix")?;
+    let prefix_len = source_len.min(PREFIX_LEN) as usize;
+    let mut prefix = vec![0u8; prefix_len];
     reader
-        .read_exact(&mut header_size_bytes)
-        .context("Failed to read header size")?;
-    let header_size = u32::from_le_bytes(header_size_bytes) as usize;
-
-    let xml_content = extract_xml_content(reader, header_size)?;
-    let image = parse_image_data_block(&xml_content)?;
+        .read_exact(&mut prefix)
+        .context("Failed to read XISF monolithic prefix")?;
+    let envelope = MonolithicEnvelope::parse(&prefix, source_len).map_err(anyhow::Error::new)?;
+    let xml_content = read_xml_header(reader, &envelope)?;
+    let image = parse_image_data_block(&xml_content, source_len, envelope.xml_end())?;
 
     debug!(
         "Parsed XISF image layout: {}x{}, offset={}, size={}",
@@ -74,46 +78,63 @@ fn load_xisf_from_reader<R: Read + Seek>(reader: &mut R) -> Result<(Vec<f32>, us
     Ok((pixels, image.width, image.height))
 }
 
-/// Extract XML content from the XISF header
-fn extract_xml_content<R: Read>(reader: &mut R, header_size: usize) -> Result<String> {
+fn read_xml_header<R: Read + Seek>(
+    reader: &mut R,
+    envelope: &MonolithicEnvelope,
+) -> Result<Vec<u8>> {
+    let range = envelope.xml_range();
+    let header_size = usize::try_from(envelope.xml_len())
+        .context("XISF XML header exceeds this platform's address space")?;
     let mut header_data = vec![0u8; header_size];
+    reader
+        .seek(SeekFrom::Start(range.start))
+        .context("Failed to seek to XISF XML header")?;
     reader
         .read_exact(&mut header_data)
         .context("Failed to read XML header")?;
-
-    let xml_start = header_data
-        .windows(5)
-        .position(|window| window == b"<?xml")
-        .context("XISF header does not contain an XML declaration")?;
-
-    let actual_size = header_data[xml_start..]
-        .iter()
-        .position(|&b| b == 0)
-        .map(|pos| xml_start + pos)
-        .unwrap_or(header_data.len());
-
-    let xml_bytes = &header_data[xml_start..actual_size];
-    let xml_content = std::str::from_utf8(xml_bytes)
-        .context("Failed to decode XISF XML header as UTF-8")?
-        .to_string();
-
-    Ok(xml_content)
+    Ok(header_data)
 }
 
-fn parse_image_data_block(xml: &str) -> Result<ImageDataBlock> {
-    let image_tag = extract_first_image_tag(xml)?;
-    let (width, height, channels) = parse_geometry(image_tag)?;
-    let sample_format = extract_attribute(image_tag, "sampleFormat")
-        .context("XISF image is missing required sampleFormat attribute")?;
+fn parse_image_data_block(xml: &[u8], source_len: u64, xml_end: u64) -> Result<ImageDataBlock> {
+    let mut descriptor = None;
+    match visit_xml(xml, |event| {
+        let XmlEvent::Element(element) = event else {
+            return Ok(());
+        };
+        if !element.namespace.is_core() {
+            return Err(anyhow!("Unsupported XML namespace on {}", element.name));
+        }
+        if element.name == "Image" && descriptor.is_none() {
+            descriptor = Some(ImageDescriptor::parse(&element).map_err(anyhow::Error::new)?);
+        }
+        Ok(())
+    }) {
+        Ok(()) => {}
+        Err(VisitError::Structural(error)) => return Err(anyhow::Error::new(error)),
+        Err(VisitError::Consumer(error)) => return Err(error),
+    }
+    let descriptor = descriptor.context("XISF header is missing an Image element")?;
+    let dimensions = descriptor.geometry.dimensions();
+    if dimensions.len() != 3 {
+        bail!(
+            "Invalid XISF geometry; expected width:height:channels, got {} dimensions",
+            dimensions.len()
+        );
+    }
+    let (width, height, channels) = (
+        usize::try_from(dimensions[0]).context("XISF image width exceeds address space")?,
+        usize::try_from(dimensions[1]).context("XISF image height exceeds address space")?,
+        dimensions[2],
+    );
 
-    if sample_format != "UInt16" {
+    if descriptor.sample_format != "UInt16" {
         bail!(
             "Unsupported XISF sampleFormat '{}'; only UInt16 images are currently supported",
-            sample_format
+            descriptor.sample_format
         );
     }
 
-    if let Some(compression) = extract_attribute(image_tag, "compression") {
+    if let Some(compression) = descriptor.compression {
         bail!(
             "Unsupported compressed XISF image '{}'; only uncompressed attachment-backed images are currently supported",
             compression
@@ -121,15 +142,43 @@ fn parse_image_data_block(xml: &str) -> Result<ImageDataBlock> {
     }
 
     if channels != 1 {
-        bail!(
-            "Unsupported XISF geometry '{}': only single-channel images are currently supported",
-            extract_attribute(image_tag, "geometry").unwrap_or_default()
-        );
+        bail!("Unsupported XISF geometry: only single-channel images are currently supported");
     }
 
-    let location = extract_attribute(image_tag, "location")
-        .context("XISF image is missing required location attribute")?;
-    let (data_offset, data_size) = parse_attachment_location(&location)?;
+    let (data_offset, data_size) = match descriptor.location {
+        BlockLocation::Attachment { offset, size } => {
+            if offset < xml_end {
+                bail!("XISF attachment overlaps the XML header");
+            }
+            checked_range(offset, size, source_len, "XISF image attachment")
+                .map_err(anyhow::Error::new)?;
+            let size = usize::try_from(size)
+                .context("XISF image attachment exceeds this platform's address space")?;
+            (offset, size)
+        }
+        BlockLocation::Inline { .. } => {
+            bail!("Unsupported inline XISF image; only attachment-backed images are currently supported")
+        }
+        BlockLocation::Embedded => {
+            bail!("Unsupported embedded XISF image; only attachment-backed images are currently supported")
+        }
+        BlockLocation::Other(location) => bail!(
+            "Unsupported XISF location '{}'; only attachment-backed images are currently supported",
+            location
+        ),
+    };
+
+    let expected = descriptor.expected_bytes().map_err(anyhow::Error::new)?;
+    if (data_size as u64) < expected {
+        bail!(
+            "XISF image payload is truncated: geometry requires {expected} bytes, location declares {data_size}"
+        );
+    }
+    if data_size as u64 > expected {
+        bail!(
+            "XISF image payload has trailing bytes: geometry requires {expected} bytes, location declares {data_size}"
+        );
+    }
 
     Ok(ImageDataBlock {
         width,
@@ -137,88 +186,6 @@ fn parse_image_data_block(xml: &str) -> Result<ImageDataBlock> {
         data_offset,
         data_size,
     })
-}
-
-fn extract_first_image_tag(xml: &str) -> Result<&str> {
-    let start = xml
-        .find("<Image ")
-        .context("XISF header is missing an <Image> element")?;
-    let end = xml[start..]
-        .find('>')
-        .map(|pos| start + pos + 1)
-        .context("XISF <Image> element is not terminated")?;
-    Ok(&xml[start..end])
-}
-
-fn parse_geometry(image_tag: &str) -> Result<(usize, usize, usize)> {
-    let geometry = extract_attribute(image_tag, "geometry")
-        .context("XISF image is missing required geometry attribute")?;
-    let parts: Vec<&str> = geometry.split(':').collect();
-    if parts.len() != 3 {
-        bail!(
-            "Invalid XISF geometry '{}'; expected width:height:channels",
-            geometry
-        );
-    }
-
-    let width = parts[0]
-        .parse::<usize>()
-        .with_context(|| format!("Invalid XISF width in geometry '{}'", geometry))?;
-    let height = parts[1]
-        .parse::<usize>()
-        .with_context(|| format!("Invalid XISF height in geometry '{}'", geometry))?;
-    let channels = parts[2]
-        .parse::<usize>()
-        .with_context(|| format!("Invalid XISF channel count in geometry '{}'", geometry))?;
-
-    if width == 0 || height == 0 || channels == 0 {
-        bail!(
-            "Invalid XISF geometry '{}'; width, height, and channels must all be non-zero",
-            geometry
-        );
-    }
-
-    Ok((width, height, channels))
-}
-
-fn parse_attachment_location(location: &str) -> Result<(u64, usize)> {
-    let parts: Vec<&str> = location.split(':').collect();
-    if parts.len() != 3 {
-        bail!(
-            "Invalid XISF location '{}'; expected attachment:offset:size",
-            location
-        );
-    }
-
-    if parts[0] != "attachment" {
-        bail!(
-            "Unsupported XISF location '{}'; only attachment-backed images are currently supported",
-            location
-        );
-    }
-
-    let data_offset = parts[1]
-        .parse::<u64>()
-        .with_context(|| format!("Invalid XISF attachment offset in '{}'", location))?;
-    let data_size = parts[2]
-        .parse::<usize>()
-        .with_context(|| format!("Invalid XISF attachment size in '{}'", location))?;
-
-    Ok((data_offset, data_size))
-}
-
-/// Extract an attribute value from XML content
-fn extract_attribute(xml: &str, attr_name: &str) -> Option<String> {
-    let search_pattern = format!("{}=\"", attr_name);
-
-    if let Some(start_pos) = xml.find(&search_pattern) {
-        let start = start_pos + search_pattern.len();
-        if let Some(end_pos) = xml[start..].find('"') {
-            return Some(xml[start..start + end_pos].to_string());
-        }
-    }
-
-    None
 }
 
 /// Read pixel data from a byte buffer
@@ -256,33 +223,9 @@ fn read_pixel_data(data: &[u8], width: usize, height: usize) -> Result<Vec<f32>>
 mod tests {
     use super::*;
     use std::fs;
-    use std::io::Cursor;
     use std::path::PathBuf;
     use std::process;
     use std::time::{SystemTime, UNIX_EPOCH};
-
-    #[test]
-    fn test_extract_attribute() {
-        let xml =
-            r#"<Image id="main" geometry="1024:768:1" sampleFormat="UInt16" colorSpace="Gray">"#;
-
-        // Test existing attributes
-        assert_eq!(
-            extract_attribute(xml, "geometry"),
-            Some("1024:768:1".to_string())
-        );
-        assert_eq!(
-            extract_attribute(xml, "sampleFormat"),
-            Some("UInt16".to_string())
-        );
-        assert_eq!(
-            extract_attribute(xml, "colorSpace"),
-            Some("Gray".to_string())
-        );
-
-        // Test non-existent attribute
-        assert_eq!(extract_attribute(xml, "nonexistent"), None);
-    }
 
     #[test]
     fn test_read_pixel_data() {
@@ -312,23 +255,6 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_xml_content() {
-        // Create a test header with XML content
-        let mut header = vec![0u8; 100];
-        let xml = b"<?xml version=\"1.0\"?><xisf><Image></Image></xisf>";
-        header[10..10 + xml.len()].copy_from_slice(xml);
-
-        // Extract the XML content
-        let mut reader = Cursor::new(header);
-        let result = extract_xml_content(&mut reader, 100).unwrap();
-
-        // Check the result
-        assert!(result.contains("<?xml"));
-        assert!(result.contains("<xisf>"));
-        assert!(result.contains("<Image>"));
-    }
-
-    #[test]
     fn test_load_xisf_reads_valid_uint16_payload() {
         let path = write_temp_xisf(
             r#"<?xml version="1.0"?><xisf><Image geometry="2:2:1" sampleFormat="UInt16" colorSpace="Gray" location="attachment:512:8" /></xisf>"#,
@@ -345,6 +271,88 @@ mod tests {
         assert!((pixels[1] - 0.5).abs() < 0.001);
         assert_eq!(pixels[2], 1.0);
         assert!((pixels[3] - 0.25).abs() < 0.001);
+    }
+
+    #[test]
+    fn load_xisf_rejects_legacy_twelve_byte_prefix() {
+        let xml = r#"<?xml version="1.0"?><xisf><Image geometry="2:2:1" sampleFormat="UInt16" colorSpace="Gray" location="attachment:512:8" /></xisf>"#;
+        let path = temp_xisf_path();
+        fs::write(
+            &path,
+            build_legacy_twelve_byte_xisf(xml, &u16_payload(&[0, 1, 2, 3])),
+        )
+        .unwrap();
+
+        let error = load_xisf(&path).expect_err("the historical 12-byte form must be rejected");
+        fs::remove_file(&path).unwrap();
+
+        assert!(format!("{error:#}").contains("reserved"));
+    }
+
+    #[test]
+    fn load_xisf_rejects_nonzero_reserved_bytes() {
+        let xml = r#"<?xml version="1.0"?><xisf><Image geometry="2:2:1" sampleFormat="UInt16" colorSpace="Gray" location="attachment:512:8" /></xisf>"#;
+        let mut bytes = build_xisf_bytes(xml, &u16_payload(&[0, 1, 2, 3]));
+        bytes[12] = 1;
+        let path = temp_xisf_path();
+        fs::write(&path, bytes).unwrap();
+
+        let error = load_xisf(&path).expect_err("reserved prefix bytes must be zero");
+        fs::remove_file(&path).unwrap();
+
+        assert!(format!("{error:#}").contains("reserved"));
+    }
+
+    #[test]
+    fn load_xisf_rejects_each_truncated_prefix_section() {
+        for (length, expected) in [(7, "signature"), (11, "length"), (15, "reserved")] {
+            let path = temp_xisf_path();
+            fs::write(&path, &b"XISF0100\x01\0\0\0\0\0\0\0"[..length]).unwrap();
+
+            let error = load_xisf(&path).expect_err("truncated prefix must fail");
+            fs::remove_file(&path).unwrap();
+
+            assert!(
+                format!("{error:#}").contains(expected),
+                "length {length} should identify the truncated {expected} field: {error:#}"
+            );
+        }
+    }
+
+    #[test]
+    fn load_xisf_rejects_invalid_utf8_and_malformed_xml() {
+        let mut invalid_utf8 = build_xisf_bytes(
+            r#"<xisf><Image geometry="1:1:1" sampleFormat="UInt16" location="attachment:512:2"/></xisf>"#,
+            &[0, 0],
+        );
+        invalid_utf8[16] = 0xff;
+        let invalid_utf8_path = temp_xisf_path();
+        fs::write(&invalid_utf8_path, invalid_utf8).unwrap();
+        let error = load_xisf(&invalid_utf8_path).expect_err("invalid UTF-8 must fail");
+        fs::remove_file(&invalid_utf8_path).unwrap();
+        assert!(format!("{error:#}").contains("UTF-8"));
+
+        let malformed_path = write_temp_xisf(
+            r#"<xisf><Image geometry="1:1:1" sampleFormat="UInt16" location="attachment:512:2"/>"#,
+            &[0, 0],
+        );
+        let error = load_xisf(&malformed_path).expect_err("malformed XML must fail");
+        fs::remove_file(&malformed_path).unwrap();
+        assert!(format!("{error:#}").contains("XML"));
+    }
+
+    #[test]
+    fn load_xisf_accepts_qualified_core_namespace_elements() {
+        let path = write_temp_xisf(
+            r#"<x:xisf xmlns:x="http://www.pixinsight.com/xisf"><x:Image geometry="2:2:1" sampleFormat="UInt16" colorSpace="Gray" location="attachment:512:8"/></x:xisf>"#,
+            &u16_payload(&[0, 32768, 65535, 16384]),
+        );
+
+        let result = load_xisf(&path);
+        fs::remove_file(&path).unwrap();
+
+        let (pixels, width, height) = result.expect("qualified core elements should load");
+        assert_eq!((width, height, pixels.len()), (2, 2, 4));
     }
 
     #[test]
@@ -436,20 +444,29 @@ mod tests {
 
     fn build_xisf_bytes(xml: &str, payload: &[u8]) -> Vec<u8> {
         const DATA_OFFSET: usize = 512;
-        const PREAMBLE_LEN: usize = 12;
-        const HEADER_SIZE: usize = DATA_OFFSET - PREAMBLE_LEN;
+        const PREFIX_LEN: usize = 16;
 
-        assert!(xml.len() <= HEADER_SIZE);
+        assert!(PREFIX_LEN + xml.len() <= DATA_OFFSET);
 
         let mut bytes = Vec::with_capacity(DATA_OFFSET + payload.len());
         bytes.extend_from_slice(b"XISF0100");
-        bytes.extend_from_slice(&(HEADER_SIZE as u32).to_le_bytes());
-
-        let mut header = vec![0u8; HEADER_SIZE];
-        header[..xml.len()].copy_from_slice(xml.as_bytes());
-        bytes.extend_from_slice(&header);
+        bytes.extend_from_slice(&(xml.len() as u32).to_le_bytes());
+        bytes.extend_from_slice(&[0; 4]);
+        bytes.extend_from_slice(xml.as_bytes());
+        bytes.resize(DATA_OFFSET, 0);
         bytes.extend_from_slice(payload);
 
+        bytes
+    }
+
+    fn build_legacy_twelve_byte_xisf(xml: &str, payload: &[u8]) -> Vec<u8> {
+        const DATA_OFFSET: usize = 512;
+        let mut bytes = Vec::with_capacity(DATA_OFFSET + payload.len());
+        bytes.extend_from_slice(b"XISF0100");
+        bytes.extend_from_slice(&(xml.len() as u32).to_le_bytes());
+        bytes.extend_from_slice(xml.as_bytes());
+        bytes.resize(DATA_OFFSET, 0);
+        bytes.extend_from_slice(payload);
         bytes
     }
 

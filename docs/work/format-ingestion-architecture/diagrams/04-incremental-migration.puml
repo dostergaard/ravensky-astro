@@ -1,0 +1,79 @@
+@startuml Incremental_Migration
+title Incremental migration and protection points
+
+skinparam activity {
+  BackgroundColor #F8F8F8
+  BorderColor #555555
+}
+
+start
+:Architecture decision and corrected fixture contract;
+note right
+  Completed by this assessment.
+  No standalone architecture-only code stage is required.
+end note
+
+:Stage 1 — shared XISF structural foundation;
+note right
+  Extract 16-byte envelope/range/event primitives.
+  Correct prefix and strict UTF-8 behavior.
+  First correctness fix lands in this stage.
+  Unit/regression tests + range Kani candidate.
+end note
+
+fork
+  :Stage 2A — migrate narrow pixel loader;
+  note right
+    Byte order, exact sample length,
+    resolved attachment descriptors.
+  end note
+fork again
+  :Stage 2B — migrate metadata extraction;
+  note right
+    Minimal raw-record boundary,
+    FITSKeyword event parsing,
+    preserve public semantic APIs.
+  end note
+fork again
+  :Stage 2C — make validator consume shared structure;
+  note right
+    Validation policy remains separate;
+    retain budgets and diagnostics.
+  end note
+end fork
+
+:Remove old 12-byte/string-scanner paths
+after parity tests pass;
+
+:Stage 3 — Revision 1 codec and extension behavior;
+note right
+  Exact Zstandard frames, bounded zstd/zstd+sh loading,
+  root extension handling, cancellation/resource tests,
+  frame-window and subblock Kani candidates.
+end note
+
+:Stage 4 — coordinated release and AstroMuninn migration;
+note right
+  Publish shared crates, update consumer versions,
+  run validation/metadata/path-plan golden tests.
+end note
+
+:Stage 5 — post-Revision-1 hardening;
+note right
+  Raw Property preservation, schema invariants,
+  detached-signature compatibility, storage corpus.
+  Selective FITS cleanup may begin here.
+end note
+
+if (Evidence justifies FITS/API cleanup?) then (yes)
+  :Cards-based FITS metadata input,
+  private proofable arithmetic extraction,
+  remove unused metrics dependencies;
+else (no)
+  :Keep mature CFITSIO paths and public APIs unchanged;
+endif
+
+:Deferred: generic format AST,
+generic image framework, pure-Rust FITS replacement;
+stop
+@enduml

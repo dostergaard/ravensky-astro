@@ -1,0 +1,66 @@
+@startuml Current_Responsibilities
+title Current responsibility flow by format
+
+skinparam componentStyle rectangle
+left to right direction
+
+rectangle "File bytes" as bytes
+rectangle "Structural interpretation" as structure
+rectangle "Validation" as validation
+rectangle "Decoded image/sample data" as decoded
+rectangle "Metadata semantics" as semantics
+rectangle "Metrics" as metrics
+rectangle "Application workflow" as workflow
+
+bytes --> structure
+structure --> validation
+structure --> decoded
+structure --> semantics
+decoded --> metrics
+semantics --> workflow
+validation --> workflow
+
+package "FITS mapping" #EAF2F8 {
+  [CFITSIO reader (astro-io)] as f_native
+  [CFITSIO card access (astro-io + astro-metadata)] as f_cards
+  [pure-Rust validator parser (astro-io)] as f_validator
+  [CFITSIO compressed-image decode] as f_native_decode
+  [managed tile/codec validation] as f_managed
+}
+
+package "XISF mapping" #FFF2CC {
+  [narrow loader scanner] as x_loader
+  [validator event/tree parser] as x_validator
+  [metadata string scanner] as x_metadata
+  [bounded validation codecs] as x_codecs
+}
+
+f_native ..> structure : native syntax ownership
+f_cards ..> structure : card representation
+f_validator ..> structure : independent pure parser
+f_validator ..> validation : conformance + extents
+f_native_decode ..> decoded
+f_managed ..> validation : binary tables / tiles / codecs
+
+x_loader ..> structure : prefix, Image, attachment
+x_validator ..> structure : prefix, XML, descriptors
+x_validator ..> validation : policy and resources
+x_metadata ..> structure : prefix, XML, Image/FITSKeyword/Property
+x_codecs ..> validation : checksum/decode without pixels
+x_loader ..> decoded : little-endian UInt16 only
+x_metadata ..> semantics
+
+note bottom of f_validator
+  Justified specialization dominates today:
+  validation does not call CFITSIO and does not render pixels.
+end note
+
+note bottom of x_validator
+  The validator currently owns the most complete
+  structural interpretation and resource enforcement.
+end note
+
+note bottom of x_metadata
+  Container syntax and metadata semantics are coupled here.
+end note
+@enduml

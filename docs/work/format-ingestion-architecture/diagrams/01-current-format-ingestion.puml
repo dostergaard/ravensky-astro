@@ -1,0 +1,81 @@
+@startuml Current_Format_Ingestion
+title Current RavenSky FITS and XISF ingestion paths
+
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+left to right direction
+
+package "AstroMuninn" {
+  [organizer / workflow] as am_workflow
+  [monitor validator] as am_validator
+  [raw metadata inspector] as am_raw
+}
+
+package "ravensky-astro facade" {
+  [re-exports astro-io, astro-metadata, astro-metrics] as facade
+}
+
+package "astro-metadata" {
+  [FITS semantic parser] as fits_meta
+  [XISF string/XML scanner] as xisf_meta
+  [AstroMetadata normalization] as normalized
+}
+
+package "astro-io" {
+  [fits::load_fits] as fits_load
+  [fits header-card helpers] as fits_cards
+  [fits::backend gate] as cfits_gate
+  [pure-Rust FITS validator] as fits_validate
+  [xisf::load_xisf narrow UInt16 loader] as xisf_load
+  [XISF validator namespace/event tree] as xisf_validate
+  [bounded codec/stream helpers] as codecs
+  [validation budget/cancellation] as validation_budget
+}
+
+package "astro-metrics" {
+  [SEP-facing f32 slice metrics] as metrics
+}
+
+cloud "CFITSIO / fitsio native boundary" as cfitsio
+database "FITS file" as fits_file
+database "XISF file" as xisf_file
+
+fits_file --> fits_load : primary image
+fits_load --> cfits_gate
+cfits_gate --> cfitsio : image decode
+fits_file --> fits_cards : HDU cards
+fits_cards --> cfits_gate
+fits_meta --> fits_cards : raw cards
+fits_meta --> cfitsio : open / primary HDU info
+fits_file --> fits_validate : independent byte parsing
+
+xisf_file --> xisf_load : 12-byte convention
+xisf_file --> xisf_validate : 16-byte prefix
+xisf_file --> xisf_meta : independent 12-byte convention
+xisf_validate --> codecs : checksum / zlib / LZ4 / zstd
+xisf_validate --> validation_budget
+
+fits_meta --> normalized
+xisf_meta --> normalized
+am_workflow --> normalized : destination semantics
+am_raw --> normalized : cards / map
+am_validator --> fits_validate : format detected from bytes
+am_validator --> xisf_validate : format detected from bytes
+
+fits_load --> metrics : Vec<f32>, width, height
+xisf_load --> metrics : Vec<f32>, width, height
+facade ..> fits_load : re-export
+facade ..> xisf_load : re-export
+facade ..> normalized : re-export
+facade ..> metrics : re-export
+
+note bottom of xisf_file
+  Three current structural interpretations:
+  narrow loader, validator, and metadata scanner.
+end note
+
+note bottom of fits_file
+  Native reader/card access and pure-Rust validation
+  are separate paths with different purposes.
+end note
+@enduml

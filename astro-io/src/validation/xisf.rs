@@ -1,10 +1,16 @@
 use super::*;
+use crate::xisf::structural::{
+    visit_xml, BlockLocation, Error as StructuralError, ErrorKind as StructuralErrorKind,
+    ImageDescriptor, MonolithicEnvelope, VisitError, XmlEvent, PREFIX_LEN,
+};
 use base64::Engine;
-use quick_xml::{events::Event, name::ResolveResult, reader::NsReader};
 use sha2::Digest;
 use std::{collections::BTreeMap, io::BufRead};
 mod streaming;
 
+// Validation keeps topology and accumulated text for conformance/checksum
+// policy. Syntax, namespaces, attributes, and image/storage descriptors come
+// from `xisf::structural`; this tree is deliberately not a shared XISF AST.
 #[derive(Default)]
 struct Node {
     name: String,
@@ -12,6 +18,7 @@ struct Node {
     text: String,
     children: Vec<usize>,
     parent: Option<usize>,
+    image: Option<ImageDescriptor>,
 }
 fn natural(s: &str) -> Result<u64> {
     s.parse()
@@ -23,59 +30,48 @@ fn attr<'a>(n: &'a Node, key: &str) -> Result<&'a str> {
         .map(String::as_str)
         .ok_or_else(|| invalid(format!("{} missing {key}", n.name)))
 }
+fn structural(error: StructuralError) -> ValidationError {
+    match error.kind() {
+        StructuralErrorKind::Incomplete => {
+            ValidationError::new(ValidationErrorKind::Incomplete, error.to_string())
+        }
+        StructuralErrorKind::Invalid => invalid(error.to_string()),
+        StructuralErrorKind::Unsupported => unsupported(error.to_string()),
+    }
+}
 fn parse(c: &mut Context<'_>, xml: &[u8], metadata: &mut Reservation) -> Result<Vec<Node>> {
-    let mut reader = NsReader::from_reader(xml);
     let mut nodes: Vec<Node> = Vec::new();
     let mut stack = Vec::new();
-    let mut roots = 0;
-    loop {
+    let result = visit_xml(xml, |event| {
         c.checkpoint()?;
-        let (ns, event) = reader
-            .read_resolved_event()
-            .map_err(|e| invalid(format!("invalid XISF XML: {e}")))?;
         match event {
-            Event::Start(ref e) | Event::Empty(ref e) => {
+            XmlEvent::Element(element) => {
                 c.structure()?;
                 metadata.grow(1024)?;
                 // Namespace-less headers are accepted for compatibility with
                 // common producers and existing fixtures. Other namespaces are
                 // not interpreted as XISF layout elements.
-                let accepted = match ns {
-                    ResolveResult::Unbound => true,
-                    ResolveResult::Bound(n) => n.as_ref() == b"http://www.pixinsight.com/xisf",
-                    ResolveResult::Unknown(_) => return Err(invalid("unbound XML namespace")),
+                if !element.namespace.is_core() {
+                    return Err(unsupported(format!("XML namespace on {}", element.name)));
+                }
+                if element.depth != stack.len() {
+                    return Err(invalid("inconsistent XML element depth"));
+                }
+                for _ in &element.attrs {
+                    metadata.grow(1024)?;
+                }
+                let image = if matches!(element.name.as_str(), "Image" | "Thumbnail") {
+                    Some(ImageDescriptor::parse(&element).map_err(structural)?)
+                } else {
+                    None
                 };
-                let name = std::str::from_utf8(e.local_name().as_ref())
-                    .map_err(|_| invalid("invalid element name"))?
-                    .to_string();
-                if !accepted {
-                    return Err(unsupported(format!("XML namespace on {name}")));
-                }
-                if stack.is_empty() {
-                    roots += 1;
-                    if roots != 1 || name != "xisf" {
-                        return Err(invalid("expected one xisf XML root"));
-                    }
-                }
-                let mut node = Node {
-                    name,
+                let node = Node {
+                    name: element.name,
+                    attrs: element.attrs,
                     parent: stack.last().copied(),
+                    image,
                     ..Node::default()
                 };
-                for a in e.attributes() {
-                    metadata.grow(1024)?;
-                    let a = a.map_err(|e| invalid(format!("invalid XML attribute: {e}")))?;
-                    let key = std::str::from_utf8(a.key.as_ref())
-                        .map_err(|_| invalid("invalid attribute name"))?
-                        .to_string();
-                    let value = a
-                        .unescape_value()
-                        .map_err(|e| invalid(format!("invalid attribute value: {e}")))?
-                        .into_owned();
-                    if node.attrs.insert(key, value).is_some() {
-                        return Err(invalid("duplicate XML attribute"));
-                    }
-                }
                 let idx = nodes.len();
                 if let Some(&parent) = stack.last() {
                     let p: &mut Node = &mut nodes[parent];
@@ -88,88 +84,53 @@ fn parse(c: &mut Context<'_>, xml: &[u8], metadata: &mut Reservation) -> Result<
                     .try_reserve(1)
                     .map_err(|_| limit("XML node allocation failed"))?;
                 nodes.push(node);
-                if matches!(event, Event::Start(_)) {
+                if !element.empty {
                     stack
                         .try_reserve(1)
                         .map_err(|_| limit("XML depth allocation failed"))?;
                     stack.push(idx);
                 }
             }
-            Event::End(_) => {
-                if stack.pop().is_none() {
+            XmlEvent::End { name, depth } => {
+                let Some(idx) = stack.pop() else {
                     return Err(invalid("unexpected XML closing element"));
+                };
+                if nodes[idx].name != name || stack.len() != depth {
+                    return Err(invalid("inconsistent XML closing element"));
                 }
             }
-            Event::Text(e) => {
-                let text = e
-                    .unescape()
-                    .map_err(|e| invalid(format!("invalid XML text: {e}")))?;
+            XmlEvent::Text { value, depth } => {
+                if depth != stack.len() {
+                    return Err(invalid("inconsistent XML text depth"));
+                }
                 if let Some(&idx) = stack.last() {
                     nodes[idx]
                         .text
-                        .try_reserve(text.len())
+                        .try_reserve(value.len())
                         .map_err(|_| limit("XML text allocation failed"))?;
-                    nodes[idx].text.push_str(&text);
-                } else if !text.trim().is_empty() {
-                    return Err(invalid("text outside XML root"));
+                    nodes[idx].text.push_str(&value);
                 }
             }
-            Event::CData(e) => {
-                let text =
-                    std::str::from_utf8(e.as_ref()).map_err(|_| invalid("invalid XML UTF-8"))?;
-                if let Some(&idx) = stack.last() {
-                    nodes[idx]
-                        .text
-                        .try_reserve(text.len())
-                        .map_err(|_| limit("XML text allocation failed"))?;
-                    nodes[idx].text.push_str(text);
-                } else {
-                    return Err(invalid("CDATA outside XML root"));
-                }
-            }
-            Event::DocType(_) => {
-                return Err(unsupported("XML DTD/entity declarations are not supported"))
-            }
-            Event::Eof => break,
-            _ => {}
         }
-    }
-    if roots != 1 || !stack.is_empty() {
-        return Err(invalid("incomplete XML document"));
+        Ok(())
+    });
+    match result {
+        Ok(()) => {}
+        Err(VisitError::Structural(error)) => return Err(structural(error)),
+        Err(VisitError::Consumer(error)) => return Err(error),
     }
     if attr(&nodes[0], "version")? != "1.0" {
         return Err(unsupported("XISF version other than 1.0"));
     }
     Ok(nodes)
 }
-fn sample_size(value: &str) -> Result<u64> {
-    match value {
-        "UInt8" => Ok(1),
-        "UInt16" => Ok(2),
-        "UInt32" | "Float32" => Ok(4),
-        "UInt64" | "Float64" | "Complex32" => Ok(8),
-        "Complex64" => Ok(16),
-        _ => Err(unsupported(format!("sample format {value}"))),
-    }
-}
 fn expected(n: &Node) -> Result<Option<u64>> {
     if n.name == "Image" || n.name == "Thumbnail" {
-        let geometry = attr(n, "geometry")?;
-        let dims = geometry.split(':');
-        if dims.clone().count() < 2 {
-            return Err(invalid(
-                "image geometry needs spatial dimensions and channels",
-            ));
-        }
-        let mut count = 1;
-        for d in dims {
-            let d = natural(d)?;
-            if d == 0 {
-                return Err(invalid("zero image dimension"));
-            }
-            count = mul(count, d)?;
-        }
-        return Ok(Some(mul(count, sample_size(attr(n, "sampleFormat")?)?)?));
+        let descriptor = n
+            .image
+            .as_ref()
+            .ok_or_else(|| invalid("missing shared image descriptor"))?;
+        return descriptor.expected_bytes().map(Some).map_err(structural);
     }
     if n.name == "Property" {
         let typ = attr(n, "type")?;
@@ -361,7 +322,7 @@ fn inline(c: &Context<'_>, node: &Node, encoding: &str) -> Result<Buffer> {
                 return Err(invalid("odd hexadecimal length"));
             }
             let mut output = c.memory.buffer(length / 2)?;
-            for (out, pair) in output.iter_mut().zip(text.chunks_exact(2)) {
+            for (out, pair) in output.iter_mut().zip(text.as_chunks::<2>().0) {
                 *out = hex_pair(pair)?;
             }
             Ok(output)
@@ -383,7 +344,9 @@ fn hex(bytes: &[u8]) -> Result<Vec<u8>> {
         return Err(invalid("odd hexadecimal length"));
     }
     bytes
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|p| {
             let a = (p[0] as char)
                 .to_digit(16)
@@ -430,21 +393,16 @@ fn checksum(c: &mut Context<'_>, n: &Node, s: &Storage) -> Result<()> {
     Ok(())
 }
 pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
-    let mut prefix = [0; 16];
-    c.read(0, &mut prefix)?;
-    if prefix[12..] != [0; 4] {
-        return Err(invalid("XISF reserved prefix bytes must be zero"));
-    }
-    let size = u32::from_le_bytes(
-        prefix[8..12]
-            .try_into()
-            .map_err(|_| invalid("XISF header length"))?,
-    ) as u64;
+    let prefix_len = c.stamp.size.min(PREFIX_LEN);
+    let prefix = c.bytes(0, prefix_len)?;
+    let envelope = MonolithicEnvelope::parse(&prefix, c.stamp.size).map_err(structural)?;
+    drop(prefix);
+    let size = envelope.xml_len();
     c.header(size)?;
     // Account parser scratch, namespace strings, owned text and reallocation
     // overlap before parsing; per-node/attribute metadata is admitted separately.
     let mut metadata = c.memory.reserve(mul(size, 32)?)?;
-    let xml = c.bytes(16, size)?;
+    let xml = c.bytes(envelope.xml_range().start, size)?;
     let nodes = parse(c, &xml, &mut metadata)?;
     drop(xml);
     let mut identifiers = BTreeMap::new();
@@ -500,37 +458,38 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
         };
         blocks += 1;
         c.structure()?;
-        let (description, storage) = if let Some(rest) = location.strip_prefix("attachment:") {
-            let (offset, len) = rest
-                .split_once(':')
-                .ok_or_else(|| invalid("invalid attachment location"))?;
-            let (offset, len) = (natural(offset)?, natural(len)?);
-            if offset < add(16, size)? {
-                return Err(invalid("attachment overlaps header"));
+        let (description, storage) = match BlockLocation::parse(location).map_err(structural)? {
+            BlockLocation::Attachment { offset, size: len } => {
+                if offset < envelope.xml_end() {
+                    return Err(invalid("attachment overlaps header"));
+                }
+                c.extent(offset, len)?;
+                (node, Storage::Attached(offset, len))
             }
-            c.extent(offset, len)?;
-            (node, Storage::Attached(offset, len))
-        } else if let Some(encoding) = location.strip_prefix("inline:") {
-            (node, Storage::Inline(inline(c, node, encoding)?))
-        } else if location == "embedded" {
-            if has_descriptor {
-                return Err(invalid(
-                    "embedded checksum/compression descriptors belong on Data",
-                ));
+            BlockLocation::Inline { encoding } => {
+                (node, Storage::Inline(inline(c, node, &encoding)?))
             }
-            let children: Vec<_> = node
-                .children
-                .iter()
-                .map(|i| &nodes[*i])
-                .filter(|n| n.name == "Data")
-                .collect();
-            if children.len() != 1 {
-                return Err(invalid("embedded block needs exactly one Data element"));
+            BlockLocation::Embedded => {
+                if has_descriptor {
+                    return Err(invalid(
+                        "embedded checksum/compression descriptors belong on Data",
+                    ));
+                }
+                let children: Vec<_> = node
+                    .children
+                    .iter()
+                    .map(|i| &nodes[*i])
+                    .filter(|n| n.name == "Data")
+                    .collect();
+                if children.len() != 1 {
+                    return Err(invalid("embedded block needs exactly one Data element"));
+                }
+                let d = children[0];
+                (d, Storage::Inline(inline(c, d, attr(d, "encoding")?)?))
             }
-            let d = children[0];
-            (d, Storage::Inline(inline(c, d, attr(d, "encoding")?)?))
-        } else {
-            return Err(unsupported(format!("XISF block location {location}")));
+            BlockLocation::Other(_) => {
+                return Err(unsupported(format!("XISF block location {location}")));
+            }
         };
         let comp = compression(c, description, storage.len())?;
         let length = comp.as_ref().map_or(storage.len(), |p| p.decoded);
@@ -542,7 +501,12 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
                 )));
             }
         }
-        if let Some(order) = node.attrs.get("byteOrder") {
+        let byte_order = node
+            .image
+            .as_ref()
+            .and_then(|image| image.byte_order.as_deref())
+            .or_else(|| node.attrs.get("byteOrder").map(String::as_str));
+        if let Some(order) = byte_order {
             if order != "little" && order != "big" {
                 return Err(invalid("invalid byte order"));
             }
