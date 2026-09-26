@@ -199,6 +199,11 @@ pub fn parse_sexagesimal(value: &str) -> Option<f64>
 
 ### XISF Parser
 
+XISF envelope and XML syntax are parsed exclusively by `astro-io`.
+`astro-metadata` consumes its small raw-record view and remains responsible for
+keyword/property precedence, normalization, derived values, and projection into
+`AstroMetadata`.
+
 ```rust
 /// Extract metadata from an XISF file path
 pub fn extract_metadata_from_path(path: &Path) -> Result<AstroMetadata>

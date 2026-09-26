@@ -4,10 +4,11 @@ use astro_metadata::fits_parser::extract_metadata_from_path;
 mod metadata_dump;
 
 fn main() {
-    metadata_dump::run_metadata_dump(
+    metadata_dump::run_metadata_dump_with_postscript(
         "FITS",
         "<fits_file_path>",
         "Raw FITS Header Cards",
         extract_metadata_from_path,
+        |_| Ok(()),
     );
 }

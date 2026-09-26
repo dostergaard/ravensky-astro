@@ -20,9 +20,11 @@
 //! `structural`.
 
 use super::*;
+use crate::xisf::codec::{Compression, Error as CodecError, ErrorKind as CodecErrorKind};
 use crate::xisf::structural::{
-    visit_xml, BlockLocation, Error as StructuralError, ErrorKind as StructuralErrorKind,
-    ImageDescriptor, MonolithicEnvelope, VisitError, XmlEvent, PREFIX_LEN,
+    visit_xml, BlockLocation, ByteOrder, Error as StructuralError,
+    ErrorKind as StructuralErrorKind, ImageDescriptor, MonolithicEnvelope, VisitError, XmlEvent,
+    PREFIX_LEN,
 };
 use base64::Engine;
 use sha2::Digest;
@@ -67,6 +69,18 @@ fn structural(error: StructuralError) -> ValidationError {
         }
         StructuralErrorKind::Invalid => invalid(error.to_string()),
         StructuralErrorKind::Unsupported => unsupported(error.to_string()),
+    }
+}
+fn compression_error(error: CodecError) -> ValidationError {
+    match error.kind() {
+        CodecErrorKind::Invalid => invalid(error.to_string()),
+        CodecErrorKind::Limit => limit(error.to_string()),
+    }
+}
+fn zstd_error(error: CodecError) -> ValidationError {
+    match error.kind() {
+        CodecErrorKind::Invalid => integrity(error.to_string()),
+        CodecErrorKind::Limit => limit(error.to_string()),
     }
 }
 /// Rebuilds the validation `Node` tree from the shared XML event stream.
@@ -151,6 +165,15 @@ fn parse(c: &mut Context<'_>, xml: &[u8], metadata: &mut Reservation) -> Result<
                     nodes[idx].text.push_str(&value);
                 }
             }
+            XmlEvent::IgnoredExtension { element_attributes } => {
+                if let Some(attributes) = element_attributes {
+                    c.structure()?;
+                    metadata.grow(1024)?;
+                    for _ in 0..attributes {
+                        metadata.grow(1024)?;
+                    }
+                }
+            }
         }
         Ok(())
     });
@@ -196,85 +219,6 @@ fn expected(n: &Node) -> Result<Option<u64>> {
         }
     }
     Ok(None)
-}
-/// A parsed compression descriptor: codec, declared decoded size, optional
-/// shuffle item size, and the subblock `(input, output)` table.
-struct Compression {
-    codec: String,
-    decoded: u64,
-    shuffle: Option<u64>,
-    parts: Vec<(u64, u64)>,
-}
-fn compression(c: &mut Context<'_>, n: &Node, stored: u64) -> Result<Option<Compression>> {
-    let Some(value) = n.attrs.get("compression") else {
-        if n.attrs.contains_key("subblocks") {
-            return Err(invalid("subblocks without compression"));
-        }
-        return Ok(None);
-    };
-    let pieces: Vec<_> = value.split(':').collect();
-    if !(2..=3).contains(&pieces.len()) {
-        return Err(invalid("invalid compression descriptor"));
-    }
-    let shuffle = if pieces[0].ends_with("+sh") {
-        let size = natural(
-            pieces
-                .get(2)
-                .ok_or_else(|| invalid("missing shuffle item size"))?,
-        )?;
-        if size == 0 {
-            return Err(invalid("zero shuffle item size"));
-        }
-        Some(size)
-    } else {
-        if pieces.len() != 2 {
-            return Err(invalid("unexpected compression parameter"));
-        }
-        None
-    };
-    let codec = pieces[0].trim_end_matches("+sh").to_string();
-    let decoded = natural(pieces[1])?;
-    let mut parts = Vec::new();
-    if let Some(value) = n.attrs.get("subblocks") {
-        for p in value.split(':') {
-            c.structure()?;
-            let (a, b) = p
-                .split_once(',')
-                .ok_or_else(|| invalid("invalid compression subblock"))?;
-            let (a, b) = (natural(a)?, natural(b)?);
-            if a == 0 || b == 0 {
-                return Err(invalid("empty compression subblock"));
-            }
-            parts
-                .try_reserve(1)
-                .map_err(|_| limit("subblock descriptor allocation failed"))?;
-            parts.push((a, b));
-        }
-    } else {
-        parts.push((stored, decoded));
-    }
-    // The subblock table must account for the stored bytes and the declared
-    // decoded size exactly. Checked addition makes a hostile table an error
-    // rather than a wrapped sum.
-    let (mut input, mut output) = (0, 0);
-    for &(a, b) in &parts {
-        input = add(input, a)?;
-        output = add(output, b)?;
-    }
-    if input != stored || output != decoded {
-        return Err(invalid("subblocks do not match stored/decoded lengths"));
-    }
-    if let Some(size) = shuffle {
-        if size > decoded {
-            return Err(invalid("shuffle item size exceeds payload"));
-        }
-    }
-    Ok(Some(Compression {
-        codec,
-        decoded,
-        shuffle,
-        parts,
-    }))
 }
 /// A resolved-but-not-materialized data block: an attachment extent in the
 /// source file, or a decoded inline buffer.
@@ -518,9 +462,8 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
         let has_descriptor = ["checksum", "compression", "subblocks"]
             .iter()
             .any(|key| node.attrs.contains_key(*key));
-        // Byte-order spelling is validated but not applied: the validator never
-        // reconstructs pixels, and decoding with `byteOrder` is a later consumer
-        // stage.
+        // Byte order is parsed structurally but not applied here because the
+        // validator verifies decoded extents without reconstructing pixels.
         if node.name == "Data" {
             let parent = node
                 .parent
@@ -576,8 +519,27 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
                 return Err(unsupported(format!("XISF block location {location}")));
             }
         };
-        let comp = compression(c, description, storage.len())?;
-        let length = comp.as_ref().map_or(storage.len(), |p| p.decoded);
+        if let Some(subblocks) = description.attrs.get("subblocks") {
+            for _ in subblocks.split(':') {
+                c.structure()?;
+            }
+        }
+        let comp = Compression::parse(
+            description.attrs.get("compression").map(String::as_str),
+            description.attrs.get("subblocks").map(String::as_str),
+            storage.len(),
+        )
+        .map_err(compression_error)?;
+        if let (Some(compression), Some(image)) = (&comp, &node.image) {
+            if let Some(size) = compression.shuffle() {
+                if size != image.sample_size().map_err(structural)? {
+                    return Err(invalid(
+                        "image shuffle item size does not match the sample format",
+                    ));
+                }
+            }
+        }
+        let length = comp.as_ref().map_or(storage.len(), Compression::decoded);
         if let Some(expected) = expected(node)? {
             if expected != length {
                 return Err(invalid(format!(
@@ -586,15 +548,12 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
                 )));
             }
         }
-        let byte_order = node
-            .image
-            .as_ref()
-            .and_then(|image| image.byte_order.as_deref())
-            .or_else(|| node.attrs.get("byteOrder").map(String::as_str));
-        if let Some(order) = byte_order {
-            if order != "little" && order != "big" {
-                return Err(invalid("invalid byte order"));
-            }
+        // Images already resolved this attribute through `ImageDescriptor`.
+        // Other block-bearing elements use the same parser so validators and
+        // decoders cannot drift on spellings or the default.
+        if node.image.is_none() {
+            ByteOrder::parse(node.attrs.get("byteOrder").map(String::as_str))
+                .map_err(structural)?;
         }
         c.decoded(length)?;
         checksum(c, description, &storage)
@@ -603,7 +562,7 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
             if let Some(comp) = &comp {
                 // Compressed blocks are not decoded at the structural level; the
                 // codec is recorded in the report, never assumed to be supported.
-                c.undecoded(&comp.codec)?;
+                c.undecoded(comp.codec())?;
             }
         }
         if c.options.level == ValidationLevel::Full {
@@ -627,38 +586,35 @@ pub(super) fn validate(c: &mut Context<'_>) -> Result<()> {
 /// input subblock plus a budgeted output buffer sized to the declared decoded
 /// length, which the decoder must fill exactly.
 fn decode(c: &mut Context<'_>, storage: &Storage, compression: &Compression) -> Result<()> {
-    if !["zlib", "lz4", "lz4hc", "zstd"].contains(&compression.codec.as_str()) {
+    if !["zlib", "lz4", "lz4hc", "zstd"].contains(&compression.codec()) {
         return Err(unsupported(format!(
             "compression codec {}",
-            compression.codec
+            compression.codec()
         )));
     }
     let mut offset = 0;
-    for &(input, output) in &compression.parts {
+    for part in compression.subblocks() {
         c.checkpoint()?;
-        match compression.codec.as_str() {
-            "zlib" => streaming::zlib(c, storage, offset, input, output)?,
-            "zstd" => streaming::zstd(c, storage, offset, input, output)?,
+        match compression.codec() {
+            "zlib" => streaming::zlib(c, storage, offset, part.stored, part.decoded)?,
+            "zstd" => streaming::zstd(c, storage, offset, part.stored, part.decoded)?,
             _ => {
                 // Raw LZ4 needs complete input and output blocks. Inline input is
                 // borrowed; attached input and decoded output own reservations.
-                let bytes = storage.part(c, offset, input)?;
-                let size = usize::try_from(output)
+                let bytes = storage.part(c, offset, part.stored)?;
+                let size = usize::try_from(part.decoded)
                     .map_err(|_| limit("LZ4 output exceeds address space"))?;
                 let mut decoded = c.memory.buffer(size)?;
                 let count = lz4_flex::block::decompress_into(&bytes, &mut decoded)
                     .map_err(|e| integrity(format!("LZ4 decode: {e}")))?;
-                if count as u64 != output {
+                if count as u64 != part.decoded {
                     return Err(integrity("LZ4 decoded size mismatch"));
                 }
             }
         }
         // Shuffling is a byte permutation; validation need not allocate or
         // reconstruct numeric pixels. Descriptor validity was checked earlier.
-        if compression.shuffle == Some(0) {
-            return Err(invalid("zero shuffle item size"));
-        }
-        offset = add(offset, input)?;
+        offset = add(offset, part.stored)?;
     }
     Ok(())
 }

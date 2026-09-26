@@ -1,0 +1,13 @@
+Done,PixInsight writer,Source image,Image type,Storage,Filename
+X,1.9.4 Lockhart build 1695,Large,Mono UInt16,Uncompressed,pi_1.9.4_large_mono_u16_uncompressed.xisf
+X,1.9.4 Lockhart build 1695,Large,Mono UInt16,Compressed,pi_1.9.4_large_mono_u16_compressed.xisf
+X,1.9.4 Lockhart build 1695,Small,Mono UInt16,Uncompressed,pi_1.9.4_small_mono_u16_uncompressed.xisf
+X,1.9.4 Lockhart build 1695,Small,Mono UInt16,Compressed,pi_1.9.4_small_mono_u16_compressed.xisf
+X,1.9.4 Lockhart build 1695,Small OSC,RGB/OSC,Uncompressed,pi_1.9.4_small_osc_uncompressed.xisf
+X,1.9.4 Lockhart build 1695,Small OSC,RGB/OSC,Compressed,pi_1.9.4_small_osc_compressed.xisf
+X,1.9.5 Lockhart,Large,Mono UInt16,Uncompressed,pi_1.9.5_large_mono_u16_uncompressed.xisf
+X,1.9.5 Lockhart,Large,Mono UInt16,Compressed,pi_1.9.5_large_mono_u16_compressed.xisf
+X,1.9.5 Lockhart,Small,Mono UInt16,Uncompressed,pi_1.9.5_small_mono_u16_uncompressed.xisf
+X,1.9.5 Lockhart,Small,Mono UInt16,Compressed,pi_1.9.5_small_mono_u16_compressed.xisf
+X,1.9.5 Lockhart,Small OSC,RGB/OSC,Uncompressed,pi_1.9.5_small_osc_uncompressed.xisf
+X,1.9.5 Lockhart,Small OSC,RGB/OSC,Compressed,pi_1.9.5_small_osc_compressed.xisf

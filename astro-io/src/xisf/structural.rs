@@ -17,9 +17,9 @@
 //! The XML surface is a streaming event/descriptor layer, not a document
 //! model: `visit_xml` hands owned events to a consumer one at a time, so no
 //! consumer materializes an intermediate event vector or a general XISF AST,
-//! and `quick-xml` types never escape this module. This stage intentionally
-//! adds no public XISF parser API; the raw-record handoff to
-//! `astro-metadata` is a later stage.
+//! and `quick-xml` types never escape this module. The public raw-metadata
+//! handoff in the parent module selects a few owned lexical facts from these
+//! private events; it does not expose the event or descriptor machinery.
 
 use quick_xml::{events::Event, name::ResolveResult, reader::NsReader};
 use std::{collections::BTreeMap, fmt, ops::Range};
@@ -192,8 +192,9 @@ pub(crate) fn checked_range(
 /// both accepted as core: unprefixed names inherit only a *default* namespace
 /// in XML, so a bare `Image` under a qualified root is still core and remains
 /// a supported producer form. `Foreign` carries the resolved URI as a fact;
-/// the structural layer neither accepts nor rejects foreign namespaces —
-/// extension acceptance is consumer policy.
+/// `visit_xml` accepts `Foreign` only for Revision 1 extension subtrees rooted
+/// directly beneath the XISF root and reports those events as ignored. A
+/// foreign element inside ordinary core content is a structural error.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Namespace {
     Unbound,
@@ -235,8 +236,20 @@ impl Element {
 #[derive(Debug)]
 pub(crate) enum XmlEvent {
     Element(Element),
-    Text { value: String, depth: usize },
-    End { name: String, depth: usize },
+    Text {
+        value: String,
+        depth: usize,
+    },
+    End {
+        name: String,
+        depth: usize,
+    },
+    /// One event in an ignored foreign root-extension subtree. Start and
+    /// empty elements carry their attribute count so validation can preserve
+    /// structure and memory admission without materializing the extension.
+    IgnoredExtension {
+        element_attributes: Option<usize>,
+    },
 }
 
 /// A failure while consuming a `visit_xml` stream.
@@ -287,9 +300,11 @@ fn namespace(result: ResolveResult<'_>) -> Result<Namespace, Error> {
 /// `Invalid` — a `DOCTYPE` is well-formed XML, just a feature this reader
 /// does not interpret, and the diagnostic must say so.
 ///
-/// What this deliberately does *not* check — element presence, placement,
-/// `version`, `uid` uniqueness, checksums, codecs, and resource limits — is
-/// conformance policy that belongs to the consumer.
+/// What this deliberately does *not* check — core element presence and
+/// placement, `version`, `uid` uniqueness, checksums, codecs, and resource
+/// limits — is conformance policy that belongs to the consumer. Foreign
+/// extension placement is checked here because every consumer must ignore the
+/// same root-only subtrees and reject the same nested foreign elements.
 pub(crate) fn visit_xml<E>(
     xml: &[u8],
     mut consumer: impl FnMut(XmlEvent) -> Result<(), E>,
@@ -323,12 +338,21 @@ pub(crate) fn visit_xml<E>(
                     // Exactly one core `xisf` root: a second root, a root
                     // with another name, or a root bound to a foreign
                     // namespace is an invalid document, not an extension
-                    // point (root extension acceptance is a later stage).
+                    // point. Extensions are children of this root.
                     if roots != 1 || name != "xisf" || !namespace.is_core() {
                         return Err(VisitError::Structural(Error::invalid(
                             "expected one core xisf XML root",
                         )));
                     }
+                }
+                let inside_extension = stack
+                    .get(1)
+                    .is_some_and(|(_, namespace)| !namespace.is_core());
+                let root_extension = depth == 1 && !namespace.is_core();
+                if !inside_extension && !root_extension && !namespace.is_core() {
+                    return Err(VisitError::Structural(Error::invalid(format!(
+                        "foreign XML namespace on {name} outside the XISF root extension scope"
+                    ))));
                 }
                 let mut attrs = BTreeMap::new();
                 for attribute in raw.attributes() {
@@ -357,14 +381,26 @@ pub(crate) fn visit_xml<E>(
                     }
                 }
                 let empty = matches!(event, Event::Empty(_));
-                consumer(XmlEvent::Element(Element {
-                    name: name.clone(),
-                    namespace: namespace.clone(),
-                    attrs,
-                    depth,
-                    empty,
-                }))
-                .map_err(VisitError::Consumer)?;
+                // Revision 1 extension elements are foreign-namespace direct
+                // children of the XISF root. Consumers that do not understand
+                // them ignore the complete subtree, including any names that
+                // resemble core elements. Foreign elements nested in ordinary
+                // core content were rejected above.
+                if !inside_extension && !root_extension {
+                    consumer(XmlEvent::Element(Element {
+                        name: name.clone(),
+                        namespace: namespace.clone(),
+                        attrs,
+                        depth,
+                        empty,
+                    }))
+                    .map_err(VisitError::Consumer)?;
+                } else {
+                    consumer(XmlEvent::IgnoredExtension {
+                        element_attributes: Some(attrs.len()),
+                    })
+                    .map_err(VisitError::Consumer)?;
+                }
                 if !empty {
                     stack.push((name, namespace));
                 }
@@ -374,6 +410,9 @@ pub(crate) fn visit_xml<E>(
                 let name = std::str::from_utf8(raw.local_name().as_ref())
                     .map_err(|_| VisitError::Structural(Error::invalid("invalid element name")))?
                     .to_string();
+                let inside_extension = stack
+                    .get(1)
+                    .is_some_and(|(_, namespace)| !namespace.is_core());
                 let Some((expected, expected_namespace)) = stack.pop() else {
                     return Err(VisitError::Structural(Error::invalid(
                         "unexpected XML closing element",
@@ -384,11 +423,18 @@ pub(crate) fn visit_xml<E>(
                         "mismatched XML closing element: expected {expected}, got {name}"
                     ))));
                 }
-                consumer(XmlEvent::End {
-                    name,
-                    depth: stack.len(),
-                })
-                .map_err(VisitError::Consumer)?;
+                if !inside_extension {
+                    consumer(XmlEvent::End {
+                        name,
+                        depth: stack.len(),
+                    })
+                    .map_err(VisitError::Consumer)?;
+                } else {
+                    consumer(XmlEvent::IgnoredExtension {
+                        element_attributes: None,
+                    })
+                    .map_err(VisitError::Consumer)?;
+                }
             }
             Event::Text(raw) => {
                 let value = raw
@@ -406,10 +452,18 @@ pub(crate) fn visit_xml<E>(
                             "text outside XML root",
                         )));
                     }
-                } else {
+                } else if !stack
+                    .get(1)
+                    .is_some_and(|(_, namespace)| !namespace.is_core())
+                {
                     consumer(XmlEvent::Text {
                         value,
                         depth: stack.len(),
+                    })
+                    .map_err(VisitError::Consumer)?;
+                } else {
+                    consumer(XmlEvent::IgnoredExtension {
+                        element_attributes: None,
                     })
                     .map_err(VisitError::Consumer)?;
                 }
@@ -423,11 +477,21 @@ pub(crate) fn visit_xml<E>(
                         "CDATA outside XML root",
                     )));
                 }
-                consumer(XmlEvent::Text {
-                    value,
-                    depth: stack.len(),
-                })
-                .map_err(VisitError::Consumer)?;
+                if !stack
+                    .get(1)
+                    .is_some_and(|(_, namespace)| !namespace.is_core())
+                {
+                    consumer(XmlEvent::Text {
+                        value,
+                        depth: stack.len(),
+                    })
+                    .map_err(VisitError::Consumer)?;
+                } else {
+                    consumer(XmlEvent::IgnoredExtension {
+                        element_attributes: None,
+                    })
+                    .map_err(VisitError::Consumer)?;
+                }
             }
             Event::DocType(_) => {
                 return Err(VisitError::Structural(Error::unsupported(
@@ -478,20 +542,63 @@ pub(crate) enum BlockLocation {
     Other(String),
 }
 
+/// Byte order of the uncompressed scalar values in an XISF data block.
+///
+/// XISF structural integers remain little-endian regardless of this value.
+/// Keeping sample endianness typed and separate prevents pixel decoders from
+/// accidentally using the host's native byte order.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ByteOrder {
+    Little,
+    Big,
+}
+
+impl ByteOrder {
+    /// Parse the complete XISF `byteOrder` lexical contract. The attribute is
+    /// optional and §10.4 defines little-endian as its default.
+    pub(crate) fn parse(value: Option<&str>) -> Result<Self, Error> {
+        match value {
+            None | Some("little") => Ok(Self::Little),
+            Some("big") => Ok(Self::Big),
+            Some(value) => Err(Error::invalid(format!(
+                "invalid byteOrder '{value}'; expected 'little' or 'big'"
+            ))),
+        }
+    }
+}
+
 /// A parsed `Image` or `Thumbnail` descriptor: geometry, sample format,
-/// optional byte order, storage location, and optional compression.
+/// resolved byte order, storage location, and optional compression.
 ///
 /// Parsing is syntax-complete but policy-light: it requires only what any
-/// image consumer needs, and `byte_order` is preserved verbatim — Stage 1
-/// consumers deliberately do not decode with it, and byte-order-correct
-/// decoding is a later stage.
+/// image consumer needs. Byte order is resolved here so validation and pixel
+/// decoding cannot develop separate lexical rules or disagree about the
+/// specification-defined default.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ImageDescriptor {
     pub(crate) geometry: Geometry,
     pub(crate) sample_format: String,
-    pub(crate) byte_order: Option<String>,
+    pub(crate) byte_order: ByteOrder,
     pub(crate) location: BlockLocation,
     pub(crate) compression: Option<String>,
+    pub(crate) subblocks: Option<String>,
+}
+
+/// Checked logical and physical size of an image's uncompressed samples.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct SampleLayout {
+    sample_count: u64,
+    byte_count: u64,
+}
+
+impl SampleLayout {
+    pub(crate) fn sample_count(self) -> u64 {
+        self.sample_count
+    }
+
+    pub(crate) fn byte_count(self) -> u64 {
+        self.byte_count
+    }
 }
 
 impl ImageDescriptor {
@@ -534,9 +641,31 @@ impl ImageDescriptor {
         Ok(Self {
             geometry: Geometry { dimensions },
             sample_format,
-            byte_order: element.attr("byteOrder").map(str::to_string),
+            byte_order: ByteOrder::parse(element.attr("byteOrder"))?,
             location,
             compression: element.attr("compression").map(str::to_string),
+            subblocks: element.attr("subblocks").map(str::to_string),
+        })
+    }
+
+    /// Exact uncompressed sample and byte counts, calculated together with
+    /// checked arithmetic so every consumer uses the same layout invariant.
+    pub(crate) fn sample_layout(&self) -> Result<SampleLayout, Error> {
+        let sample_count =
+            self.geometry
+                .dimensions()
+                .iter()
+                .try_fold(1u64, |count, dimension| {
+                    count
+                        .checked_mul(*dimension)
+                        .ok_or_else(|| Error::invalid("image sample count overflows"))
+                })?;
+        let byte_count = sample_count
+            .checked_mul(sample_size(&self.sample_format)?)
+            .ok_or_else(|| Error::invalid("image byte count overflows"))?;
+        Ok(SampleLayout {
+            sample_count,
+            byte_count,
         })
     }
 
@@ -544,15 +673,13 @@ impl ImageDescriptor {
     /// checked multiplication, so a hostile dimension such as 2^64 − 1 is an
     /// `Invalid` error rather than a wrapped allocation size.
     pub(crate) fn expected_bytes(&self) -> Result<u64, Error> {
-        let mut samples = 1u64;
-        for dimension in self.geometry.dimensions() {
-            samples = samples
-                .checked_mul(*dimension)
-                .ok_or_else(|| Error::invalid("image sample count overflows"))?;
-        }
-        samples
-            .checked_mul(sample_size(&self.sample_format)?)
-            .ok_or_else(|| Error::invalid("image byte count overflows"))
+        self.sample_layout().map(SampleLayout::byte_count)
+    }
+
+    /// Byte width of one uncompressed image sample. Compression shuffle item
+    /// widths are expressed in this same domain, independently of byte order.
+    pub(crate) fn sample_size(&self) -> Result<u64, Error> {
+        sample_size(&self.sample_format)
     }
 }
 

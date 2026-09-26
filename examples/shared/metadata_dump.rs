@@ -4,13 +4,17 @@ use std::env;
 use std::path::Path;
 use std::process;
 
-pub fn run_metadata_dump<F>(
+/// Run a metadata dump and append format-specific diagnostics after the
+/// semantic report.
+pub fn run_metadata_dump_with_postscript<F, G>(
     format_name: &str,
     usage_arg: &str,
     raw_header_title: &str,
     extract_metadata_from_path: F,
+    postscript: G,
 ) where
     F: Fn(&Path) -> Result<AstroMetadata>,
+    G: Fn(&Path) -> Result<()>,
 {
     let args: Vec<String> = env::args().collect();
 
@@ -27,7 +31,13 @@ pub fn run_metadata_dump<F>(
     let file_path = Path::new(&args[1]);
 
     match extract_metadata_from_path(file_path) {
-        Ok(metadata) => print_metadata_report(format_name, raw_header_title, file_path, &metadata),
+        Ok(metadata) => {
+            print_metadata_report(format_name, raw_header_title, file_path, &metadata);
+            if let Err(err) = postscript(file_path) {
+                eprintln!("Error writing metadata diagnostics: {}", err);
+                process::exit(1);
+            }
+        }
         Err(err) => {
             eprintln!("Error extracting metadata: {}", err);
             process::exit(1);

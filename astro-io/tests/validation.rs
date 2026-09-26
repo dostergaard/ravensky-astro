@@ -430,19 +430,54 @@ fn streaming_rejects_truncated_footers_and_trailing_bytes() {
     }
 }
 #[test]
-fn zstd_concatenated_and_skippable_frames_are_accounted_independently() {
+fn zstd_subblocks_require_exactly_one_standard_frame_each() {
     let data = vec![23; 128 * 1024];
     let frame = compressed_frame("zstd", &data);
-    let mut payload = frame.clone();
-    payload.extend(0x184d2a50u32.to_le_bytes());
-    payload.extend(3u32.to_le_bytes());
-    payload.extend([1, 2, 3]);
-    payload.extend(frame);
-    let file = compressed_fixture("zstd", &payload, data.len() * 2);
     let budget = MemoryBudget::new(2 * 1024 * 1024).unwrap();
     let options = ValidationOptions::default().with_level(ValidationLevel::Full);
-    validate_file_with_budget(&file.0, &options, None, &budget).unwrap();
+
+    let mut two_subblocks = frame.clone();
+    two_subblocks.extend_from_slice(&frame);
+    let xml = format!(
+        r#"<xisf version="1.0"><Image geometry="{}:1:1" sampleFormat="UInt8" location="attachment:4096:{}" compression="zstd:{}" subblocks="{},{}:{},{}"/></xisf>"#,
+        data.len() * 2,
+        two_subblocks.len(),
+        data.len() * 2,
+        frame.len(),
+        data.len(),
+        frame.len(),
+        data.len()
+    );
+    let file = Fixture::new(&xisf(&xml, &two_subblocks));
+    validate_file_with_budget(&file.0, &options, None, &budget)
+        .expect("one frame in each declared subblock should validate");
     assert_eq!(budget.used_bytes(), 0);
+
+    let mut concatenated = frame.clone();
+    concatenated.extend_from_slice(&frame);
+    let mut skippable = 0x184d2a50u32.to_le_bytes().to_vec();
+    skippable.extend_from_slice(&3u32.to_le_bytes());
+    skippable.extend_from_slice(&[1, 2, 3]);
+    skippable.extend_from_slice(&frame);
+    let mut trailing_skippable = frame.clone();
+    trailing_skippable.extend_from_slice(&0x184d2a50u32.to_le_bytes());
+    trailing_skippable.extend_from_slice(&3u32.to_le_bytes());
+    trailing_skippable.extend_from_slice(&[1, 2, 3]);
+    for (name, payload, decoded) in [
+        ("concatenated", concatenated, data.len() * 2),
+        ("skippable", skippable, data.len()),
+        ("trailing skippable", trailing_skippable, data.len()),
+    ] {
+        let file = compressed_fixture("zstd", &payload, decoded);
+        let error = validate_file_with_budget(&file.0, &options, None, &budget).expect_err(name);
+        assert_eq!(
+            error.kind(),
+            ValidationErrorKind::IntegrityMismatch,
+            "{name}"
+        );
+        assert_eq!(budget.used_bytes(), 0);
+    }
+
     // Valid magic with an excessive declared window: refuse before native decode.
     let file = compressed_fixture("zstd", &[0x28, 0xb5, 0x2f, 0xfd, 0, 0xf8, 1, 0, 0], 1);
     assert_eq!(
@@ -452,6 +487,74 @@ fn zstd_concatenated_and_skippable_frames_are_accounted_independently() {
         ValidationErrorKind::ResourceLimit
     );
     assert_eq!(budget.used_bytes(), 0);
+}
+
+#[test]
+fn xisf_foreign_extensions_are_allowed_only_as_direct_root_children() {
+    let accepted = Fixture::new(&xisf(
+        r#"<xisf version="1.0" xmlns:e="urn:example"><e:Extension><e:Nested><Image/></e:Nested></e:Extension><Image geometry="2:1:1" sampleFormat="UInt16" location="attachment:4096:4"/></xisf>"#,
+        &[0; 4],
+    ));
+    assert_eq!(
+        validate_file(&accepted.0, &ValidationOptions::default(), None)
+            .expect("root extension should be ignored")
+            .image_count(),
+        1
+    );
+    let bounded = ValidationOptions::default()
+        .with_limits(ValidationLimits::default().with_max_structures(3).unwrap());
+    assert_eq!(
+        validate_file(&accepted.0, &bounded, None)
+            .expect_err("ignored extension elements must still consume structure budget")
+            .kind(),
+        ValidationErrorKind::ResourceLimit
+    );
+
+    for xml in [
+        r#"<xisf version="1.0" xmlns:e="urn:example"><Image geometry="2:1:1" sampleFormat="UInt16" location="attachment:4096:4"><e:Extension/></Image></xisf>"#,
+        r#"<xisf version="1.0" xmlns:e="urn:example"><Metadata><e:Extension/></Metadata><Image geometry="2:1:1" sampleFormat="UInt16" location="attachment:4096:4"/></xisf>"#,
+    ] {
+        let file = Fixture::new(&xisf(xml, &[0; 4]));
+        assert_eq!(
+            validate_file(&file.0, &ValidationOptions::default(), None)
+                .expect_err("foreign elements nested in core content must fail")
+                .kind(),
+            ValidationErrorKind::InvalidStructure
+        );
+    }
+}
+
+#[test]
+fn xisf_compression_subblock_extent_overflow_is_rejected() {
+    let xml = concat!(
+        r#"<xisf version="1.0"><Image geometry="1:1:1" sampleFormat="UInt8" "#,
+        r#"location="attachment:4096:1" compression="zstd:1" "#,
+        r#"subblocks="18446744073709551615,1:1,1"/></xisf>"#,
+    );
+    let file = Fixture::new(&xisf(xml, &[0]));
+    assert_eq!(
+        validate_file(&file.0, &ValidationOptions::default(), None)
+            .expect_err("subblock total overflow must fail")
+            .kind(),
+        ValidationErrorKind::InvalidStructure
+    );
+}
+
+#[test]
+fn xisf_image_shuffle_width_must_match_the_sample_format() {
+    let data = [0u8; 4];
+    let compressed = compressed_frame("zstd", &data);
+    let xml = format!(
+        r#"<xisf version="1.0"><Image geometry="2:1:1" sampleFormat="UInt16" location="attachment:4096:{}" compression="zstd+sh:4:4"/></xisf>"#,
+        compressed.len()
+    );
+    let file = Fixture::new(&xisf(&xml, &compressed));
+    assert_eq!(
+        validate_file(&file.0, &ValidationOptions::default(), None)
+            .expect_err("shuffle width must describe one UInt16 sample")
+            .kind(),
+        ValidationErrorKind::InvalidStructure
+    );
 }
 #[test]
 fn concurrent_validations_share_one_budget_and_leave_no_reservations() {

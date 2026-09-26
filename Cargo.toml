@@ -27,7 +27,6 @@ csv = "1.4"
 log = "0.4"
 fitsio = { version = "0.21.2", features = ["fitsio-src"] }
 quick-xml = "0.30"
-byteorder = "1.5"
 flate2 = "1.0"
 ndarray = "0.15"
 rayon = "1.11"
@@ -72,6 +71,7 @@ csv.workspace = true
 # A direct edge lets docs.rs select fitsio/src-cmake without exposing a
 # RavenSky feature or changing normal/all-features backend selection.
 fitsio.workspace = true
+quick-xml.workspace = true
 rayon.workspace = true
 serde_json.workspace = true
 walkdir.workspace = true

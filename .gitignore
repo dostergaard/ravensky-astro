@@ -3,6 +3,8 @@ __pycache__/
 **/*.rs.bk
 .DS_Store
 tests/data
+# Test data for PI XISF files, too large for GitHub.
+tests/PI_XISF_data/*.xisf
 # External reference material, maintained outside this repository.
 docs/fits_standard40aa-le.pdf
 

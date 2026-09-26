@@ -1,570 +1,469 @@
 # AGENTS.md
 
-Repository guidance for coding agents working in the ravensky-astro repository.
+Repository guidance for coding agents working in the `ravensky-astro` repository.
 
-## Scope
+## Scope and repository role
 
-This file applies to the ravensky-astro repository.
+This file applies to the `ravensky-astro` repository.
 
-Also follow the workspace-root `AGENTS.md`. This repository file adds library- and crate-specific guidance and takes precedence where it is more specific.
+Also follow the workspace-root `AGENTS.md`. This file adds shared-library and crate-specific guidance and takes precedence where it is more specific.
 
----
+RavenSky Astro is a shared Rust library workspace providing reusable functionality for astronomical image I/O, metadata extraction and normalization, image-quality analysis, and related domain infrastructure.
 
-## Repository role
+Current crates:
 
-RavenSky Astro is a shared-library workspace.
+* `astro-io` — low-level FITS/XISF loading and file-format access;
+* `astro-metadata` — structured metadata extraction, parsing, normalization, and derived metadata behavior;
+* `astro-metrics` — quantitative image analysis and quality metrics;
+* `ravensky-astro` — thin umbrella facade over the subcrates;
+* `astro-bench` — unpublished opt-in synthetic workload and measurement tooling; application calibration and runtime policy remain consumer concerns.
 
-It provides reusable Rust crates for astronomical image I/O, metadata extraction and normalization, image-quality metrics, and a thin umbrella facade crate.
+This repository should not own end-user workflow orchestration, CLI/GUI interaction design, packaging, licensing-tier behavior, or other product-specific policy unless explicitly required.
 
-Current workspace crates:
-
-- `astro-io`: low-level FITS/XISF loading and related file-format access helpers
-- `astro-metadata`: structured metadata extraction, parsing, and normalization
-- `astro-metrics`: quantitative image-analysis and quality metrics
-- `ravensky-astro`: umbrella crate and facade over the subcrates
-- `astro-bench`: unpublished opt-in synthetic workload library and measurement CLI;
-  application calibration/settings policy stays with consumers
-
-This repository is not the place for end-user workflow orchestration, GUI behavior, CLI interaction design, packaging logic, or product-tier behavior unless explicitly required.
-
-Prefer keeping this repository focused on durable, reusable library concerns.
+Keep the repository focused on durable, reusable library concerns.
 
 ---
 
-## Repository maturity note
+## Repository maturity and priorities
 
-This repository is published but still in an early formative stage.
+The crates are published but remain in an early formative stage.
 
-Some existing crate structure, API shape, naming, module layout, and documentation reflect early design decisions made during initial exploration of Rust and the crate ecosystem. The current architecture direction is sound, but boundary cleanup and API tightening are still appropriate.
+Some API shape, naming, module layout, documentation, and crate boundaries reflect early exploratory design. Deliberate cleanup is appropriate when it materially improves the long-term library architecture.
 
-Agents may recommend or perform deliberate refactoring when it materially improves:
+When concerns compete, prioritize:
 
-- crate boundaries
-- API clarity
-- naming consistency
-- documentation quality
-- testability
-- maintainability
-- long-term semver stability
+1. correctness;
+2. crate-boundary clarity;
+3. API clarity;
+4. maintainability;
+5. testability;
+6. semver stability;
+7. documentation quality;
+8. performance;
+9. implementation elegance.
 
-Prefer making these improvements now, while downstream adoption is still limited, rather than freezing immature structure indefinitely.
+Do not preserve weak early design merely to avoid change, but do not churn published APIs without a clear architectural or maintainability benefit.
 
-Even so, refactoring must remain intentional, justified, and well-scoped. Do not churn the codebase without a clear architectural or maintainability benefit.
-
----
-
-## Repository priorities
-
-When making decisions, prioritize in this order:
-
-1. correctness
-2. crate-boundary clarity
-3. API clarity
-4. maintainability
-5. testability
-6. semver stability
-7. documentation quality
-8. performance
-9. implementation elegance
-
-Do not trade away clarity or long-term crate quality for clever abstractions or short-term convenience.
+Because the crates are still `0.x` and downstream adoption is limited, intentional breaking corrections may sometimes be preferable to indefinitely preserving a poor abstraction. Treat such changes as explicit design work, not incidental cleanup.
 
 ---
 
-## Current architectural direction
+## Architectural direction
 
-The current coarse-grained split is considered correct unless the task explicitly justifies changing it:
+The current coarse-grained crate split is considered correct unless a task provides a strong reason to change it:
 
-- `astro-io` should own low-level format access and image/file loading concerns
-- `astro-metadata` should own structured metadata models, extraction, and normalization
-- `astro-metrics` should own image-analysis metrics and quality scoring
-- `ravensky-astro` should remain a thin facade unless there is a clear reason to make it a more opinionated composition layer
+* `astro-io` owns low-level format access, decoding, and image/file loading;
+* `astro-metadata` owns structured metadata models, extraction, normalization, precedence, and derived metadata semantics;
+* `astro-metrics` owns image-analysis metrics and quality scoring;
+* `ravensky-astro` remains a thin facade unless selective composition clearly improves consumer ergonomics;
+* `astro-bench` provides measurement infrastructure without imposing application runtime policy.
 
-Prefer tightening boundaries inside this structure over inventing a new structure casually.
+Prefer improving boundaries within this structure over inventing a new structure casually.
 
----
+### Known architectural pressure points
 
-## Known architectural pressure points
+Treat the following as known design concerns rather than patterns to reproduce:
 
-The repository currently has several known weak spots that should be handled deliberately:
+* `astro-metadata` currently depends on and re-exports `astro_io::fits::FitsHeaderCard`, indicating an immature ownership boundary;
+* XISF support needs careful architectural treatment before further public API expansion;
+* some terminology and documentation still reflect older "Astro Core" naming;
+* the published API surface is already somewhat broad;
+* cross-crate contract coverage is thinner than desired;
+* no deliberate feature-flag strategy exists yet.
 
-- `astro-metadata` currently depends on and re-exports `astro_io::fits::FitsHeaderCard`, which suggests an immature crate boundary
-- XISF support in `astro-io` should be treated as an area needing extra care before further API expansion
-- some naming and documentation still drift from older "Astro Core" terminology
-- the public API surface is already published and somewhat broad
-- cross-crate contract testing is thinner than ideal
-- there is currently no feature-flag strategy even though future backend or capability splits may need one
-
-Do not paper over these issues with ad hoc additions. Prefer explicit design corrections.
-
----
-
-## Shared-library boundary rules
-
-Prefer putting genuinely reusable domain logic in this repository.
-
-Good fits include:
-
-- astronomy-domain types and calculations
-- metadata models and normalization
-- FITS/XISF or related data-access abstractions
-- reusable parsing and validation logic
-- metrics, analysis, and scoring primitives
-- common error and utility types where reuse is real
-
-Avoid adding:
-
-- app-specific workflow assumptions
-- CLI presentation behavior
-- GUI state or interaction logic
-- product-tier distinctions
-- packaging or installer behavior
-- policy decisions that belong to consuming applications
-
-Do not pull product logic downward into shared crates merely to reduce duplication unless the abstraction is genuinely reusable and improves the design.
+Do not paper over these issues with additional ad hoc coupling.
 
 ---
 
-## Crate-boundary guidance
+## Crate ownership
 
-Before adding new logic, decide carefully which crate it belongs in.
+Before adding a type, parser, helper, trait, or API, decide which crate conceptually owns it.
 
 ### `astro-io`
 
-Best for:
+Owns low-level representation and access to external formats.
 
-- file-format reading
-- image loading
-- raw format access
-- low-level header-card extraction
-- backend-specific decode behavior
+Good fits:
+
+* FITS/XISF and related file-format reading;
+* image loading;
+* raw header or property extraction;
+* binary/layout access;
+* backend-specific decoding;
+* low-level format validation primitives where they belong with structural parsing.
 
 Avoid placing here:
 
-- normalized metadata models
-- high-level metadata semantics
-- product-facing interpretation rules
-- analysis or scoring logic
+* normalized metadata models;
+* high-level metadata semantics;
+* product policy;
+* image-quality metrics.
 
 ### `astro-metadata`
 
-Best for:
+Owns the semantic metadata layer.
 
-- structured metadata models
-- metadata parsing
-- normalization
-- precedence and fallback rules
-- consistent derived metadata behavior across formats
+Good fits:
+
+* structured metadata models;
+* parsing raw metadata into domain values;
+* normalization;
+* precedence and fallback rules;
+* format-independent derived metadata behavior.
 
 Avoid placing here:
 
-- raw file I/O concerns that do not belong to metadata interpretation
-- image-analysis metrics
-- UI- or product-specific metadata policy
+* unrelated raw file I/O;
+* image-quality analysis;
+* application-specific metadata policy.
 
 ### `astro-metrics`
 
-Best for:
+Owns reusable quantitative image analysis.
 
-- star/background/quality metrics
-- numerical analysis
-- scoring logic
-- analysis-oriented types tied to image quality
+Good fits:
+
+* star, background, and image-quality metrics;
+* numerical analysis;
+* scoring primitives;
+* types directly associated with reusable image analysis.
 
 Avoid placing here:
 
-- raw format loading
-- metadata normalization policy unless strictly needed for metrics inputs
+* raw format loading;
+* general metadata normalization;
+* application scoring policy that is not intrinsically part of the metric.
 
 ### `ravensky-astro`
 
-Best for:
+The umbrella crate should primarily provide:
 
-- re-exports
-- minimal facade ergonomics
-- selective composition only when it clearly improves consumer experience
+* re-exports;
+* discoverability;
+* minimal facade ergonomics;
+* selective composition that clearly benefits consumers.
 
-Do not casually turn the umbrella crate into a grab bag.
+Do not turn it into a miscellaneous convenience layer.
 
----
+### `astro-bench`
 
-## Public API guidance
+Keep benchmark/workload infrastructure separate from application policy.
 
-Be conservative with public API changes.
-
-For public items:
-
-- prefer clear, unsurprising names
-- encode meaning in types where practical
-- document invariants and edge cases
-- avoid exposing implementation details
-- prefer small, composable interfaces
-- avoid over-generalizing too early
-
-Before adding a public type, trait, function, module, or field, ask:
-
-- is this truly reusable?
-- is this the right crate for it?
-- is the name stable enough to live with?
-- does this expose the correct abstraction level?
-- does this make future semver cleanup harder?
-- can a smaller surface achieve the same outcome?
-
-If the answer is uncertain, prefer the smaller public surface.
-
-Public field exposure should be treated cautiously. Prefer methods, builders, smart constructors, or focused config/data types where they improve long-term API durability.
+It may model representative workloads and expose measurement tools, but product-specific resource admission, configuration defaults, calibration decisions, and runtime scheduling belong to consumers.
 
 ---
 
-## Semver and compatibility
+## Shared-library boundary rule
 
-Assume that published crates may have downstream consumers.
+Reusable astronomy-domain logic belongs here when it represents a stable library concept.
+
+Good fits include:
+
+* astronomy-domain types and calculations;
+* metadata models and normalization;
+* FITS/XISF parsing and validation primitives;
+* reusable image access abstractions;
+* reusable metrics and scoring primitives;
+* common domain errors and utilities where reuse is genuine.
+
+Do not pull product logic downward merely to eliminate duplication.
+
+A shared abstraction should represent a reusable concept, not an application workflow disguised as a library API.
+
+---
+
+## Public API and semver
+
+Treat every public item as a long-term commitment even while the crates remain `0.x`.
+
+Before adding or widening a public API, ask:
+
+* is this genuinely reusable?
+* does the owning crate make sense?
+* is the abstraction level correct?
+* is the name stable enough to keep?
+* does this expose implementation detail?
+* can a smaller public surface solve the same problem?
+* will this make later semver cleanup harder?
+
+When uncertain, prefer the smaller public surface.
+
+Be especially cautious with:
+
+* public struct fields;
+* convenience types that expose internals;
+* broad trait abstractions;
+* genericity without demonstrated consumers;
+* re-exports that accidentally create cross-crate ownership commitments.
+
+Prefer methods, smart constructors, builders, config types, and focused domain types when they preserve future implementation freedom.
+
+### Compatibility
+
+Assume published crates may have downstream consumers.
 
 Do not casually:
 
-- rename public items
-- change type semantics
-- alter error behavior in surprising ways
-- remove variants, fields, or supported inputs
-- tighten parsing or validation rules without reason
-- change output formats or serialization behavior without explicit intent
+* rename or remove public items;
+* change type semantics;
+* alter error behavior unexpectedly;
+* remove accepted inputs;
+* tighten parsing or validation without intent;
+* change serialization or output contracts.
 
-Because the crates are still `0.x` and downstream adoption appears limited, deliberate breaking refactors may be acceptable when they clearly improve long-term crate quality.
+Breaking changes may be justified when they materially improve the long-term architecture, especially while adoption remains limited.
 
-Treat these as intentional design corrections, not incidental cleanup. When making such changes, update:
+When intentionally breaking compatibility, update together:
 
-- documentation
-- tests
-- examples
-- changelog or release notes
-- crate-level guidance where applicable
+* code;
+* tests;
+* rustdoc and crate documentation;
+* examples;
+* changelog or release notes;
+* any affected downstream workspace consumers.
 
-Avoid repeated naming churn unless it fixes a real architectural problem.
-
----
-
-## Type and trait design
-
-Prefer strong domain types over loosely structured primitives.
-
-Prefer:
-
-- enums over ambiguous flags
-- newtypes where they clarify meaning
-- builders or config structs over long parameter lists
-- trait implementations only when they reflect clear semantic meaning
-- composition over elaborate trait hierarchies
-
-Avoid:
-
-- public APIs that depend on booleans with unclear meaning
-- trait machinery that is harder to understand than the concrete design
-- exposing internal convenience abstractions as public contracts
-- genericity that is not justified by real consumer needs
-- field-heavy public structs when a narrower API would better preserve future flexibility
+Avoid repeated naming churn unless it resolves a real design problem.
 
 ---
 
-## Error handling
+## Parsing, validation, metadata, and normalization
 
-Use explicit, meaningful error handling.
+This repository interprets external file structures, metadata, and scientific values. These behaviors form library contracts.
 
-Prefer:
+Preserve:
 
-- domain-appropriate error types
-- context-preserving propagation
-- actionable messages where errors cross crate boundaries
-- distinguishing invalid input, unsupported cases, and internal failures where useful
-- failing clearly instead of returning placeholder data for unsupported or broken cases
+* deterministic parsing and interpretation;
+* explicit precedence and fallback rules;
+* predictable handling of malformed or incomplete input;
+* clear separation between structural format data and normalized metadata semantics;
+* stable failure behavior for unsupported or invalid cases.
 
-Avoid:
+Do not silently change normalization, precedence, or derived-value semantics.
 
-- `unwrap()` and `expect()` in production paths
-- vague catch-all error messages
-- silently discarding malformed or unexpected data unless the contract explicitly allows it
-- debug printing or stdout output in published library code except where explicitly intended
+When parsing, metadata extraction, normalization, or validation behavior changes, update the corresponding tests and documentation.
 
-When parsing or normalizing data, make failure behavior explicit and predictable.
+### Structural parsing versus semantic interpretation
 
----
+Prefer sharing syntax, range, decoding, and structural validation primitives rather than creating multiple divergent parsers for the same format.
 
-## Parsing, metadata, and normalization behavior
+Do not force validation, metadata extraction, and image loading into a single oversized object model when they have different output or resource needs.
 
-Many crates in this repository interpret external data, metadata, file structures, or scientific values.
+Where practical:
 
-For this kind of logic:
+* `astro-io` should own reusable low-level structural parsing and format-access primitives;
+* higher layers should consume those primitives for metadata extraction, validation, or image access;
+* semantic interpretation should remain outside the lowest-level parser unless it is intrinsic to the file format itself.
 
-- preserve determinism
-- document precedence and fallback rules
-- make normalization behavior explicit
-- handle malformed or incomplete inputs predictably
-- avoid silent semantic drift
-
-If parsing, metadata extraction, normalization, or derived-value logic changes, update tests and documentation accordingly.
-
-Be especially careful when changing cross-crate boundaries between raw extracted data and normalized metadata semantics.
+Avoid parallel parsing implementations whose behavior can drift independently.
 
 ---
 
-## XISF and format-backend guidance
+## FITS and XISF
 
-XISF support should be treated as an active refinement area.
+Treat FITS and XISF as format backends with explicit contracts, not collections of special cases.
 
-When working on XISF or backend-specific code:
+For backend work:
 
-- prefer clear failure over placeholder behavior
-- remove or avoid hardcoded test-path logic in library code
-- avoid stdout printing in normal library operation
-- keep test-only behavior isolated from production paths
-- document unsupported cases explicitly
-- avoid expanding public API around immature internal behavior until the implementation is sound
+* prefer clear failure over placeholder behavior;
+* isolate test-only behavior from production paths;
+* do not hardcode test paths in library code;
+* avoid stdout/debug printing in normal library operation;
+* document unsupported cases;
+* avoid widening public APIs around immature internal implementations;
+* make meaningful backend differences explicit.
 
-If backend behavior differs materially across formats, make the contract explicit.
+### XISF
 
----
+XISF remains an active refinement area.
 
-## Dependency discipline
+Before expanding XISF-facing APIs, prefer strengthening:
 
-Do not add dependencies casually.
+* structural parsing;
+* validation coverage;
+* metadata extraction consistency;
+* error behavior;
+* test fixtures and malformed-input coverage;
+* shared parser primitives where validation and extraction currently diverge.
 
-Before adding a crate:
+Do not preserve an early XISF implementation merely because it already exists if a better internal boundary can be introduced without compromising the public contract.
 
-- check whether the standard library already suffices
-- check whether the dependency is already present in the workspace
-- prefer mature, well-maintained crates
-- consider compile time, binary size, transitive dependency cost, and maintenance burden
-- avoid large dependencies for small convenience gains
+### FITS
 
-Prefer keeping foundational crates especially lightweight and stable.
+Apply the same architectural principles to FITS.
 
-Unused dependencies should be removed when identified.
+Avoid allowing mature FITS support to accumulate separate parsing paths for:
 
----
+* validation;
+* metadata extraction;
+* image loading;
+* structural inspection.
 
-## Feature-flag guidance
-
-This workspace currently has no feature-flag strategy.
-
-Do not introduce features casually. But if a task requires optional backends, staged migrations, or optional capabilities, prefer a deliberate and documented feature design over ad hoc conditional compilation.
-
-A good feature design should:
-
-- have a clear user-facing purpose
-- avoid fragmenting core crate semantics unnecessarily
-- keep default behavior understandable
-- be documented at the crate level
-- avoid creating hard-to-test combinations without reason
+Where these operations need different outputs or resource budgets, share low-level syntax and structural primitives rather than forcing them through one all-purpose representation.
 
 ---
 
-## Performance guidance
+## Feature flags
 
-Performance matters when processing large files, metadata sets, or image-related data, but do not sacrifice clarity without a good reason.
+There is currently no established feature-flag strategy.
 
-Optimize deliberately.
+Do not introduce Cargo features casually.
 
-Good reasons to optimize include:
+Features may be appropriate for:
 
-- repeated allocations in hot paths
-- unnecessary cloning of large structures
-- avoidable repeated parsing or normalization work
-- accidental quadratic behavior
-- poor scaling across large datasets
+* optional format backends;
+* optional heavyweight dependencies;
+* staged compatibility transitions;
+* capabilities that are genuinely optional for consumers.
 
-Prefer measured or well-reasoned improvements over speculative tuning.
+A feature design should:
 
-Efficient bounded primitives are part of the shared-library contract. For large
-input/decoding paths, document live allocations, native backend overhead,
-fallible allocation behavior, resource limits and cancellation boundaries.
-Support caller-coordinated reservations without embedding product schedulers,
-monitor timers, hidden global pools or independent whole-machine budgets.
-Count codec-internal threads when describing concurrency capabilities.
+* have a clear consumer-facing purpose;
+* keep defaults understandable;
+* avoid fragmenting fundamental crate semantics;
+* be documented at crate level;
+* avoid an unmanageable matrix of combinations.
 
-Follow the workspace Performance and Resource Design policy when present; keep
-library guarantees and standalone usage documented in this repository. Compare
-serial and concurrent workloads, peak memory and end-to-end throughput where
-relevant. Evaluate existing SIMD/hardware support before adding dependencies;
-retain portable fallbacks and identical validation semantics.
+Prefer an explicit feature architecture over scattered conditional compilation.
 
 ---
 
-## Concurrency guidance
+## Performance and resource contracts
 
-Evaluate both concurrency and serialization against workload and backend evidence.
-Serial execution is a measurement baseline or a justified restriction, not a
-universal release design. Require resource bounds and deterministic results for
-concurrent use; document verified backend capabilities and isolate necessary
-serialization across all affected callers.
+Shared libraries should provide efficient, bounded primitives without embedding application schedulers or whole-machine policy.
 
-Do not introduce async, threads, channels, locks, or parallel processing casually.
+For large-file, decode, parsing, or image-processing paths, consider and document where relevant:
 
-When concurrency is appropriate:
+* live Rust allocations;
+* native/backend allocations;
+* fallible allocation behavior;
+* resource limits;
+* cancellation boundaries;
+* codec/backend thread usage;
+* serial versus concurrent behavior.
 
-- keep ownership and synchronization easy to reason about
-- document assumptions and invariants
-- preserve deterministic observable behavior where practical
-- avoid making APIs harder to use unless the gain is clear
+Libraries may expose primitives that allow callers to coordinate resource reservations or concurrency, but should not create:
 
----
+* product-specific admission schedulers;
+* monitor timers;
+* hidden global worker pools;
+* independent whole-machine memory budgets.
 
-## Testing expectations
+Count codec-internal or backend threads when describing concurrency behavior.
 
-When changing behavior in this repository, validate with the narrowest useful tests first, then broader checks as appropriate.
+Concurrency or serialization should be based on workload and backend evidence.
 
-Expected validation usually includes:
+Require:
 
-- `cargo fmt`
-- `cargo clippy --all-targets --all-features`
-- relevant unit tests
-- relevant integration tests
-- doc tests where applicable
+* bounded resource use;
+* deterministic results;
+* explicit backend limitations;
+* serialization across all affected callers when a backend requires it.
 
-Add or update tests when changing:
+Do not serialize unrelated work merely because one backend or operation requires serialization.
 
-- public behavior
-- parsing or normalization logic
-- metadata extraction
-- error behavior
-- serialization or output contracts
-- backend-specific behavior
-- performance-sensitive logic when regressions are plausible
-- crate-boundary behavior between `astro-io`, `astro-metadata`, and `astro-metrics`
+Follow the workspace Performance and Resource Design policy for broader resource principles.
 
-Prefer tests that verify behavior and contracts, not implementation trivia.
+Where relevant, measure both:
 
-Regression tests are strongly preferred for bug fixes.
+* throughput and latency;
+* peak memory;
+* serial and concurrent behavior;
+* end-to-end rather than only microbenchmark performance.
 
-For deliberate refactors, add or update tests that lock in the intended crate contracts and prevent regressions while structure changes.
-
-Cross-crate contract tests are especially valuable in this workspace.
+Evaluate existing SIMD or hardware acceleration before adding new dependencies, retain portable fallbacks, and preserve identical validation semantics.
 
 ---
 
-## Documentation expectations
+## Cross-crate contracts
 
-Public crates and public APIs should be documented clearly.
+Changes that move concepts or responsibilities between `astro-io`, `astro-metadata`, and `astro-metrics` deserve explicit contract testing.
 
-Prefer rustdoc that explains:
+Particularly valuable boundaries include:
 
-- purpose
-- expected inputs and outputs
-- invariants
-- edge cases
-- error behavior
-- examples where useful
+* raw format structures → semantic metadata;
+* decoded image data → metrics;
+* shared error behavior;
+* format-specific extraction → normalized format-independent values;
+* facade re-exports → underlying crate APIs.
+
+Prefer tests that make these boundaries visible so internal refactoring does not silently alter semantics.
+
+When a crate-boundary change is intentional, update the relevant contract tests alongside the implementation.
+
+---
+
+## Verification emphasis
+
+Follow the workspace validation and definition-of-done requirements.
+
+For this repository, verification should emphasize reusable library contracts rather than only successful compilation.
+
+When applicable, verify:
+
+* public API behavior;
+* parsing and validation semantics;
+* malformed and unsupported inputs;
+* metadata precedence and normalization;
+* backend consistency;
+* error contracts;
+* cross-crate boundaries;
+* serialization/output contracts;
+* performance/resource invariants where relevant.
+
+Regression tests are strongly preferred for defects.
+
+For deliberate refactors, use tests to lock in the intended external contract while permitting internal structure to change.
+
+Cross-crate contract tests are especially valuable.
+
+---
+
+## Documentation and architecture
+
+Public APIs should explain the contract that consumers need to depend upon, including:
+
+* purpose;
+* inputs and outputs;
+* invariants;
+* edge cases;
+* error behavior;
+* examples where useful.
 
 Update documentation when changing:
 
-- public APIs
-- parsing behavior
-- normalization rules
-- supported formats
-- feature flags
-- crate capabilities or intended usage
-- architectural boundaries between crates
+* public APIs;
+* parsing or validation behavior;
+* metadata normalization;
+* supported formats;
+* feature flags;
+* crate capabilities;
+* ownership boundaries.
 
-Do not leave stale examples or outdated crate-level guidance behind.
+Do not allow architecture documents in `docs/` to drift indefinitely from implemented design.
 
-Improving rustdoc coverage, crate-level documentation, examples, and usage guidance is a worthwhile form of foundational refactoring in this repository.
+When exploratory decisions settle, consolidate them into authoritative guidance rather than accumulating contradictory planning notes.
 
-The architecture docs in `docs/` should not drift indefinitely from the actual code. When design decisions settle, prefer converging planning notes into clearer authoritative guidance.
-
----
-
-## Refactoring guidance
-
-Deliberate refactoring is encouraged in this repository when it improves the long-term quality of the shared crates, especially while downstream adoption remains low.
-
-Good refactors in this repository include:
-
-- clarifying crate boundaries and responsibilities
-- moving types or concepts into better ownership boundaries
-- improving module organization
-- simplifying or reshaping immature public APIs
-- strengthening type design
-- isolating parsing or normalization logic
-- improving rustdoc coverage and examples
-- improving testability and test structure
-- adding cross-crate contract tests
-- reducing real duplication
-- separating stable core concepts from exploratory or volatile code
-- renaming poorly chosen items for long-term clarity before adoption hardens
-- removing stale terminology and docs drift
-
-When refactoring public APIs, documentation, examples, and tests should be updated together.
-
-Avoid:
-
-- aesthetic churn without architectural benefit
-- unnecessary abstraction
-- broad rewrites without a clear target state
-- mixing unrelated cleanup into feature work unless it is required
-- preserving weak early design choices solely to avoid change
-
-Prefer intentional, documented improvements that move the repository toward a cleaner and more durable crate ecosystem.
+Removing stale terminology and clarifying crate-level documentation are worthwhile architectural improvements.
 
 ---
 
-## Things agents should not do casually
-
-Do not casually:
-
-- introduce product-specific assumptions into shared crates
-- widen the public API without a clear reason
-- make breaking changes to published crate behavior
-- change parsing or normalization semantics silently
-- add heavyweight dependencies for convenience
-- expose internal helper types as public API
-- introduce concurrency complexity without evidence it is worthwhile
-- optimize hot paths without identifying an actual problem
-- leave prototype behavior in published library paths
-
-These changes have long-term maintenance cost.
-
----
-
-## Preferred agent workflow in this repository
-
-When beginning work:
-
-- identify which crate or crates are actually in scope
-- inspect existing public APIs and patterns before adding new ones
-- check whether the change belongs in shared library code or in a consuming application
-- preserve compatibility unless the task explicitly requires otherwise
-- use an explicit implementation strategy for non-trivial refactors, API reshaping, crate-boundary changes, backend cleanup, or documentation uplift efforts
-
-When finishing work:
-
-- summarize crate-level and API-level effects
-- note any compatibility implications
-- report validation performed
-- mention downstream consumer impacts when relevant
-
----
-
-## Recommended skills
-
-When available in this workspace, prefer using skills for repeatable library-engineering workflows.
-
-Recommended examples:
-
-- `grill-me` for clarifying abstraction boundaries, consumer needs, and API direction before implementation
-- `impl` for non-trivial library design or refactoring plans
-- `tdd` for parsing, metadata, normalization, error handling, backend cleanup, and regression fixes
-- `verify` before declaring work complete
-- `api-audit` when reviewing a crate, module, or library change
-
-Use these skills to reduce hidden assumptions and improve confidence in shared-library changes.
-
----
-
-## Repository-local principle
+## Repository principle
 
 RavenSky Astro should remain a trustworthy shared foundation.
 
-When uncertain, choose the design that is clearer, more reusable, more stable, and easier for downstream consumers to understand and depend on.
+When several designs satisfy the immediate requirement, prefer the one that produces:
+
+* clearer crate ownership;
+* a smaller and more durable public API;
+* reusable rather than product-specific abstractions;
+* predictable parsing and metadata semantics;
+* stronger contracts between crates;
+* easier downstream adoption and maintenance.
+
+---
 
 <!-- graft:start -->
+
 ## Graft — repo context graph
 
 This repo is indexed in `graft/`: small linked markdown nodes that explain each
@@ -577,7 +476,7 @@ already have (symbol, error string, file name) as the query. New to this repo?
 Run `graft map` first — a token-budgeted orientation (dir clusters, hubs,
 hotspots), no LLM, no key.
 
-- Run `graft ask "<your question>" --source` → ranked nodes with the relevant
+* Run `graft ask "<your question>" --source` → ranked nodes with the relevant
   code spans inlined (each hit's ≤8-line crux by default; `--full` for whole
   definitions when the crux isn't enough). Match the tool to the task shape:
   for understanding or editing, the top node IS the answer — cite its
@@ -586,14 +485,14 @@ hotspots), no LLM, no key.
   results are top-N, not complete — run `graft grep "<literal>"` instead
   (exhaustive over indexed files, grouped by enclosing symbol), falling back
   to raw `grep -rn` only for unindexed files.
-- `graft skeleton <file>` → every definition's signature + span, ~10× cheaper
+* `graft skeleton <file>` → every definition's signature + span, ~10× cheaper
   than reading the file; use it to skim an API surface.
-- `graft callers <symbol>` gives precomputed, exact edges — who calls this.
+* `graft callers <symbol>` gives precomputed, exact edges — who calls this.
   Add `--direction out` for what it calls, or `--depth N` to walk
   transitively for the full blast radius. For structural questions, skip
   ranking and use this directly.
-- Or browse: `graft/INDEX.md` lists every node; follow the links.
-- Monorepos and folders of multiple repos rank fairly across sub-projects —
+* Or browse: `graft/INDEX.md` lists every node; follow the links.
+* Monorepos and folders of multiple repos rank fairly across sub-projects —
   hits carry `[scope/]` labels naming which one they're from. Narrow with
   `graft ask "<task>" --in <scope>/` once you know where you're working.
 
@@ -604,4 +503,5 @@ re-read whole files.
 
 After big code changes, refresh the graph with `graft build` (deterministic,
 no API key, $0).
+
 <!-- graft:end -->

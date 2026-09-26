@@ -11,6 +11,9 @@ description = "I/O operations for astronomical image formats"
 documentation = "https://docs.rs/astro-io"
 readme = "README.md"
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+
 [package.metadata.docs.rs]
 features = ["fitsio/src-cmake"]
 targets = ["x86_64-unknown-linux-gnu"]
@@ -22,7 +25,6 @@ fitsio.workspace = true
 quick-xml.workspace = true
 serde.workspace = true
 log.workspace = true
-byteorder.workspace = true
 flate2.workspace = true
 
 # Validation codecs and digests; keep native codec features minimal.

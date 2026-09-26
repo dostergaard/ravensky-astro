@@ -5,6 +5,7 @@
 
 use anyhow::{Context, Result};
 use astro_io::fits::{header_cards_to_map, FitsHeaderCard};
+use astro_io::xisf::{read_metadata_records, XisfImageMetadata, XisfMetadataRecords};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use log::warn;
 use std::collections::HashMap;
@@ -17,6 +18,7 @@ use super::types::{AstroMetadata, AttachmentInfo, ColorManagement, DisplayFuncti
 
 /// Extract metadata from an XISF file
 pub fn extract_metadata<R: Read + Seek>(reader: &mut R) -> Result<AstroMetadata> {
+    let records = read_metadata_records(reader).context("Failed to read XISF metadata records")?;
     let mut metadata = AstroMetadata::default();
     metadata.detector.binning_x = 1;
     metadata.detector.binning_y = 1;
@@ -30,40 +32,13 @@ pub fn extract_metadata<R: Read + Seek>(reader: &mut R) -> Result<AstroMetadata>
         block_alignment: None,
     };
 
-    // Read and validate the signature
-    let mut signature = [0u8; 8];
-    reader
-        .read_exact(&mut signature)
-        .context("Failed to read XISF signature")?;
-
-    if &signature != b"XISF0100" {
-        return Err(anyhow::anyhow!("Invalid XISF signature"));
-    }
-
-    // Read the header size (4 bytes)
-    let mut header_size_bytes = [0u8; 4];
-    reader
-        .read_exact(&mut header_size_bytes)
-        .context("Failed to read header size")?;
-    let header_size = u32::from_le_bytes(header_size_bytes) as usize;
-
-    // Extract XML content from the header
-    if let Ok(xml_content) = extract_xml_content(reader, header_size) {
-        // Extract FITS keywords from the XML
-        extract_fits_keywords(&xml_content, &mut metadata, &mut raw_header_cards);
-
-        // Extract other metadata from XML attributes
-        extract_xml_attributes(&xml_content, &mut metadata);
-
-        // Extract XISF-specific metadata
-        extract_xisf_metadata(&xml_content, &mut metadata, &mut xisf_metadata);
-
-        // Extract color management information
-        extract_color_management(&xml_content, &mut metadata);
-
-        // Extract attachment information
-        extract_attachments(&xml_content, &mut metadata);
-    }
+    // Syntax and raw lexical preservation stop at `astro-io`; every operation
+    // below is semantic projection into the existing public metadata model.
+    extract_fits_keywords(&records, &mut metadata, &mut raw_header_cards);
+    extract_image_attributes(&records, &mut metadata);
+    extract_xisf_metadata(&records, &mut xisf_metadata);
+    extract_color_management(&records, &mut metadata);
+    extract_attachments(&records, &mut metadata);
 
     // Store raw headers and XISF metadata
     metadata.raw_headers = header_cards_to_map(&raw_header_cards);
@@ -83,157 +58,107 @@ pub fn extract_metadata_from_path(path: &Path) -> Result<AstroMetadata> {
     extract_metadata(&mut file)
 }
 
-/// Extract XML content from the XISF header
-fn extract_xml_content<R: Read>(reader: &mut R, header_size: usize) -> Result<String> {
-    // Read the XML header
-    let mut header_data = vec![0u8; header_size];
-    reader
-        .read_exact(&mut header_data)
-        .context("Failed to read XML header")?;
-
-    // Find the XML declaration
-    let mut xml_start = 0;
-    for i in 0..header_data.len() {
-        if i + 5 < header_data.len() && &header_data[i..i + 5] == b"<?xml" {
-            xml_start = i;
-            break;
-        }
-    }
-
-    // XISF headers might have null bytes at the end - trim them
-    let actual_size = header_data[xml_start..]
-        .iter()
-        .position(|&b| b == 0)
-        .map(|pos| xml_start + pos)
-        .unwrap_or(header_data.len());
-
-    // Convert to string
-    let xml_content = String::from_utf8_lossy(&header_data[xml_start..actual_size]).to_string();
-
-    Ok(xml_content)
-}
-
-/// Extract FITS keywords from XML content
+/// Interpret ordered raw FITSKeyword records without changing their source
+/// order or duplicate behavior. The semantic copy is normalized for the
+/// existing metadata fields; the `astro-io` record remains untouched.
 fn extract_fits_keywords(
-    xml: &str,
+    records: &XisfMetadataRecords,
     metadata: &mut AstroMetadata,
     raw_header_cards: &mut Vec<FitsHeaderCard>,
 ) {
-    let mut pos = 0;
-
-    while let Some(start_pos) = xml[pos..].find("<FITSKeyword ") {
-        let keyword_start = pos + start_pos;
-
-        // Find the end of the FITSKeyword tag
-        if let Some(end_pos) = xml[keyword_start..].find("/>") {
-            let keyword_end = keyword_start + end_pos + 2;
-            let keyword_tag = &xml[keyword_start..keyword_end];
-
-            // Extract name and value attributes
-            if let Some(name) = extract_attribute(keyword_tag, "name") {
-                if let Some(value) = extract_attribute(keyword_tag, "value") {
-                    // Remove quotes if present
-                    let clean_value = value.trim_matches('\'').to_string();
-                    let card_index = raw_header_cards.len() + 1;
-                    raw_header_cards.push(FitsHeaderCard {
-                        hdu_index: 0,
-                        card_index,
-                        keyword: name.clone(),
-                        value: Some(clean_value.clone()),
-                        comment: None,
-                        raw_card: None,
-                    });
-
-                    // Process known FITS keywords
-                    process_fits_keyword(metadata, &name, &clean_value);
-                }
-            }
-
-            pos = keyword_end;
-        } else {
-            break;
-        }
+    for keyword in records.fits_keywords() {
+        let clean_value = normalize_fits_keyword_value(keyword.value());
+        let card_index = raw_header_cards.len() + 1;
+        raw_header_cards.push(FitsHeaderCard {
+            hdu_index: 0,
+            card_index,
+            keyword: keyword.name().to_string(),
+            value: Some(clean_value.clone()),
+            comment: keyword.comment().map(str::to_string),
+            raw_card: None,
+        });
+        process_fits_keyword(metadata, keyword.name(), &clean_value);
     }
 }
 
-/// Extract attributes from XML content
-fn extract_xml_attributes(xml: &str, metadata: &mut AstroMetadata) {
-    // Extract image dimensions
-    if let Some(geometry) = extract_attribute(xml, "geometry") {
+fn normalize_fits_keyword_value(value: &str) -> String {
+    let value = value.trim();
+    match value
+        .strip_prefix('\'')
+        .and_then(|value| value.strip_suffix('\''))
+    {
+        Some(value) => value.trim_end().to_string(),
+        None => value.to_string(),
+    }
+}
+
+fn extract_image_attributes(records: &XisfMetadataRecords, metadata: &mut AstroMetadata) {
+    // Creator interpretation is document-level and must not depend on whether
+    // the file also contains an Image element.
+    if let Some(creator_app) = property_value(records, "XISF:CreatorApplication") {
+        if let Some(ref mut env) = metadata.environment {
+            env.software_version = Some(creator_app.to_string());
+        } else {
+            metadata.environment = Some(super::types::Environment {
+                software_version: Some(creator_app.to_string()),
+                ..Default::default()
+            });
+        }
+    }
+
+    let Some(image) = records.images().first() else {
+        return;
+    };
+    if let Some(geometry) = image.geometry() {
         let parts: Vec<&str> = geometry.split(':').collect();
         if parts.len() >= 2 {
             metadata.detector.width = parts[0].parse().unwrap_or(0);
             metadata.detector.height = parts[1].parse().unwrap_or(0);
         }
     }
-
-    // Extract color space
-    if let Some(color_space) = extract_attribute(xml, "colorSpace") {
-        if color_space == "Gray" {
-            // It's a monochrome image
-        }
-    }
-
-    // Extract sample format
-    if let Some(sample_format) = extract_attribute(xml, "sampleFormat") {
-        if sample_format == "UInt16" {
-            // It's a 16-bit image
-        }
-    }
-
-    // Extract creator application
-    if let Some(creator_app) = extract_property_value(xml, "XISF:CreatorApplication") {
-        if let Some(ref mut env) = metadata.environment {
-            env.software_version = Some(creator_app);
-        } else {
-            metadata.environment = Some(super::types::Environment {
-                software_version: Some(creator_app),
-                ..Default::default()
-            });
-        }
-    }
 }
 
-/// Extract XISF-specific metadata from XML content
-fn extract_xisf_metadata(
-    xml: &str,
-    _metadata: &mut AstroMetadata,
-    xisf_metadata: &mut XisfMetadata,
-) {
+/// Project raw document/property facts into XISF-specific semantic metadata.
+fn extract_xisf_metadata(records: &XisfMetadataRecords, xisf_metadata: &mut XisfMetadata) {
     // Extract XISF version
-    if let Some(version) = extract_attribute(xml, "version") {
-        xisf_metadata.version = version;
+    if let Some(version) = records.version() {
+        xisf_metadata.version = version.to_string();
     }
 
     // Extract creator application
-    if let Some(creator_app) = extract_property_value(xml, "XISF:CreatorApplication") {
-        xisf_metadata.creator = Some(creator_app);
+    if let Some(creator_app) = property_value(records, "XISF:CreatorApplication") {
+        xisf_metadata.creator = Some(creator_app.to_string());
     }
 
     // Extract creation time
-    if let Some(creation_time) = extract_property_value(xml, "XISF:CreationTime") {
-        xisf_metadata.creation_time = parse_date_time(&creation_time);
+    if let Some(creation_time) = property_value(records, "XISF:CreationTime") {
+        xisf_metadata.creation_time = parse_date_time(creation_time);
     }
 
     // Extract block alignment
-    if let Some(block_alignment) = extract_attribute(xml, "blockAlignment") {
+    if let Some(block_alignment) = records.block_alignment() {
         xisf_metadata.block_alignment = block_alignment.parse::<usize>().ok();
     }
 }
 
-/// Extract color management information from XML content
-fn extract_color_management(xml: &str, metadata: &mut AstroMetadata) {
+/// Project raw image/property facts into the existing color metadata model.
+fn extract_color_management(records: &XisfMetadataRecords, metadata: &mut AstroMetadata) {
     let mut color_management = ColorManagement::default();
     let mut has_color_info = false;
+    let image = records.images().first();
 
     // Extract color space
-    if let Some(color_space) = extract_attribute(xml, "colorSpace") {
-        color_management.color_space = Some(color_space);
+    if let Some(color_space) = image.and_then(XisfImageMetadata::color_space) {
+        color_management.color_space = Some(color_space.to_string());
         has_color_info = true;
     }
 
     // Extract ICC profile if present
-    if let Some(_icc_profile) = extract_property_value(xml, "ICCProfile") {
+    if records
+        .properties()
+        .iter()
+        .any(|property| property.id() == "ICCProfile" && property.value().is_some())
+    {
         // In a real implementation, we would decode the base64 data here
         // For now, we'll just note that it exists
         color_management.icc_profile = Some(Vec::new());
@@ -241,14 +166,14 @@ fn extract_color_management(xml: &str, metadata: &mut AstroMetadata) {
     }
 
     // Extract display function information
-    if let Some(display_function_type) = extract_attribute(xml, "displayFunction") {
+    if let Some(display_function_type) = image.and_then(XisfImageMetadata::display_function) {
         let mut display_function = DisplayFunction {
-            function_type: Some(display_function_type),
+            function_type: Some(display_function_type.to_string()),
             ..Default::default()
         };
 
         // Extract display function parameters
-        if let Some(params) = extract_attribute(xml, "displayParameters") {
+        if let Some(params) = image.and_then(XisfImageMetadata::display_parameters) {
             let param_pairs: Vec<&str> = params.split(';').collect();
             let mut parameters = HashMap::new();
 
@@ -274,98 +199,53 @@ fn extract_color_management(xml: &str, metadata: &mut AstroMetadata) {
     }
 }
 
-/// Extract attachment information from XML content
-fn extract_attachments(xml: &str, metadata: &mut AstroMetadata) {
+/// Project ordered image facts into the existing attachment metadata model.
+fn extract_attachments(records: &XisfMetadataRecords, metadata: &mut AstroMetadata) {
     let mut attachments = Vec::new();
-    let mut pos = 0;
 
-    // Look for Image tags
-    while let Some(start_pos) = xml[pos..].find("<Image ") {
-        let image_start = pos + start_pos;
+    for image in records.images() {
+        let mut attachment = AttachmentInfo {
+            id: image
+                .id()
+                .map(str::to_string)
+                .unwrap_or_else(|| format!("image{}", attachments.len())),
+            geometry: image.geometry().unwrap_or_default().to_string(),
+            sample_format: image.sample_format().unwrap_or("UInt16").to_string(),
+            bits_per_sample: image
+                .bits_per_sample()
+                .and_then(|value| value.parse().ok())
+                .unwrap_or(16),
+            ..Default::default()
+        };
 
-        // Find the end of the Image tag
-        if let Some(end_pos) = xml[image_start..].find(">") {
-            let image_end = image_start + end_pos + 1;
-            let image_tag = &xml[image_start..image_end];
-
-            // Create a new attachment
-            let mut attachment = AttachmentInfo::default();
-
-            // Extract attachment ID
-            if let Some(id) = extract_attribute(image_tag, "id") {
-                attachment.id = id;
-            } else {
-                attachment.id = format!("image{}", attachments.len());
-            }
-
-            // Extract geometry
-            if let Some(geometry) = extract_attribute(image_tag, "geometry") {
-                attachment.geometry = geometry;
-            }
-
-            // Extract sample format
-            if let Some(sample_format) = extract_attribute(image_tag, "sampleFormat") {
-                attachment.sample_format = sample_format;
-            } else {
-                attachment.sample_format = "UInt16".to_string(); // Default
-            }
-
-            // Extract bits per sample
-            if let Some(bits_per_sample) = extract_attribute(image_tag, "bitsPerSample") {
-                attachment.bits_per_sample = bits_per_sample.parse().unwrap_or(16);
-            } else {
-                attachment.bits_per_sample = 16; // Default
-            }
-
-            // Extract compression
-            if let Some(compression) = extract_attribute(image_tag, "compression") {
-                attachment.compression = Some(compression);
-
-                // Extract compression parameters
-                if let Some(params) = extract_attribute(image_tag, "compressionParameters") {
-                    let param_pairs: Vec<&str> = params.split(';').collect();
-                    let mut parameters = HashMap::new();
-
-                    for pair in param_pairs {
-                        let kv: Vec<&str> = pair.split('=').collect();
-                        if kv.len() == 2 {
-                            parameters.insert(kv[0].to_string(), kv[1].to_string());
-                        }
+        if let Some(compression) = image.compression() {
+            attachment.compression = Some(compression.to_string());
+            if let Some(params) = image.compression_parameters() {
+                for pair in params.split(';') {
+                    let kv: Vec<&str> = pair.split('=').collect();
+                    if kv.len() == 2 {
+                        attachment
+                            .compression_parameters
+                            .insert(kv[0].to_string(), kv[1].to_string());
                     }
-
-                    attachment.compression_parameters = parameters;
                 }
             }
-
-            // Extract checksum
-            if let Some(checksum_type) = extract_attribute(image_tag, "checksumType") {
-                attachment.checksum_type = Some(checksum_type);
-
-                if let Some(checksum) = extract_attribute(image_tag, "checksum") {
-                    attachment.checksum = Some(checksum);
-                }
-            }
-
-            // Extract resolution information
-            if let Some(resolution_x) = extract_attribute(image_tag, "xResolution") {
-                attachment.resolution_x = resolution_x.parse::<f64>().ok();
-
-                if let Some(resolution_y) = extract_attribute(image_tag, "yResolution") {
-                    attachment.resolution_y = resolution_y.parse::<f64>().ok();
-                }
-
-                if let Some(resolution_unit) = extract_attribute(image_tag, "resolutionUnit") {
-                    attachment.resolution_unit = Some(resolution_unit);
-                }
-            }
-
-            // Add the attachment to the list
-            attachments.push(attachment);
-
-            pos = image_end;
-        } else {
-            break;
         }
+
+        if let Some(checksum_type) = image.checksum_type() {
+            attachment.checksum_type = Some(checksum_type.to_string());
+            attachment.checksum = image.checksum().map(str::to_string);
+        }
+
+        if let Some(resolution_x) = image.x_resolution() {
+            attachment.resolution_x = resolution_x.parse::<f64>().ok();
+            attachment.resolution_y = image
+                .y_resolution()
+                .and_then(|value| value.parse::<f64>().ok());
+            attachment.resolution_unit = image.resolution_unit().map(str::to_string);
+        }
+
+        attachments.push(attachment);
     }
 
     // If we found at least one attachment, update the metadata
@@ -544,38 +424,15 @@ fn process_fits_keyword(metadata: &mut AstroMetadata, name: &str, value: &str) {
     }
 }
 
-/// Extract an attribute value from XML content
-fn extract_attribute(xml: &str, attr_name: &str) -> Option<String> {
-    let search_pattern = format!("{}=\"", attr_name);
-
-    if let Some(start_pos) = xml.find(&search_pattern) {
-        let start = start_pos + search_pattern.len();
-        if let Some(end_pos) = xml[start..].find('"') {
-            return Some(xml[start..start + end_pos].to_string());
-        }
-    }
-
-    None
-}
-
-/// Extract a property value from XML content
-fn extract_property_value(xml: &str, property_id: &str) -> Option<String> {
-    let search_pattern = format!("id=\"{}\" type=\"", property_id);
-
-    if let Some(start_pos) = xml.find(&search_pattern) {
-        // Find the closing > of the Property tag
-        if let Some(tag_end) = xml[start_pos..].find(">") {
-            let tag_end_pos = start_pos + tag_end + 1;
-
-            // Find the closing </Property> tag
-            if let Some(end_tag_pos) = xml[tag_end_pos..].find("</Property>") {
-                let value_end = tag_end_pos + end_tag_pos;
-                return Some(xml[tag_end_pos..value_end].trim().to_string());
-            }
-        }
-    }
-
-    None
+/// Return the first matching Property value, preserving the historical
+/// first-record precedence while normalizing only surrounding XML text space.
+fn property_value<'a>(records: &'a XisfMetadataRecords, property_id: &str) -> Option<&'a str> {
+    records
+        .properties()
+        .iter()
+        .find(|property| property.id() == property_id)
+        .and_then(|property| property.value())
+        .map(str::trim)
 }
 
 /// Helper function to parse date/time strings
@@ -606,6 +463,15 @@ mod tests {
     use chrono::{TimeZone, Utc};
     use std::io::Cursor;
 
+    fn xisf(xml: &str) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(16 + xml.len());
+        bytes.extend_from_slice(b"XISF0100");
+        bytes.extend_from_slice(&(xml.len() as u32).to_le_bytes());
+        bytes.extend_from_slice(&[0; 4]);
+        bytes.extend_from_slice(xml.as_bytes());
+        bytes
+    }
+
     #[test]
     fn test_creation_time_does_not_override_observation_date() {
         let xml = concat!(
@@ -620,13 +486,8 @@ mod tests {
             "</xisf>"
         );
 
-        let header_size = xml.len() as u32;
-        let mut bytes = Vec::new();
-        bytes.extend_from_slice(b"XISF0100");
-        bytes.extend_from_slice(&header_size.to_le_bytes());
-        bytes.extend_from_slice(xml.as_bytes());
-
-        let metadata = extract_metadata(&mut Cursor::new(bytes)).expect("metadata should parse");
+        let metadata =
+            extract_metadata(&mut Cursor::new(xisf(xml))).expect("metadata should parse");
 
         assert_eq!(
             metadata.exposure.date_obs,
@@ -652,16 +513,39 @@ mod tests {
             "</xisf>"
         );
 
-        let header_size = xml.len() as u32;
-        let mut bytes = Vec::new();
-        bytes.extend_from_slice(b"XISF0100");
-        bytes.extend_from_slice(&header_size.to_le_bytes());
-        bytes.extend_from_slice(xml.as_bytes());
-
-        let metadata = extract_metadata(&mut Cursor::new(bytes)).expect("metadata should parse");
+        let metadata =
+            extract_metadata(&mut Cursor::new(xisf(xml))).expect("metadata should parse");
 
         assert_eq!(metadata.detector.binning_x, 1);
         assert_eq!(metadata.detector.binning_y, 1);
+    }
+
+    #[test]
+    fn document_properties_do_not_require_an_image() {
+        let xml = concat!(
+            r#"<xisf version="1.0">"#,
+            r#"<Property id="XISF:CreatorApplication" type="String">Producer</Property>"#,
+            r#"</xisf>"#,
+        );
+
+        let metadata =
+            extract_metadata(&mut Cursor::new(xisf(xml))).expect("metadata should parse");
+
+        assert_eq!(
+            metadata
+                .environment
+                .as_ref()
+                .and_then(|environment| environment.software_version.as_deref()),
+            Some("Producer")
+        );
+        assert_eq!(
+            metadata
+                .xisf
+                .as_ref()
+                .and_then(|xisf| xisf.creator.as_deref()),
+            Some("Producer")
+        );
+        assert!(metadata.attachments.is_empty());
     }
 
     #[test]
@@ -678,13 +562,8 @@ mod tests {
             "</xisf>"
         );
 
-        let header_size = xml.len() as u32;
-        let mut bytes = Vec::new();
-        bytes.extend_from_slice(b"XISF0100");
-        bytes.extend_from_slice(&header_size.to_le_bytes());
-        bytes.extend_from_slice(xml.as_bytes());
-
-        let metadata = extract_metadata(&mut Cursor::new(bytes)).expect("metadata should parse");
+        let metadata =
+            extract_metadata(&mut Cursor::new(xisf(xml))).expect("metadata should parse");
 
         assert_eq!(
             metadata.exposure.header_coordinates.ra_dec.ra,
@@ -716,5 +595,120 @@ mod tests {
                 .abs()
                 < 0.000_000_001
         );
+    }
+
+    #[test]
+    fn shared_records_preserve_semantics_precedence_and_attachment_projection() {
+        let xml = concat!(
+            r#"<xisf version="1.0" blockAlignment="4096">"#,
+            r#"<Property id="XISF:CreatorApplication" type="String">PixInsight 1.9</Property>"#,
+            r#"<Property id="XISF:CreatorApplication" type="String">Later Producer</Property>"#,
+            r#"<Property id="XISF:CreationTime" type="TimePoint" value="2024-09-06T10:31:17"/>"#,
+            r#"<Property id="ICCProfile" type="ByteArray">AA==</Property>"#,
+            r#"<Image id="main" geometry="10:20:1" sampleFormat="UInt16" colorSpace="Gray" bitsPerSample="16" compression="zlib:6" compressionParameters="itemSize=2;level=6" checksumType="sha256" checksum="abcd" xResolution="72" yResolution="73" resolutionUnit="inch" displayFunction="STF" displayParameters="m=0.5;s=1">"#,
+            r#"<FITSKeyword name="TELESCOP" value="Scope"/>"#,
+            r#"<FITSKeyword name="INSTRUME" value="Camera"/>"#,
+            r#"<FITSKeyword name="XPIXSZ" value="3.76"/>"#,
+            r#"<FITSKeyword name="XBINNING" value="2"/>"#,
+            r#"<FITSKeyword name="FILTER" value="L"/>"#,
+            r#"<FITSKeyword name="DATE-OBS" value="2024-09-04T08:39:13"/>"#,
+            r#"<FITSKeyword name="EXPTIME" value="60"/>"#,
+            r#"<FITSKeyword name="PIERSIDE" value="East"/>"#,
+            r#"<FITSKeyword name="AMBTEMP" value="12.5"/>"#,
+            r#"<FITSKeyword name="CRPIX1" value="5.5"/>"#,
+            r#"<FITSKeyword name="CRPIX2" value="6.5"/>"#,
+            r#"<FITSKeyword name="OBJECT" value="M31"/>"#,
+            r#"<FITSKeyword name="OBJECT" value="  &apos;M31 &amp; M32   &apos;  " comment="escaped &amp; ordered"/>"#,
+            r#"</Image></xisf>"#,
+        );
+
+        let metadata =
+            extract_metadata(&mut Cursor::new(xisf(xml))).expect("metadata should parse");
+
+        assert_eq!(metadata.equipment.telescope_name.as_deref(), Some("Scope"));
+        assert_eq!(metadata.detector.camera_name.as_deref(), Some("Camera"));
+        assert_eq!(metadata.detector.pixel_size, Some(3.76));
+        assert_eq!(metadata.detector.binning_x, 2);
+        assert_eq!(metadata.filter.name.as_deref(), Some("L"));
+        assert_eq!(metadata.exposure.exposure_time, Some(60.0));
+        assert_eq!(metadata.exposure.object_name.as_deref(), Some("M31 & M32"));
+        assert_eq!(metadata.raw_header_cards.len(), 13);
+        assert_eq!(metadata.raw_header_cards[11].value.as_deref(), Some("M31"));
+        assert_eq!(
+            metadata.raw_header_cards[12].comment.as_deref(),
+            Some("escaped & ordered")
+        );
+        assert_eq!(
+            metadata.raw_headers.get("OBJECT").map(String::as_str),
+            Some("M31 & M32")
+        );
+
+        let xisf = metadata.xisf.as_ref().unwrap();
+        assert_eq!(xisf.version, "1.0");
+        assert_eq!(xisf.creator.as_deref(), Some("PixInsight 1.9"));
+        assert_eq!(xisf.block_alignment, Some(4096));
+        assert_eq!(
+            metadata
+                .environment
+                .as_ref()
+                .and_then(|environment| environment.software_version.as_deref()),
+            Some("PixInsight 1.9")
+        );
+        let mount = metadata.mount.as_ref().unwrap();
+        assert_eq!(mount.pier_side.as_deref(), Some("East"));
+        assert_eq!(
+            metadata.environment.as_ref().unwrap().ambient_temp,
+            Some(12.5)
+        );
+        let wcs = metadata.wcs.as_ref().unwrap();
+        assert_eq!(wcs.crpix1, Some(5.5));
+        assert_eq!(wcs.crpix2, Some(6.5));
+        assert_eq!(
+            (metadata.detector.width, metadata.detector.height),
+            (10, 20)
+        );
+        let color = metadata.color_management.as_ref().unwrap();
+        assert_eq!(color.color_space.as_deref(), Some("Gray"));
+        assert!(color.icc_profile.is_some());
+        assert_eq!(
+            color
+                .display_function
+                .as_ref()
+                .and_then(|display| display.function_type.as_deref()),
+            Some("STF")
+        );
+        assert_eq!(metadata.attachments.len(), 1);
+        assert_eq!(metadata.attachments[0].id, "main");
+        assert_eq!(metadata.attachments[0].geometry, "10:20:1");
+        assert_eq!(metadata.attachments[0].sample_format, "UInt16");
+        assert_eq!(metadata.attachments[0].bits_per_sample, 16);
+        assert_eq!(
+            metadata.attachments[0].compression.as_deref(),
+            Some("zlib:6")
+        );
+        assert_eq!(metadata.attachments[0].checksum.as_deref(), Some("abcd"));
+        assert_eq!(metadata.attachments[0].resolution_x, Some(72.0));
+        assert_eq!(metadata.attachments[0].resolution_y, Some(73.0));
+    }
+
+    #[test]
+    fn structural_and_metadata_record_errors_are_not_empty_success() {
+        let malformed = xisf(r#"<xisf><Image></xisf>"#);
+        assert!(extract_metadata(&mut Cursor::new(malformed)).is_err());
+
+        let mut invalid_utf8 = xisf("<xisf/> ");
+        let last = invalid_utf8.len() - 1;
+        invalid_utf8[last] = 0xff;
+        assert!(extract_metadata(&mut Cursor::new(invalid_utf8)).is_err());
+
+        let malformed_keyword = xisf(r#"<xisf><Image><FITSKeyword name="OBJECT"/></Image></xisf>"#);
+        assert!(extract_metadata(&mut Cursor::new(malformed_keyword)).is_err());
+
+        let xml = r#"<xisf><Image><FITSKeyword name="OBJECT" value="M31"/></Image></xisf>"#;
+        let mut legacy = Vec::with_capacity(12 + xml.len());
+        legacy.extend_from_slice(b"XISF0100");
+        legacy.extend_from_slice(&(xml.len() as u32).to_le_bytes());
+        legacy.extend_from_slice(xml.as_bytes());
+        assert!(extract_metadata(&mut Cursor::new(legacy)).is_err());
     }
 }

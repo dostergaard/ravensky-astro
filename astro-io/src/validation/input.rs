@@ -1,5 +1,6 @@
 //! Bounded payload input shared by container decoders.
 use super::*;
+use crate::xisf::codec::BoundedBufRead;
 use std::io::BufRead;
 
 enum Location<'a> {
@@ -75,6 +76,16 @@ impl Read for Input<'_, '_> {
         output[..n].copy_from_slice(&bytes[..n]);
         self.consume(n);
         Ok(n)
+    }
+}
+
+impl BoundedBufRead for Input<'_, '_> {
+    fn logical_len(&self) -> u64 {
+        self.length
+    }
+
+    fn logical_consumed(&self) -> u64 {
+        self.consumed
     }
 }
 

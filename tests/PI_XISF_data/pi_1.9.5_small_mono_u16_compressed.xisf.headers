@@ -1,0 +1,294 @@
+XISF Metadata for: tests/PI_XISF_data/pi_1.9.5_small_mono_u16_compressed.xisf
+
+=== Equipment Information ===
+Telescope: Astro-Tech AT115EDT with 0.8x Reducer
+Focal Length: 644 mm
+Focal Ratio: f/6.5
+
+=== Detector Information ===
+Camera: Uranus-C PRO
+Image Dimensions: 5549x3170 pixels
+Sensor Temperature: -10.0 °C
+
+=== Exposure Information ===
+Object: Sh2-114
+Exposure Time: 420.00 seconds
+Frame Type: Other/Processed
+Observation Date: 2025-09-21 03:27:47 UTC
+Coordinates: RA=320.273349°, Dec=38.699596°
+
+=== Filter Information ===
+Filter: HaOiii
+
+=== Mount Information ===
+Pier Side: East
+Location: Lat=43.825278°, Long=-70.307778°
+
+=== Environment Information ===
+Software Version: PixInsight 1.9.5
+
+=== Calculated Values ===
+Plate Scale: 0.929 arcsec/pixel
+Field of View: 85.90' × 49.07' (arcmin)
+
+=== XISF Information ===
+Format Version: 1.0
+Creator: PixInsight 1.9.5
+Creation Time: 2026-09-25 18:06:34 UTC
+
+=== Color Management ===
+Color Space: Gray
+
+=== XISF Attachments ===
+[0] _small_mono_u16_ | geometry=5549:3170:1 | sample=UInt16 | bits=16
+    Compression: zstd+sh:35180660:2
+
+=== Raw XISF FITS Keywords ===
+[HDU 0 #001] DATE = 2025-10-03T13:10:21 / creation date of Other/Processed
+[HDU 0 #002] DATE-OBS = 2025-09-21T03:27:47 / observation date of Other/Processed
+[HDU 0 #003] SOFTWARE = Astro Pixel Processor by Aries Productions / software
+[HDU 0 #004] VERSION = 2.0.0-beta38 / Astro Pixel Processor version
+[HDU 0 #005] IMAGETYP = LIGHT / Type of frame
+[HDU 0 #006] FRAME = Other/Processed / frame was processed by Astro Pixel Processor
+[HDU 0 #007] INSTRUME = Uranus-C PRO / instrument name
+[HDU 0 #008] CFAIMAGE = no / Color Filter Array pattern
+[HDU 0 #009] ROWORDER = TOP-DOWN / Order of pixel rows stored in the image array
+[HDU 0 #010] EXPTIME = 28560.0 / exposure time (s)
+[HDU 0 #011] GAIN = 210.0 / gain or ISO depending on instrument
+[HDU 0 #012] AD-PED = 0.E0 / adaptive pedestal from data calibration
+[HDU 0 #013] FILTNUM = 1 / data combined from 1 filter
+[HDU 0 #014] FILT-1 = HaOiii / filter used
+[HDU 0 #015] FILTER = HaOiii / filter used
+[HDU 0 #016] CBG-1 = 0.0042037055827751 / calibrated background of channel 1
+[HDU 0 #017] NOTE-1 = Distinct header tags from the original/reference frame follow below / 
+[HDU 0 #018] INTEGRAT = Integration / integration of light frames
+[HDU 0 #019] NUMFRAME = 68 / number of frames used in this integration
+[HDU 0 #020] BG-1 = 4.3500028551E-3 / background estimate of channel 1
+[HDU 0 #021] SCALE-1 = 3.9939882117E-4 / dispersion of channel 1
+[HDU 0 #022] NOISE-1 = 2.4001454585E-4 / noise level of channel 1
+[HDU 0 #023] SNR-1 = 6.0438814163E0 / Signal to Noise Ratio of channel 1
+[HDU 0 #024] NOTE-2 = NR = Noise Reduction / 
+[HDU 0 #025] NOTE-3 = medNR = noise in median frame / noise in integration / 
+[HDU 0 #026] NOTE-4 = refNR = noise in reference frame / noise in integration / 
+[HDU 0 #027] NOTE-5 = ideal noise reduction = square root of number of frames / 
+[HDU 0 #028] NOTE-6 = the realized/ideal noise reduction ratio should approach 1 ideally / 
+[HDU 0 #029] NOTE-7 = the effective noise reduction has a correction for / 
+[HDU 0 #030] NOTE-8 = dispersion change between the frame and the integration / 
+[HDU 0 #031] NOTE-9 = because dispersion and noise are correlated / 
+[HDU 0 #032] MEDNR-1 = 1.4492540595E0 / median noise reduction, channel 1
+[HDU 0 #033] REFNR-1 = 1.4237268179E0 / reference noise reduction, channel 1
+[HDU 0 #034] IDNR-1 = 8.2462112512E0 / ideal noise reduction, channel 1
+[HDU 0 #035] RATNR-1 = 1.7574786957E-1 / realized/ideal noise reduction ratio, channel 1
+[HDU 0 #036] MEDENR-1 = 5.8686906777E-1 / effective median noise reduction, channel 1
+[HDU 0 #037] REFENR-1 = 5.7604156954E-1 / effective reference noise reduction, channel 1
+[HDU 0 #038] NORMMODE = regular / normalization mode
+[HDU 0 #039] NORMMETH = multiply-scale / normalization method
+[HDU 0 #040] NORMSCAL = BWMV / normalization scale/dispersion calculation
+[HDU 0 #041] NOTE-10 = REF-1 tag: used reference frame / 
+[HDU 0 #042] NOTE-11 = REF-2 tag: used reference frame / 
+[HDU 0 #043] REF-1 = DATETIME_2025-09-20_23-27-47__IMAGETYPE_LIGHT__FILTER_HaOiii / 
+[HDU 0 #044] REF-2 = __EXPOSURE_420.00s__BIN_1x1__GAIN_210__FRAMENR_0024.fits / 
+[HDU 0 #045] COMPMODE = full / composition mode
+[HDU 0 #046] REGMODE = normal / registration mode
+[HDU 0 #047] REGMODEL = projective / registration model
+[HDU 0 #048] OPT-DC = disabled / optical distortion correction
+[HDU 0 #049] WEIGHTS = quality / integration weights
+[HDU 0 #050] INT-METH = average / integration method
+[HDU 0 #051] OUTL-REJ = adaptive rejection / outlier rejection filter
+[HDU 0 #052] OUTL-LN = LN rejection / outlier rejection with local normalization
+[HDU 0 #053] OUTL-DP = 8 / outlier rejection diffraction protection
+[HDU 0 #054] OUTL-KL = 8.E0 / outlier rejection kappa low
+[HDU 0 #055] OUTL-KH = 4.E0 / outlier rejection kappa high
+[HDU 0 #056] INT-MODE = Bayer/X-Trans drizzle / integration mode
+[HDU 0 #057] DRZ-DROP = 8.E-1 / drizzle droplet size
+[HDU 0 #058] DRZ-KERN = topHatKernel / drizzle kernel
+[HDU 0 #059] INTSCALE = 1.5E0 / integrate scale
+[HDU 0 #060] NOTE-12 = PROJECT tag: projection type / 
+[HDU 0 #061] PROJECT = rectilinearProjection / 
+[HDU 0 #062] MBBLEND = no MBB / multi-band blending
+[HDU 0 #063] LNC-DEG = noLNC / Local Normalization Correction not applied
+[HDU 0 #064] NOTE-13 = Distinct header tags from the original/reference frame follow below / 
+[HDU 0 #065] EXPOSURE = 420.0 / [s] Exposure duration
+[HDU 0 #066] DATE-LOC = 2025-09-20T23:27:47.251 / Time of observation (local)
+[HDU 0 #067] DATE-AVG = 2025-09-21T03:31:17.527 / Averaged midpoint time (UTC)
+[HDU 0 #068] XBINNING = 1 / X axis binning factor
+[HDU 0 #069] YBINNING = 1 / Y axis binning factor
+[HDU 0 #070] OFFSET = 6 / Sensor gain offset
+[HDU 0 #071] XPIXSZ = 2.9 / [um] Pixel X axis size
+[HDU 0 #072] YPIXSZ = 2.9 / [um] Pixel Y axis size
+[HDU 0 #073] CAMERAID = Player One_CAMDA3E1482022109000 / Imaging instrument identifier
+[HDU 0 #074] SET-TEMP = -10.0 / [degC] CCD temperature setpoint
+[HDU 0 #075] CCD-TEMP = -10.0 / [degC] CCD temperature
+[HDU 0 #076] BAYERPAT = RGGB / Sensor Bayer pattern
+[HDU 0 #077] XBAYROFF = 0 / Bayer pattern X axis offset
+[HDU 0 #078] YBAYROFF = 0 / Bayer pattern Y axis offset
+[HDU 0 #079] USBLIMIT = 100 / Camera-specific USB setting
+[HDU 0 #080] TELESCOP = Astro-Tech AT115EDT with 0.8x Reducer / Name of telescope
+[HDU 0 #081] FOCALLEN = 644.0 / [mm] Focal length
+[HDU 0 #082] FOCRATIO = 6.5 / Focal ratio
+[HDU 0 #083] RA = 320.273349438971 / [deg] RA of telescope
+[HDU 0 #084] DEC = 38.6995956287014 / [deg] Declination of telescope
+[HDU 0 #085] CENTALT = 71.9925682907016 / [deg] Altitude of telescope
+[HDU 0 #086] CENTAZ = 261.810394279201 / [deg] Azimuth of telescope
+[HDU 0 #087] AIRMASS = 1.05132563912575 / Airmass at frame center (Gueymard 1993)
+[HDU 0 #088] PIERSIDE = East / Telescope pointing state
+[HDU 0 #089] SITEELEV = 91.4 / [m] Observation site elevation
+[HDU 0 #090] SITELAT = 43.8252777777778 / [deg] Observation site latitude
+[HDU 0 #091] SITELONG = -70.307778 / [deg] Observation site longitude
+[HDU 0 #092] FWHEEL = POA Phoenix Wheel / Filter Wheel name
+[HDU 0 #093] OBJECT = Sh2-114 / Name of the object of interest
+[HDU 0 #094] OBJCTRA = 21 21 11 / [H M S] RA of imaged object
+[HDU 0 #095] OBJCTDEC = +38 42 31 / [D M S] Declination of imaged object
+[HDU 0 #096] OBJCTROT = 275.19 / [deg] planned rotation of imaged object
+[HDU 0 #097] FOCNAME = ZWO Focuser (1) / Focusing equipment name
+[HDU 0 #098] FOCPOS = 17533 / [step] Focuser position
+[HDU 0 #099] FOCUSPOS = 17533 / [step] Focuser position
+[HDU 0 #100] FOCUSSZ = 0.0 / [um] Focuser step size
+[HDU 0 #101] FOCTEMP = 19.2099990844727 / [degC] Focuser temperature
+[HDU 0 #102] FOCUSTEM = 19.2099990844727 / [degC] Focuser temperature
+[HDU 0 #103] EQUINOX = 2000.0 / Equinox of celestial coordinate system
+[HDU 0 #104] SWCREATE = N.I.N.A. 3.1.2.9001 (x64) / Software that created this file
+[HDU 0 #105] STRKEYWD = Example / This is a string keyword
+[HDU 0 #106] INTKEYWD = 5 / This is a integer keyword
+[HDU 0 #107] DBLKEYWD = 1.3 / This is a double keyword
+
+XISF Raw Format
+---------------
+Version: 1.0
+Image 1
+  Id: _small_mono_u16_
+  Geometry: 5549:3170:1
+  Sample Format: UInt16
+  Color Space: Gray
+  Compression: zstd+sh:35180660:2
+
+XISF XML Document
+=================
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Extensible Image Serialization Format - XISF version 1.0
+Created with PixInsight software - http://pixinsight.com/
+-->
+<xisf version="1.0" xmlns="http://www.pixinsight.com/xisf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.pixinsight.com/xisf http://pixinsight.com/xisf/xisf-1.0.xsd">
+  <Image id="_small_mono_u16_" geometry="5549:3170:1" sampleFormat="UInt16" colorSpace="Gray" compression="zstd+sh:35180660:2" location="attachment:14594:17753195">
+    <FITSKeyword name="DATE" value="'2025-10-03T13:10:21'" comment="creation date of Other/Processed"/>
+    <FITSKeyword name="DATE-OBS" value="'2025-09-21T03:27:47'" comment="observation date of Other/Processed"/>
+    <FITSKeyword name="SOFTWARE" value="'Astro Pixel Processor by Aries Productions'" comment="software"/>
+    <FITSKeyword name="VERSION" value="'2.0.0-beta38'" comment="Astro Pixel Processor version"/>
+    <FITSKeyword name="IMAGETYP" value="'LIGHT   '" comment="Type of frame"/>
+    <FITSKeyword name="FRAME" value="'Other/Processed'" comment="frame was processed by Astro Pixel Processor"/>
+    <FITSKeyword name="INSTRUME" value="'Uranus-C PRO'" comment="instrument name"/>
+    <FITSKeyword name="CFAIMAGE" value="'no      '" comment="Color Filter Array pattern"/>
+    <FITSKeyword name="ROWORDER" value="'TOP-DOWN'" comment="Order of pixel rows stored in the image array"/>
+    <FITSKeyword name="EXPTIME" value="28560.0" comment="exposure time (s)"/>
+    <FITSKeyword name="GAIN" value="210.0" comment="gain or ISO depending on instrument"/>
+    <FITSKeyword name="AD-PED" value="0.E0" comment="adaptive pedestal from data calibration"/>
+    <FITSKeyword name="FILTNUM" value="1" comment="data combined from 1 filter"/>
+    <FITSKeyword name="FILT-1" value="'HaOiii  '" comment="filter used"/>
+    <FITSKeyword name="FILTER" value="'HaOiii  '" comment="filter used"/>
+    <FITSKeyword name="CBG-1" value="0.0042037055827751" comment="calibrated background of channel 1"/>
+    <FITSKeyword name="NOTE-1" value="'Distinct header tags from the original/reference frame follow below'" comment=""/>
+    <FITSKeyword name="INTEGRAT" value="'Integration'" comment="integration of light frames"/>
+    <FITSKeyword name="NUMFRAME" value="68" comment="number of frames used in this integration"/>
+    <FITSKeyword name="BG-1" value="4.3500028551E-3" comment="background estimate of channel 1"/>
+    <FITSKeyword name="SCALE-1" value="3.9939882117E-4" comment="dispersion of channel 1"/>
+    <FITSKeyword name="NOISE-1" value="2.4001454585E-4" comment="noise level of channel 1"/>
+    <FITSKeyword name="SNR-1" value="6.0438814163E0" comment="Signal to Noise Ratio of channel 1"/>
+    <FITSKeyword name="NOTE-2" value="'NR = Noise Reduction'" comment=""/>
+    <FITSKeyword name="NOTE-3" value="'medNR = noise in median frame / noise in integration'" comment=""/>
+    <FITSKeyword name="NOTE-4" value="'refNR = noise in reference frame / noise in integration'" comment=""/>
+    <FITSKeyword name="NOTE-5" value="'ideal noise reduction = square root of number of frames'" comment=""/>
+    <FITSKeyword name="NOTE-6" value="'the realized/ideal noise reduction ratio should approach 1 ideally'" comment=""/>
+    <FITSKeyword name="NOTE-7" value="'the effective noise reduction has a correction for'" comment=""/>
+    <FITSKeyword name="NOTE-8" value="'dispersion change between the frame and the integration'" comment=""/>
+    <FITSKeyword name="NOTE-9" value="'because dispersion and noise are correlated'" comment=""/>
+    <FITSKeyword name="MEDNR-1" value="1.4492540595E0" comment="median noise reduction, channel 1"/>
+    <FITSKeyword name="REFNR-1" value="1.4237268179E0" comment="reference noise reduction, channel 1"/>
+    <FITSKeyword name="IDNR-1" value="8.2462112512E0" comment="ideal noise reduction, channel 1"/>
+    <FITSKeyword name="RATNR-1" value="1.7574786957E-1" comment="realized/ideal noise reduction ratio, channel 1"/>
+    <FITSKeyword name="MEDENR-1" value="5.8686906777E-1" comment="effective median noise reduction, channel 1"/>
+    <FITSKeyword name="REFENR-1" value="5.7604156954E-1" comment="effective reference noise reduction, channel 1"/>
+    <FITSKeyword name="NORMMODE" value="'regular '" comment="normalization mode"/>
+    <FITSKeyword name="NORMMETH" value="'multiply-scale'" comment="normalization method"/>
+    <FITSKeyword name="NORMSCAL" value="'BWMV    '" comment="normalization scale/dispersion calculation"/>
+    <FITSKeyword name="NOTE-10" value="'REF-1 tag: used reference frame'" comment=""/>
+    <FITSKeyword name="NOTE-11" value="'REF-2 tag: used reference frame'" comment=""/>
+    <FITSKeyword name="REF-1" value="'DATETIME_2025-09-20_23-27-47__IMAGETYPE_LIGHT__FILTER_HaOiii'" comment=""/>
+    <FITSKeyword name="REF-2" value="'__EXPOSURE_420.00s__BIN_1x1__GAIN_210__FRAMENR_0024.fits'" comment=""/>
+    <FITSKeyword name="COMPMODE" value="'full    '" comment="composition mode"/>
+    <FITSKeyword name="REGMODE" value="'normal  '" comment="registration mode"/>
+    <FITSKeyword name="REGMODEL" value="'projective'" comment="registration model"/>
+    <FITSKeyword name="OPT-DC" value="'disabled'" comment="optical distortion correction"/>
+    <FITSKeyword name="WEIGHTS" value="'quality '" comment="integration weights"/>
+    <FITSKeyword name="INT-METH" value="'average '" comment="integration method"/>
+    <FITSKeyword name="OUTL-REJ" value="'adaptive rejection'" comment="outlier rejection filter"/>
+    <FITSKeyword name="OUTL-LN" value="'LN rejection'" comment="outlier rejection with local normalization"/>
+    <FITSKeyword name="OUTL-DP" value="'8       '" comment="outlier rejection diffraction protection"/>
+    <FITSKeyword name="OUTL-KL" value="8.E0" comment="outlier rejection kappa low"/>
+    <FITSKeyword name="OUTL-KH" value="4.E0" comment="outlier rejection kappa high"/>
+    <FITSKeyword name="INT-MODE" value="'Bayer/X-Trans drizzle'" comment="integration mode"/>
+    <FITSKeyword name="DRZ-DROP" value="8.E-1" comment="drizzle droplet size"/>
+    <FITSKeyword name="DRZ-KERN" value="'topHatKernel'" comment="drizzle kernel"/>
+    <FITSKeyword name="INTSCALE" value="1.5E0" comment="integrate scale"/>
+    <FITSKeyword name="NOTE-12" value="'PROJECT tag: projection type'" comment=""/>
+    <FITSKeyword name="PROJECT" value="'rectilinearProjection'" comment=""/>
+    <FITSKeyword name="MBBLEND" value="'no MBB  '" comment="multi-band blending"/>
+    <FITSKeyword name="LNC-DEG" value="'noLNC   '" comment="Local Normalization Correction not applied"/>
+    <FITSKeyword name="NOTE-13" value="'Distinct header tags from the original/reference frame follow below'" comment=""/>
+    <FITSKeyword name="EXPOSURE" value="420.0" comment="[s] Exposure duration"/>
+    <FITSKeyword name="DATE-LOC" value="'2025-09-20T23:27:47.251'" comment="Time of observation (local)"/>
+    <FITSKeyword name="DATE-AVG" value="'2025-09-21T03:31:17.527'" comment="Averaged midpoint time (UTC)"/>
+    <FITSKeyword name="XBINNING" value="1" comment="X axis binning factor"/>
+    <FITSKeyword name="YBINNING" value="1" comment="Y axis binning factor"/>
+    <FITSKeyword name="OFFSET" value="6" comment="Sensor gain offset"/>
+    <FITSKeyword name="XPIXSZ" value="2.9" comment="[um] Pixel X axis size"/>
+    <FITSKeyword name="YPIXSZ" value="2.9" comment="[um] Pixel Y axis size"/>
+    <FITSKeyword name="CAMERAID" value="'Player One_CAMDA3E1482022109000'" comment="Imaging instrument identifier"/>
+    <FITSKeyword name="SET-TEMP" value="-10.0" comment="[degC] CCD temperature setpoint"/>
+    <FITSKeyword name="CCD-TEMP" value="-10.0" comment="[degC] CCD temperature"/>
+    <FITSKeyword name="BAYERPAT" value="'RGGB    '" comment="Sensor Bayer pattern"/>
+    <FITSKeyword name="XBAYROFF" value="0" comment="Bayer pattern X axis offset"/>
+    <FITSKeyword name="YBAYROFF" value="0" comment="Bayer pattern Y axis offset"/>
+    <FITSKeyword name="USBLIMIT" value="100" comment="Camera-specific USB setting"/>
+    <FITSKeyword name="TELESCOP" value="'Astro-Tech AT115EDT with 0.8x Reducer'" comment="Name of telescope"/>
+    <FITSKeyword name="FOCALLEN" value="644.0" comment="[mm] Focal length"/>
+    <FITSKeyword name="FOCRATIO" value="6.5" comment="Focal ratio"/>
+    <FITSKeyword name="RA" value="320.273349438971" comment="[deg] RA of telescope"/>
+    <FITSKeyword name="DEC" value="38.6995956287014" comment="[deg] Declination of telescope"/>
+    <FITSKeyword name="CENTALT" value="71.9925682907016" comment="[deg] Altitude of telescope"/>
+    <FITSKeyword name="CENTAZ" value="261.810394279201" comment="[deg] Azimuth of telescope"/>
+    <FITSKeyword name="AIRMASS" value="1.05132563912575" comment="Airmass at frame center (Gueymard 1993)"/>
+    <FITSKeyword name="PIERSIDE" value="'East    '" comment="Telescope pointing state"/>
+    <FITSKeyword name="SITEELEV" value="91.4" comment="[m] Observation site elevation"/>
+    <FITSKeyword name="SITELAT" value="43.8252777777778" comment="[deg] Observation site latitude"/>
+    <FITSKeyword name="SITELONG" value="-70.307778" comment="[deg] Observation site longitude"/>
+    <FITSKeyword name="FWHEEL" value="'POA Phoenix Wheel'" comment="Filter Wheel name"/>
+    <FITSKeyword name="OBJECT" value="'Sh2-114 '" comment="Name of the object of interest"/>
+    <FITSKeyword name="OBJCTRA" value="'21 21 11'" comment="[H M S] RA of imaged object"/>
+    <FITSKeyword name="OBJCTDEC" value="'+38 42 31'" comment="[D M S] Declination of imaged object"/>
+    <FITSKeyword name="OBJCTROT" value="275.19" comment="[deg] planned rotation of imaged object"/>
+    <FITSKeyword name="FOCNAME" value="'ZWO Focuser (1)'" comment="Focusing equipment name"/>
+    <FITSKeyword name="FOCPOS" value="17533" comment="[step] Focuser position"/>
+    <FITSKeyword name="FOCUSPOS" value="17533" comment="[step] Focuser position"/>
+    <FITSKeyword name="FOCUSSZ" value="0.0" comment="[um] Focuser step size"/>
+    <FITSKeyword name="FOCTEMP" value="19.2099990844727" comment="[degC] Focuser temperature"/>
+    <FITSKeyword name="FOCUSTEM" value="19.2099990844727" comment="[degC] Focuser temperature"/>
+    <FITSKeyword name="EQUINOX" value="2000.0" comment="Equinox of celestial coordinate system"/>
+    <FITSKeyword name="SWCREATE" value="'N.I.N.A. 3.1.2.9001 (x64)'" comment="Software that created this file"/>
+    <FITSKeyword name="STRKEYWD" value="'Example '" comment="This is a string keyword"/>
+    <FITSKeyword name="INTKEYWD" value="5" comment="This is a integer keyword"/>
+    <FITSKeyword name="DBLKEYWD" value="1.3" comment="This is a double keyword"/>
+    <DisplayFunction m="0.003319857642054558:0.003319857642054558:0.003319857642054558:0.5" s="0.003202247899025679:0.003202247899025679:0.003202247899025679:0" h="1:1:1:1" l="0:0:0:0" r="1:1:1:1"/>
+    <Resolution horizontal="72" vertical="72" unit="inch"/>
+    <ICCProfile compression="zstd:3360" location="inline:base64">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</ICCProfile>
+    <Property id="PCL:OverridableIdentifier" type="Boolean" value="false"/>
+  </Image>
+  <Metadata>
+    <Property id="XISF:CreationTime" type="String">2026-09-25T18:06:34Z</Property>
+    <Property id="XISF:CreatorApplication" type="String">PixInsight 1.9.5</Property>
+    <Property id="XISF:CreatorModule" type="String">XISF module version 1.1.3</Property>
+    <Property id="XISF:CreatorOS" type="String">macOS</Property>
+    <Property id="XISF:CompressionCodecs" type="String">zstd+sh</Property>
+    <Property id="XISF:CompressionLevel" type="Int32" value="0"/>
+  </Metadata>
+</xisf>

@@ -85,6 +85,13 @@ pub fn normalize_pixels(pixels: &[f32]) -> Vec<f32>
 ```rust
 /// Read an XISF file and return its pixel data, width, and height
 pub fn load_xisf(path: &Path) -> Result<(Vec<f32>, usize, usize)>
+
+/// Read the narrow raw-record view used by semantic metadata consumers
+pub fn read_metadata_records<R: Read + Seek>(reader: &mut R)
+    -> Result<XisfMetadataRecords>
+
+/// Read the complete validated XISF XML header as strict UTF-8 text
+pub fn read_xisf_xml_header<R: Read + Seek>(reader: &mut R) -> Result<String>
 ```
 
 - **Parameters**:
@@ -99,14 +106,30 @@ pub fn load_xisf(path: &Path) -> Result<(Vec<f32>, usize, usize)>
   - If the XISF signature is invalid
   - If the XML header cannot be parsed
   - If required image attributes such as `geometry`, `sampleFormat`, or `location` are missing or invalid
-  - If the file uses an unsupported XISF variant such as compressed, non-`UInt16`, or multi-channel image data
+  - If the file uses an unsupported XISF variant such as a compression codec other than `zstd` / `zstd+sh`, non-`UInt16`, or multi-channel image data
   - If the image payload is truncated or cannot be read
+
+`read_metadata_records` uses the same 16-byte envelope and strict,
+namespace-aware XML event path as loading and validation. Its accessor-based
+result preserves ordered `FITSKeyword` records, raw scalar/text `Property`
+records, and only the selected document/image attributes used by current
+metadata interpretation. It does not expose XML parser types or a document
+AST, and malformed structure is returned as an error rather than empty
+metadata.
+
+`read_xisf_xml_header` uses that same envelope and structural XML path, but
+returns the original validated UTF-8 document rather than a semantic projection.
+It is intended for diagnostics that must retain writer-specific XML content;
+callers can format the text for display without gaining parser internals or an
+XISF document AST.
 
 Current scope:
 
-- Uncompressed attachment-backed image data
+- Uncompressed, `zstd`, and `zstd+sh` attachment-backed image data, including compression subblocks
 - Single-channel images
-- `UInt16` samples decoded to normalized `f32`
+- little- and big-endian `UInt16` samples decoded to normalized `f32`
+- Exactly one non-skippable Zstandard frame per compression subblock, with whole-block unshuffle after subblock concatenation
+- Unknown foreign-namespace extension subtrees only when they are direct children of the XISF root
 
 ## Usage Examples
 
@@ -169,7 +192,7 @@ contains a compilable usage example.
 | FITS `DATASUM` / `CHECKSUM` | Presence and encoding | Stored-data/HDU ones-complement verification |
 | XISF 1.0 images, thumbnails, profiles and property blocks | Prefix/XML, local references, geometry, sample widths, block extents | Reads every physical byte and local block |
 | XISF attachments, inline Base64/hex, embedded Data | Location/encoding and declared lengths | Payload checks below |
-| XISF zlib, LZ4, LZ4HC, Zstandard, shuffle and subblocks | Stored/decoded lengths and descriptor consistency | Decompression and exact output-length verification |
+| XISF zlib, LZ4, LZ4HC, Zstandard, shuffle and subblocks | Stored/decoded lengths and descriptor consistency | Decompression, exact output-length verification, and one Zstandard frame per subblock |
 | XISF SHA-1, SHA-256, SHA-512, SHA3-256, SHA3-512 | Present checksum descriptors | Digest verification over stored bytes before decoding |
 
 XISF validation supports multiple images/channels and UInt8/16/32/64,
@@ -222,12 +245,12 @@ println!("Peak call reservations: {}", report.peak_reserved_bytes());
 ```
 
 | Stage | Memory behavior |
-|---|---|
+| --- | --- |
 | File reads/checksums | Fallible, reserved buffers of at most 64 KiB; final whole-file read preserves gap/padding coverage |
 | XISF XML | Reserve 32× XML length for parser/string scratch and growth overlap, plus 1 KiB per node/attribute before insertion; retain metadata allowance through traversal |
 | Inline XISF | Reserved packed-text and decoded-byte buffers; LZ4 subblocks borrow inline slices instead of cloning them |
 | Zlib | 64 KiB input/output buffers, 1 MiB inflater-state allowance; decoded bytes are counted and discarded; require explicit stream end, exact output and no trailing bytes |
-| Zstandard | 64 KiB input/output, rounded declared frame history plus 1 MiB context/block allowance; admit each concatenated/skippable frame independently and enforce native window limit |
+| Zstandard | 64 KiB input/output, rounded declared frame history plus 1 MiB context/block allowance; require exactly one standard frame per XISF compression subblock, reject skippable/trailing frames, and enforce the native window limit |
 | LZ4/LZ4HC | Complete attached input and decoded output blocks must fit live reservations; no streaming claim for the raw-block decoder |
 | FITS header/tables | 1 KiB per retained structural keyword covers map/string/table bookkeeping before insertion |
 | FITS GZIP_1/GZIP_2 tiles and GZIP fallback | Reserve 1 MiB inflater + 256 KiB header allowance, ≤64 KiB each input/output, and axis bookkeeping. Stream/discard output without a decoded-tile cache |
@@ -300,12 +323,13 @@ ICC profile, color-space, or XML-signature conformance/authentication.
 
 FITS random groups, unknown HDU extensions and externally wrapped files (such
 as whole-file gzip) return `Unsupported`. FITS validation opens literal local
-paths without CFITSIO filter interpretation. XISF external
-block locations, foreign XML element namespaces, DTDs, and external entities
-are unsupported; the validator does not fetch external resources. Namespace-less
-XISF headers are accepted for producer compatibility. Existing image loaders and
-metadata APIs still use the coordinated native backend and retain its platform
-limitations; validation's managed allocation contract does not cover those loaders.
+paths without CFITSIO filter interpretation. XISF external block locations,
+foreign XML elements outside direct root-extension subtrees, DTDs, and external
+entities are unsupported; the validator does not fetch external resources.
+Namespace-less XISF headers are accepted for producer compatibility. Existing
+image loaders and metadata APIs still use the coordinated native backend and
+retain its platform limitations; validation's managed allocation contract does
+not cover those loaders.
 
 Tests generate temporary containers, exercise native CFITSIO compression and
 checksums, and use published SHA test vectors. Broader capture compatibility and
