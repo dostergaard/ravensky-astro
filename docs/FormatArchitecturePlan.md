@@ -11,12 +11,9 @@ Windows testing showed a repeatable FITS-open boundary at full path length `260`
 
 At the same time, XISF handling is already native Rust and structurally separate from FITS behavior.
 
-Additionally, the project has an internal naming mismatch:
-
-1. The published meta crate is `ravensky-astro` on crates.io.
-2. Parts of internal documentation and code still refer to `astro-core`.
-
-That mismatch is now a source of avoidable confusion for contributors and for downstream users reading examples. It also increases the risk of accidental collisions with similarly named crates or local module identifiers. As part of this architecture work, we should align internal naming with the published crate identity.
+The crate naming alignment completed in version 0.3.0. The published meta crate,
+its documentation, and its Rust imports now use the RavenSky identity. Historical
+rename details remain in the changelog.
 
 This document proposes a format-centric architecture so path handling fixes and future format support are implemented once, then reused across tools.
 
@@ -33,14 +30,13 @@ This document proposes a format-centric architecture so path handling fixes and 
 
 ---
 
-## Naming Alignment Plan (`astro-core` -> `ravensky-astro`)
+## Naming Alignment (complete)
 
-This architecture plan includes a coordinated naming refactor:
-
-1. Treat `ravensky-astro` as the canonical meta-crate name in docs, examples, module references, and package metadata.
-2. Deprecate internal/project references to `astro-core` except where a temporary compatibility alias is intentionally retained during migration.
-3. Update dependent projects (including AstroMuninn) to prefer `ravensky-astro` naming in manifests, imports, and docs.
-4. Execute this rename in staged phases to avoid breaking downstream builds.
+1. `ravensky-astro` is the canonical meta-crate name in package metadata and
+   documentation; Rust consumers import it as `ravensky_astro`.
+2. Documentation, examples, and AstroMuninn references use canonical naming.
+3. The 0.3.0 breaking import rename was made directly because the library had
+   zero known usage; no temporary compatibility alias was needed.
 
 ---
 
@@ -57,7 +53,6 @@ This architecture plan includes a coordinated naming refactor:
 1. `astro-io` remains the primary image I/O facade.
 2. `astro-metadata` remains the primary metadata facade.
 3. `ravensky-astro` remains the canonical meta crate and re-export surface.
-4. Temporary aliasing from `astro-core` may be retained only for migration compatibility, then removed.
 
 ### Optional shared contract crate (recommended)
 
@@ -131,12 +126,15 @@ Move existing XISF logic into `astro-format-xisf` early:
 2. Add integration tests for current behavior (golden files).
 3. Preserve current public APIs.
 
-## Phase 0.5 - Naming Alignment Foundation
+## Phase 0.5 - Naming Alignment (complete)
 
-1. Audit all `astro-core` references across crates, docs, examples, CI, and release scripts.
-2. Introduce transitional compatibility where needed (for example, temporary package aliases in dependent crates).
-3. Update docs and examples to use `ravensky-astro` as canonical naming.
-4. Add CI checks or linting rules to prevent reintroducing stale `astro-core` references in new changes.
+1. Completed a repository-wide audit of code, documentation, examples, CI, and
+   release scripts.
+2. Switched documentation and examples to canonical package and import names.
+3. Added CI checks that prevent retired naming from reappearing outside
+   historical release notes.
+4. Skipped temporary compatibility because there were zero known consumers at
+   the time of the breaking 0.3.0 release.
 
 ## Phase 1 - Extract XISF
 
@@ -179,7 +177,8 @@ Move existing XISF logic into `astro-format-xisf` early:
 4. Add new explicit APIs for selecting an image/HDU without removing existing convenience APIs.
 5. Route implementation under the hood to format crates.
 6. Document backend selection (feature flags) without forcing downstream rewrites.
-7. During naming migration, prefer additive compatibility (aliases/bridges) before removals, then remove `astro-core` references in a scheduled major/minor release window as appropriate.
+7. Keep naming migration history in release notes; do not retain temporary
+   compatibility shims after the migration has closed.
 
 ---
 

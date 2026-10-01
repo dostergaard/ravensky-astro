@@ -66,7 +66,6 @@ Treat the following as known design concerns rather than patterns to reproduce:
 
 * `astro-metadata` currently depends on and re-exports `astro_io::fits::FitsHeaderCard`, indicating an immature ownership boundary;
 * XISF support needs careful architectural treatment before further public API expansion;
-* some terminology and documentation still reflect older "Astro Core" naming;
 * the published API surface is already somewhat broad;
 * cross-crate contract coverage is thinner than desired;
 * no deliberate feature-flag strategy exists yet.

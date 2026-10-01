@@ -1,5 +1,5 @@
 // ravensky-astro/src/lib.rs
-//! Astro Core
+//! RavenSky Astro
 //!
 //! Copyright (c) 2025 Dean Ostergaard
 //!

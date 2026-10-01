@@ -15,6 +15,24 @@ env:
   RUSTUP_TOOLCHAIN: 1.94.0
 
 jobs:
+  retired-naming:
+    name: Retired naming
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Reject retired crate spelling
+        shell: bash
+        run: |
+          set -euo pipefail
+          prefix=astro
+          suffix=core
+          pattern="${prefix}[-_ ]${suffix}"
+          if git grep -n -i -E "$pattern" -- ':!CHANGELOG.md'; then
+            echo "Use canonical RavenSky crate names outside historical release notes." >&2
+            exit 1
+          fi
+
   build:
     name: Rust (${{ matrix.target }})
     strategy:
