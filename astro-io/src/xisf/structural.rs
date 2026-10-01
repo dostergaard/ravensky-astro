@@ -452,9 +452,9 @@ pub(crate) fn visit_xml<E>(
                             "text outside XML root",
                         )));
                     }
-                } else if !stack
+                } else if stack
                     .get(1)
-                    .is_some_and(|(_, namespace)| !namespace.is_core())
+                    .is_none_or(|(_, namespace)| namespace.is_core())
                 {
                     consumer(XmlEvent::Text {
                         value,
@@ -477,9 +477,9 @@ pub(crate) fn visit_xml<E>(
                         "CDATA outside XML root",
                     )));
                 }
-                if !stack
+                if stack
                     .get(1)
-                    .is_some_and(|(_, namespace)| !namespace.is_core())
+                    .is_none_or(|(_, namespace)| namespace.is_core())
                 {
                     consumer(XmlEvent::Text {
                         value,
