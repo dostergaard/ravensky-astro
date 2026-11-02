@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-11-02
+
+### Fixed
+
+- Read metadata and pixels from the logical image HDU in CFITSIO tiled-compressed
+  FITS files, including N.I.N.A. `GZIP_2` captures whose primary HDU contains no
+  image. Ordinary uncompressed FITS images continue to use the primary HDU.
+- Resolve observational header values from the selected image HDU, falling back
+  to the primary header only when a value is absent, and report the logical image
+  dimensions and pixel type.
+- Show the selected image HDU in the `dump_fits_metadata` example.
+
+### Added
+
+- `astro_io::fits::select_image_hdu` for callers that need the same logical-image
+  selection as the loader and metadata parser.
+
 ## [0.6.1] - 2026-09-09
 
 ### Fixed

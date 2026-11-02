@@ -140,11 +140,11 @@ Add only the crates you need:
 
 ```toml
 [dependencies]
-astro-io = "0.6.1"
-astro-metadata = "0.6.1"
-astro-metrics = "0.6.1"
+astro-io = "0.6.2"
+astro-metadata = "0.6.2"
+astro-metrics = "0.6.2"
 # Optional meta crate that re-exports all three:
-ravensky-astro = "0.6.1"
+ravensky-astro = "0.6.2"
 ```
 
 Each crate can be used independently.
