@@ -15,5 +15,31 @@ sandbox's CFITSIO native-build permission error. Both passed when rerun with the
 required build permission. The ignored real capture files were not included in
 the `ravensky-astro` package archive.
 
-CI, GitHub release, crates.io publication, and independent registry-consumer
-validation remain to be recorded after publication.
+## Publication
+
+Release source commit `0d8c57a053cf922cbe8075fc77e82b69192f9aeb` passed
+[GitHub CI run 41474331600](https://github.com/dostergaard/ravensky-astro/actions/runs/41474331600)
+on Linux x86-64 GNU, macOS ARM64, and the configured Windows GNU subset.
+Annotated tag `v0.6.2` resolves to that commit. The
+[GitHub release](https://github.com/dostergaard/ravensky-astro/releases/tag/v0.6.2)
+was published before crates.io uploads, as requested.
+
+The first `cargo +1.94.0 package` output in the reused target directory passed
+Cargo verification but an independent gzip audit found trailing bytes in three
+archives. A fresh `cargo package --locked --workspace --exclude astro-bench`
+using stable Cargo in `/private/tmp/ravensky-astro-062-package` produced four
+complete gzip streams. The existing `verify_archives.py` audit confirmed clean
+VCS identity, source bytes, internal dependency versions, docs.rs metadata, and
+archive structure. `cargo publish --locked` then published in dependency order:
+
+| Crate | Published archive SHA-256 |
+| --- | --- |
+| `astro-io 0.6.2` | `93d958eab651452ce18f658a0e9cce5f12d3c86a29a59ae407bd94d8441f3604` |
+| `astro-metadata 0.6.2` | `4ba69196d5d2d456fada2659d24f24719d01e3f949b0a13d9ea8f9aa0d0cb83c` |
+| `astro-metrics 0.6.2` | `b34325099d6c245c774fef225862eabe76e8b61afd3a315de7925615c452cadf` |
+| `ravensky-astro 0.6.2` | `a105bde6689fcd00dd266100ceda2f5859f71f79afc1f26fe2fc75558084cedd` |
+
+Each archive downloaded from crates.io matched its independently audited local
+archive byte-for-byte. Cargo verified each dependent crate against the newly
+published registry dependencies before uploading it. Hosted docs.rs completion
+and an AstroMuninn dependency update are separate follow-up checks.
