@@ -4,7 +4,7 @@
 //! and convert it into the AstroMetadata structure.
 
 use anyhow::{Context, Result};
-use astro_io::fits::{header_cards_to_map, read_header_cards};
+use astro_io::fits::header_cards_to_map;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use fitsio::FitsFile;
 use log::warn;
@@ -26,39 +26,62 @@ pub fn extract_metadata_from_path(path: &Path) -> Result<AstroMetadata> {
     })
 }
 
-/// Extract metadata from a FITS file
+/// Extract metadata from the first usable two-dimensional FITS image.
+///
+/// The image HDU supplies observational values; absent keys fall back to the
+/// primary header. Raw cards retain every HDU in file order, and `raw_headers`
+/// is the last-value-wins projection of those cards for compatibility.
+/// A container with no usable image returns an error.
 ///
 /// Native calls share astro-io's CFITSIO gate. On non-reentrant builds, enclose
 /// open, use and drop of the caller-owned handle in
 /// [`astro_io::fits::backend::with_cfitsio`].
 pub fn extract_metadata(fits_file: &mut FitsFile) -> Result<AstroMetadata> {
     astro_io::fits::backend::with_cfitsio(|| {
-        let hdu = fits_file.primary_hdu()?;
+        let hdu = astro_io::fits::select_image_hdu(fits_file)?;
         let mut metadata = AstroMetadata::default();
-        let raw_header_cards = read_header_cards(fits_file, hdu.number)
+        let raw_header_cards = astro_io::fits::read_all_header_cards(fits_file)
             .context("Failed to extract FITS header cards")?;
         let raw_headers = header_cards_to_map(&raw_header_cards);
+        // The selected image owns observational values. An empty or ancillary
+        // primary can supply missing values, but cannot override the image.
+        let mut semantic_headers = HashMap::new();
+        for card in raw_header_cards.iter().filter(|card| card.hdu_index == 0) {
+            if let Some(value) = &card.value {
+                semantic_headers.insert(card.keyword.clone(), value.clone());
+            }
+        }
+        if hdu.number != 0 {
+            for card in raw_header_cards
+                .iter()
+                .filter(|card| card.hdu_index == hdu.number)
+            {
+                if let Some(value) = &card.value {
+                    semantic_headers.insert(card.keyword.clone(), value.clone());
+                }
+            }
+        }
 
         // Parse equipment information
-        parse_equipment(&mut metadata.equipment, &raw_headers);
+        parse_equipment(&mut metadata.equipment, &semantic_headers);
 
         // Parse detector information
-        parse_detector(&mut metadata.detector, &raw_headers, &hdu.info);
+        parse_detector(&mut metadata.detector, &semantic_headers, &hdu.info);
 
         // Parse filter information
-        parse_filter(&mut metadata.filter, &raw_headers);
+        parse_filter(&mut metadata.filter, &semantic_headers);
 
         // Parse exposure information
-        parse_exposure(&mut metadata.exposure, &raw_headers);
+        parse_exposure(&mut metadata.exposure, &semantic_headers);
 
         // Parse mount information
-        metadata.mount = parse_mount(&raw_headers);
+        metadata.mount = parse_mount(&semantic_headers);
 
         // Parse environment information
-        metadata.environment = parse_environment(&raw_headers);
+        metadata.environment = parse_environment(&semantic_headers);
 
         // Parse WCS information
-        metadata.wcs = parse_wcs(&raw_headers);
+        metadata.wcs = parse_wcs(&semantic_headers);
 
         // Store the canonical lossless cards plus the compatibility lookup map.
         metadata.raw_header_cards = raw_header_cards;
@@ -109,24 +132,11 @@ fn parse_detector(
     detector.camera_name = get_string_header(headers, &["INSTRUME", "CAMERA"]);
     detector.pixel_size = get_float_header(headers, &["PIXSIZE", "XPIXSZ"]);
 
-    // Get dimensions from NAXIS1/NAXIS2 headers
-    if let Some(naxis1) = get_int_header(headers, &["NAXIS1"]) {
-        detector.width = naxis1 as usize;
-    }
-
-    if let Some(naxis2) = get_int_header(headers, &["NAXIS2"]) {
-        detector.height = naxis2 as usize;
-    }
-
-    // If dimensions are not in headers, try to get them from HDU info
-    if detector.width == 0 || detector.height == 0 {
-        if let fitsio::hdu::HduInfo::ImageInfo { shape, .. } = hdu_info {
-            if shape.len() >= 2 {
-                // FITS standard: first dimension is y (height), second is x (width)
-                detector.height = shape[0];
-                detector.width = shape[1];
-            }
-        }
+    // CFITSIO exposes logical image axes for tiled images; physical NAXIS1/2
+    // describe the compressed table and must not become detector dimensions.
+    if let fitsio::hdu::HduInfo::ImageInfo { shape, .. } = hdu_info {
+        detector.height = shape[0];
+        detector.width = shape[1];
     }
 
     // Binning
@@ -504,7 +514,12 @@ mod tests {
     fn test_extract_metadata_preserves_duplicate_cards() -> Result<()> {
         astro_io::fits::backend::with_cfitsio(|| {
             let path = unique_temp_fits_path("metadata");
-            let mut file = FitsFile::create(&path).open()?;
+            let mut file = FitsFile::create(&path)
+                .with_custom_primary(&fitsio::images::ImageDescription {
+                    data_type: fitsio::images::ImageType::Short,
+                    dimensions: &[2, 2],
+                })
+                .open()?;
             let hdu = file.primary_hdu()?;
 
             hdu.write_key(&mut file, "OBJECT", "M42".to_string())?;

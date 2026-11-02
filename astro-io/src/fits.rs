@@ -35,13 +35,13 @@ pub struct FitsHeaderCard {
     pub raw_card: Option<String>,
 }
 
-/// Read a FITS file and return its pixel data, width, and height.
+/// Read the first usable two-dimensional FITS image and return its pixels,
+/// width, and height. Pixel data are fully materialized as `f32` values.
 pub fn load_fits(path: &Path) -> Result<(Vec<f32>, usize, usize)> {
     backend::with_cfitsio(|| {
         // Open the FITS file.
         let mut file = FitsFile::open(path)?;
-        // Access the primary HDU (header-data unit).
-        let hdu = file.primary_hdu()?;
+        let hdu = select_image_hdu(&mut file)?;
 
         // Extract the image dimensions by borrowing hdu.info.
         let (width, height) = if let fitsio::hdu::HduInfo::ImageInfo { shape, .. } = &hdu.info {
@@ -49,13 +49,34 @@ pub fn load_fits(path: &Path) -> Result<(Vec<f32>, usize, usize)> {
             let w = shape[1];
             (w, h)
         } else {
-            bail!("Primary HDU is not an image");
+            bail!("Selected HDU is not an image");
         };
 
         // Read the entire image into a Vec<f32>.
         let pixels: Vec<f32> = hdu.read_image(&mut file)?;
 
         Ok((pixels, width, height))
+    })
+}
+
+/// Select the first nonempty image with at least two axes.
+///
+/// CFITSIO presents tile-compressed binary-table extensions as logical images,
+/// so this also selects them without reading or decompressing pixel data.
+/// Returns an error when the container has no usable two-dimensional image.
+/// On non-reentrant builds, enclose the caller-owned handle's complete lifetime
+/// in [`backend::with_cfitsio`], including open and close.
+pub fn select_image_hdu(fits_file: &mut FitsFile) -> Result<fitsio::hdu::FitsHdu> {
+    backend::with_cfitsio(|| {
+        for index in 0..fits_file.num_hdus()? {
+            let hdu = fits_file.hdu(index)?;
+            if let fitsio::hdu::HduInfo::ImageInfo { shape, .. } = &hdu.info {
+                if shape.len() >= 2 && shape.iter().all(|&axis| axis > 0) {
+                    return Ok(hdu);
+                }
+            }
+        }
+        bail!("No usable two-dimensional FITS image HDU")
     })
 }
 

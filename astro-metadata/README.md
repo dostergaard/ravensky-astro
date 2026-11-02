@@ -19,6 +19,16 @@ Metadata extraction and handling for astronomical images.
 
 ## FITS concurrency
 
+FITS extraction selects the first nonempty image with at least two axes,
+including CFITSIO tile-compressed image extensions. Observational keywords in
+that image take precedence; missing keywords fall back to the primary header.
+Logical dimensions come from CFITSIO image information, not the physical
+`NAXIS1`/`NAXIS2` of a compressed binary table. A FITS container without a
+usable image returns an error. `raw_header_cards` retains every HDU in file
+order; `raw_headers` remains a last-value-wins lookup across those raw cards
+and may therefore differ from the selected image's canonical fields when later
+HDUs repeat a keyword. Extraction reads headers, not pixel data or checksums.
+
 FITS metadata extraction shares astro-io's CFITSIO admission gate with image loading
 and validation. Reentrant builds retain concurrent access using independent handles;
 other builds serialize native work. Path-based extraction includes open and close.

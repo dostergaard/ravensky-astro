@@ -13,6 +13,12 @@ I/O operations for astronomical image formats.
 - Efficient image data handling
 - Support for various data types (8-bit, 16-bit, 32-bit float)
 
+FITS loading selects the first nonempty image with at least two axes. CFITSIO
+presents tiled-image binary-table extensions as logical images, so an empty
+primary HDU can be followed by a compressed image. `select_image_hdu` exposes
+this header-only selection to metadata consumers. Loading pixels still allocates
+the full returned `Vec<f32>`.
+
 ## CFITSIO concurrency
 
 FITS loading, header access and metadata extraction share
@@ -66,7 +72,7 @@ pub fn load_fits(path: &Path) -> Result<(Vec<f32>, usize, usize)>
     - `usize`: Height of the image in pixels
 - **Errors**:
   - If the file cannot be opened
-  - If the primary HDU is not an image
+- If the container has no nonempty image with at least two axes
   - If the image data cannot be read
   - On Windows, FITS open may fail when the full pathname is 260 characters or longer due to CFITSIO `fopen` path handling.
 
