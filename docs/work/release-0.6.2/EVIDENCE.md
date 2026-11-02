@@ -41,5 +41,6 @@ archive structure. `cargo publish --locked` then published in dependency order:
 
 Each archive downloaded from crates.io matched its independently audited local
 archive byte-for-byte. Cargo verified each dependent crate against the newly
-published registry dependencies before uploading it. Hosted docs.rs completion
-and an AstroMuninn dependency update are separate follow-up checks.
+published registry dependencies before uploading it. All four versioned API
+documentation pages returned HTTP 200 on docs.rs. The AstroMuninn dependency
+update remains a separate follow-up.
