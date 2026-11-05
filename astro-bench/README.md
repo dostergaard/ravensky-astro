@@ -13,6 +13,21 @@ the adjacent workspace validator sources.
 
 ## Run a benchmark
 
+The focused P1 typed-I/O probe writes and exactly rereads one 1024×1024
+UInt16 image through the supported FITS/XISF codec set, printing file size,
+write/read time, checksum and Unix process peak RSS. The default gradient
+exercises compression expansion and XISF raw-subblock fallback; `--smooth`
+exercises compressed payloads. It creates and removes its own temporary files.
+
+```sh
+cargo run -p astro-bench --example p1_typed_io --features fitsio/src-cmake
+cargo run -p astro-bench --example p1_typed_io --features fitsio/src-cmake -- --smooth
+```
+
+The explicit CMake backend feature builds bundled CFITSIO out of source when
+the Cargo registry is read-only. Record hardware, build profile, storage and
+cache conditions when comparing timings.
+
 New users: follow the [standalone benchmark guide](../docs/BenchmarkGuide.md) for
 prerequisites, a small first run, worker comparisons, JSON interpretation, existing
 captures and a complete separate-project Rust example. This README is the compact

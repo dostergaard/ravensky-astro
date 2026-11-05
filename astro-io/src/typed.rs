@@ -4,7 +4,9 @@
 //! whether a cross-format metadata mapping is faithful. Callers must account
 //! for every listed image and ancillary structure before writing a new file.
 
+pub mod capability;
 pub mod compare;
+pub mod metadata;
 pub mod write;
 
 use crate::fits::{self, FitsHeaderCard};
@@ -19,7 +21,11 @@ use std::{
     fs::File,
     io::{Read, Seek, SeekFrom},
     path::Path,
+    time::SystemTime,
 };
+
+#[cfg(unix)]
+use std::os::unix::fs::MetadataExt;
 
 /// Hard limits applied before an inventory allocates source-controlled records.
 #[derive(Debug, Clone, Copy)]
@@ -54,6 +60,12 @@ pub enum ContainerFormat {
 pub struct ByteExtent {
     pub offset: u64,
     pub length: u64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AncillaryReference {
+    FitsHdu(usize),
+    XisfElement(usize),
 }
 
 /// One logical image, in source order. `source_index` is an HDU or XML element
@@ -104,6 +116,38 @@ pub struct ContainerInventory {
     pub xisf_elements: Vec<XisfElementRecord>,
     /// Exact source XML, including unknown core elements, comments and order.
     pub xisf_xml: Option<String>,
+    source_stamp: SourceObservation,
+}
+
+/// A cheap binding between this inventory and one local file observation.
+/// Application transactions still require P4's stronger source checks.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct SourceObservation {
+    len: u64,
+    modified: Option<SystemTime>,
+    #[cfg(unix)]
+    identity: (u64, u64),
+}
+
+impl SourceObservation {
+    fn capture(path: &Path) -> Result<Self> {
+        let metadata = path.metadata()?;
+        Ok(Self {
+            len: metadata.len(),
+            modified: metadata.modified().ok(),
+            #[cfg(unix)]
+            identity: (metadata.dev(), metadata.ino()),
+        })
+    }
+}
+
+impl ContainerInventory {
+    fn ensure_source(&self, path: &Path) -> Result<()> {
+        if SourceObservation::capture(path)? != self.source_stamp {
+            bail!("Source changed since container inventory was built");
+        }
+        Ok(())
+    }
 }
 
 /// Per-call limit for exact pixel access. The caller controls aggregate
@@ -127,6 +171,120 @@ impl Default for PixelReadLimits {
     }
 }
 
+/// Reusable exact reader. For compressed XISF it decodes a bounded image once,
+/// then serves multiple chunks from that exact byte buffer. Callers coordinate
+/// aggregate memory if multiple readers coexist.
+pub struct U16ChunkReader<'a> {
+    path: &'a Path,
+    inventory: &'a ContainerInventory,
+    image_index: usize,
+    limits: PixelReadLimits,
+    decoded_xisf: Option<Vec<u8>>,
+    big_endian: bool,
+}
+
+impl<'a> U16ChunkReader<'a> {
+    pub fn open(
+        path: &'a Path,
+        inventory: &'a ContainerInventory,
+        image_index: usize,
+        limits: PixelReadLimits,
+    ) -> Result<Self> {
+        inventory.ensure_source(path)?;
+        let image = inventory
+            .images
+            .get(image_index)
+            .context("Image index is not inventoried")?;
+        let mut decoded_xisf = None;
+        let mut big_endian = false;
+        if inventory.format == ContainerFormat::Xisf {
+            big_endian =
+                image.source_attributes.get("byteOrder").map(String::as_str) == Some("big");
+            if image.compression.is_some() {
+                if image.sample_format != "UInt16" || image.axes.len() != 3 || image.axes[2] != 1 {
+                    bail!("Unsupported compressed XISF exact UInt16 representation");
+                }
+                let count = image.axes.iter().try_fold(1u64, |count, axis| {
+                    count
+                        .checked_mul(*axis)
+                        .context("Image sample count overflows")
+                })?;
+                let expected = count.checked_mul(2).context("XISF byte count overflows")?;
+                if expected > limits.max_decoded_image_bytes {
+                    bail!("Compressed XISF decoded image exceeds configured byte limit");
+                }
+                let attachment = image
+                    .attachment
+                    .context("XISF image is not attachment-backed")?;
+                let compression = Compression::parse(
+                    image.compression.as_deref(),
+                    image.source_attributes.get("subblocks").map(String::as_str),
+                    attachment.length,
+                )?
+                .context("Missing XISF compression descriptor")?;
+                if compression.decoded() != expected {
+                    bail!("XISF compression length does not match image geometry");
+                }
+                if compression.shuffle().is_some_and(|size| size != 2) {
+                    bail!("XISF UInt16 shuffle item size must be two bytes");
+                }
+                let mut file = File::open(path)?;
+                file.seek(SeekFrom::Start(attachment.offset))?;
+                decoded_xisf = Some(crate::xisf::decode_compressed_image(
+                    &mut file,
+                    &compression,
+                    usize::try_from(expected)?,
+                    limits.max_stored_subblock_bytes,
+                )?);
+            }
+        }
+        Ok(Self {
+            path,
+            inventory,
+            image_index,
+            limits,
+            decoded_xisf,
+            big_endian,
+        })
+    }
+
+    pub fn read_chunk(&mut self, start: u64, output: &mut [u16]) -> Result<()> {
+        let Some(decoded) = &self.decoded_xisf else {
+            return read_u16_chunk(
+                self.path,
+                self.inventory,
+                self.image_index,
+                start,
+                output,
+                self.limits,
+            );
+        };
+        if self.limits.max_chunk_samples == 0 || output.len() > self.limits.max_chunk_samples {
+            bail!("UInt16 chunk exceeds configured sample limit");
+        }
+        let byte_start =
+            usize::try_from(start.checked_mul(2).context("XISF byte offset overflows")?)?;
+        let byte_count = output
+            .len()
+            .checked_mul(2)
+            .context("XISF chunk byte count overflows")?;
+        let byte_end = byte_start
+            .checked_add(byte_count)
+            .context("XISF chunk byte range overflows")?;
+        let bytes = decoded
+            .get(byte_start..byte_end)
+            .context("UInt16 chunk exceeds decoded image")?;
+        for (sample, pair) in output.iter_mut().zip(bytes.as_chunks::<2>().0) {
+            *sample = if self.big_endian {
+                u16::from_be_bytes(*pair)
+            } else {
+                u16::from_le_bytes(*pair)
+            };
+        }
+        Ok(())
+    }
+}
+
 /// Read a bounded range of exact logical UInt16 samples into caller storage.
 /// The source inventory must describe the same unchanged file. Unsupported
 /// representation, geometry, or compression returns an error instead of
@@ -139,6 +297,7 @@ pub fn read_u16_chunk(
     output: &mut [u16],
     limits: PixelReadLimits,
 ) -> Result<()> {
+    inventory.ensure_source(path)?;
     if limits.max_chunk_samples == 0 || output.len() > limits.max_chunk_samples {
         bail!("UInt16 chunk exceeds configured sample limit");
     }
@@ -230,7 +389,7 @@ pub fn read_u16_chunk(
                     .context("XISF byte range overflows")?;
                 for (sample, pair) in output
                     .iter_mut()
-                    .zip(decoded[byte_start..byte_end].chunks_exact(2))
+                    .zip(decoded[byte_start..byte_end].as_chunks::<2>().0)
                 {
                     *sample = if order == "little" {
                         u16::from_le_bytes([pair[0], pair[1]])
@@ -253,7 +412,7 @@ pub fn read_u16_chunk(
             for chunk in output.chunks_mut(buffer.len() / 2) {
                 let bytes = &mut buffer[..chunk.len() * 2];
                 file.read_exact(bytes)?;
-                for (sample, pair) in chunk.iter_mut().zip(bytes.chunks_exact(2)) {
+                for (sample, pair) in chunk.iter_mut().zip(bytes.as_chunks::<2>().0) {
                     *sample = if order == "little" {
                         u16::from_le_bytes([pair[0], pair[1]])
                     } else {
@@ -266,23 +425,88 @@ pub fn read_u16_chunk(
     }
 }
 
+/// Read a bounded physical slice of an inventoried non-image structure.
+/// FITS HDU data include table/heap bytes and padding as reported by CFITSIO;
+/// XISF references are attachment bytes as stored, before decompression.
+pub fn read_ancillary_chunk(
+    path: &Path,
+    inventory: &ContainerInventory,
+    reference: AncillaryReference,
+    start: u64,
+    output: &mut [u8],
+    max_chunk_bytes: usize,
+) -> Result<()> {
+    inventory.ensure_source(path)?;
+    if max_chunk_bytes == 0 || output.len() > max_chunk_bytes {
+        bail!("Ancillary read exceeds configured byte limit");
+    }
+    let extent = match (inventory.format, reference) {
+        (ContainerFormat::Fits, AncillaryReference::FitsHdu(index)) => {
+            let hdu = inventory
+                .fits_hdus
+                .get(index)
+                .context("FITS HDU is not inventoried")?;
+            if hdu.image_index.is_some() {
+                bail!("FITS HDU is an image, not ancillary content");
+            }
+            hdu.data
+        }
+        (ContainerFormat::Xisf, AncillaryReference::XisfElement(index)) => {
+            let element = inventory
+                .xisf_elements
+                .get(index)
+                .context("XISF element is not inventoried")?;
+            if matches!(element.name.as_str(), "Image" | "Thumbnail") {
+                bail!("XISF element is an image, not ancillary content");
+            }
+            element
+                .attachment
+                .context("XISF element has no attached binary content")?
+        }
+        _ => bail!("Ancillary reference does not match source format"),
+    };
+    let end = start
+        .checked_add(output.len() as u64)
+        .context("Ancillary range overflows")?;
+    if end > extent.length {
+        bail!("Ancillary range exceeds inventoried extent");
+    }
+    let absolute = extent
+        .offset
+        .checked_add(start)
+        .context("Ancillary offset overflows")?;
+    let mut file = File::open(path)?;
+    file.seek(SeekFrom::Start(absolute))?;
+    file.read_exact(output)?;
+    Ok(())
+}
+
 /// Read a bounded raw inventory. This does not decode pixels or certify a
 /// semantic conversion; full validation remains a separate operation.
 pub fn inventory(path: &Path, limits: InventoryLimits) -> Result<ContainerInventory> {
+    let source_stamp = SourceObservation::capture(path)?;
     let mut file =
         File::open(path).with_context(|| format!("Failed to open {}", path.display()))?;
     let mut magic = [0u8; 8];
     file.read_exact(&mut magic)
         .context("Failed to read container signature")?;
-    match &magic {
-        b"XISF0100" => inventory_xisf(&mut file, limits),
-        b"SIMPLE  " => fits::backend::with_cfitsio(|| inventory_fits(path, limits)),
+    let found = match &magic {
+        b"XISF0100" => inventory_xisf(&mut file, limits, source_stamp.clone()),
+        b"SIMPLE  " => {
+            fits::backend::with_cfitsio(|| inventory_fits(path, limits, source_stamp.clone()))
+        }
         _ => bail!("Unsupported container signature"),
-    }
+    }?;
+    found.ensure_source(path)?;
+    Ok(found)
 }
 
-fn inventory_fits(path: &Path, limits: InventoryLimits) -> Result<ContainerInventory> {
-    let source_len = path.metadata()?.len();
+fn inventory_fits(
+    path: &Path,
+    limits: InventoryLimits,
+    source_stamp: SourceObservation,
+) -> Result<ContainerInventory> {
+    let source_len = source_stamp.len;
     let mut file = FitsFile::open(path)?;
     let count = fits::read_num_hdus(&mut file)?;
     if count > limits.max_hdus {
@@ -349,6 +573,11 @@ fn inventory_fits(path: &Path, limits: InventoryLimits) -> Result<ContainerInven
                             .with_context(|| format!("Invalid FITS HDU {index} {key}"))
                     })
                     .collect::<Result<Vec<_>>>()?;
+                axes.iter().try_fold(1u64, |count, axis| {
+                    count
+                        .checked_mul(*axis)
+                        .context("FITS image sample count overflows")
+                })?;
                 let bitpix_key = if compressed { "ZBITPIX" } else { "BITPIX" };
                 let bitpix = card_value(&cards, bitpix_key).unwrap_or("unknown");
                 let bzero_key = if compressed { "ZBZERO" } else { "BZERO" };
@@ -362,15 +591,21 @@ fn inventory_fits(path: &Path, limits: InventoryLimits) -> Result<ContainerInven
                 let bscale = card_value(&cards, bscale_key)
                     .or_else(|| card_value(&cards, "BSCALE"))
                     .unwrap_or("1");
-                let sample_format = if bitpix == "16" && bscale == "1" && bzero == "32768" {
-                    "UInt16".to_owned()
-                } else {
-                    format!("BITPIX={bitpix},BSCALE={bscale},BZERO={bzero}")
-                };
+                let blank = card_value(&cards, if compressed { "ZBLANK" } else { "BLANK" })
+                    .or_else(|| card_value(&cards, "BLANK"));
+                let sample_format =
+                    if bitpix == "16" && bscale == "1" && bzero == "32768" && blank.is_none() {
+                        "UInt16".to_owned()
+                    } else {
+                        format!("BITPIX={bitpix},BSCALE={bscale},BZERO={bzero},BLANK={blank:?}")
+                    };
                 let mut source_attributes = BTreeMap::new();
                 source_attributes.insert("BITPIX".into(), bitpix.into());
                 source_attributes.insert("BSCALE".into(), bscale.into());
                 source_attributes.insert("BZERO".into(), bzero.into());
+                if let Some(blank) = blank {
+                    source_attributes.insert("BLANK".into(), blank.into());
+                }
                 source_attributes.insert("CFITSIO_IMAGE_TYPE".into(), format!("{image_type:?}"));
                 let id = card_value(&cards, "EXTNAME").map(str::to_owned);
                 image_index = Some(images.len());
@@ -410,6 +645,7 @@ fn inventory_fits(path: &Path, limits: InventoryLimits) -> Result<ContainerInven
         fits_hdus,
         xisf_elements: Vec::new(),
         xisf_xml: None,
+        source_stamp,
     })
 }
 
@@ -421,7 +657,11 @@ fn card_value<'a>(cards: &'a [FitsHeaderCard], key: &str) -> Option<&'a str> {
         .and_then(|card| card.value.as_deref())
 }
 
-fn inventory_xisf(file: &mut File, limits: InventoryLimits) -> Result<ContainerInventory> {
+fn inventory_xisf(
+    file: &mut File,
+    limits: InventoryLimits,
+    source_stamp: SourceObservation,
+) -> Result<ContainerInventory> {
     let header = crate::xisf::read_monolithic_header_limited(file, limits.max_xml_bytes)?;
     let mut images = Vec::new();
     let mut elements: Vec<XisfElementRecord> = Vec::new();
@@ -464,6 +704,28 @@ fn inventory_xisf(file: &mut File, limits: InventoryLimits) -> Result<ContainerI
                         );
                     }
                     let descriptor = ImageDescriptor::parse(&element)?;
+                    descriptor
+                        .geometry
+                        .dimensions()
+                        .iter()
+                        .try_fold(1u64, |count, axis| {
+                            count
+                                .checked_mul(*axis)
+                                .context("XISF image sample count overflows")
+                        })?;
+                    if matches!(
+                        descriptor.sample_format.as_str(),
+                        "UInt8"
+                            | "UInt16"
+                            | "UInt32"
+                            | "UInt64"
+                            | "Float32"
+                            | "Float64"
+                            | "Complex32"
+                            | "Complex64"
+                    ) {
+                        descriptor.sample_layout()?;
+                    }
                     let image_index = images.len();
                     images.push(ImageRecord {
                         source_index: index,
@@ -520,5 +782,6 @@ fn inventory_xisf(file: &mut File, limits: InventoryLimits) -> Result<ContainerI
         fits_hdus: Vec::new(),
         xisf_elements: elements,
         xisf_xml,
+        source_stamp,
     })
 }

@@ -11,8 +11,11 @@ use std::{
 
 const CHUNK_SAMPLES: usize = 32_768;
 const MAX_SHUFFLED_IMAGE_BYTES: usize = 16 << 20;
+const MAX_COMPRESSED_IMAGE_BYTES: usize = 16 << 20;
 const ALIGNMENT: u64 = 4096;
 const MAX_SUBBLOCKS_PER_IMAGE: usize = 1_000_000;
+const MAX_TOTAL_SUBBLOCKS: usize = 100_000;
+const MAX_SCALAR_METADATA_BYTES: usize = 4 << 20;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum XisfCodec {
@@ -20,6 +23,23 @@ pub enum XisfCodec {
     Zstd,
     Zlib,
     Lz4,
+}
+
+/// Narrow, lossless XISF property-writing primitives. Arbitrary property
+/// types remain visible in inventory and must be rejected or handled by P2.
+#[derive(Debug, Clone, Copy)]
+pub enum XisfPropertyValue<'a> {
+    String(&'a str),
+    ByteArray(&'a [u8]),
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct XisfPropertySpec<'a> {
+    /// `None` places the property on the root; `Some(i)` associates it with
+    /// image `i` in the supplied image list.
+    pub image_index: Option<usize>,
+    pub id: &'a str,
+    pub value: XisfPropertyValue<'a>,
 }
 
 impl XisfCodec {
@@ -50,6 +70,20 @@ pub fn write_xisf_u16(
     images: &[U16ImageSpec<'_>],
     codec: XisfCodec,
     shuffled: bool,
+    read: impl FnMut(usize, u64, &mut [u16]) -> Result<()>,
+) -> Result<()> {
+    write_xisf_u16_with_properties(path, images, &[], codec, shuffled, read)
+}
+
+/// Variant with explicit root/image String and binary ByteArray properties.
+/// Binary properties are stored as checksummed attachments, without loading
+/// additional copies of their byte slices.
+pub fn write_xisf_u16_with_properties(
+    path: &Path,
+    images: &[U16ImageSpec<'_>],
+    properties: &[XisfPropertySpec<'_>],
+    codec: XisfCodec,
+    shuffled: bool,
     mut read: impl FnMut(usize, u64, &mut [u16]) -> Result<()>,
 ) -> Result<()> {
     if images.is_empty() || images.len() > 10_000 {
@@ -61,12 +95,37 @@ pub fn write_xisf_u16(
     if path.exists() {
         bail!("XISF output already exists: {}", path.display());
     }
+    let mut total_subblocks = 0usize;
+    let mut image_id_bytes = 0usize;
     for image in images {
-        image.sample_count()?;
-        if image.sample_count()?.div_ceil(CHUNK_SAMPLES) > MAX_SUBBLOCKS_PER_IMAGE {
+        let count = image.sample_count()?;
+        let parts = count.div_ceil(CHUNK_SAMPLES);
+        total_subblocks = total_subblocks
+            .checked_add(parts)
+            .context("XISF subblock count overflows")?;
+        if parts > MAX_SUBBLOCKS_PER_IMAGE || total_subblocks > MAX_TOTAL_SUBBLOCKS {
             bail!("XISF image exceeds writer subblock count limit");
         }
+        if codec != XisfCodec::Uncompressed
+            && count.checked_mul(2).context("XISF byte count overflows")?
+                > MAX_COMPRESSED_IMAGE_BYTES
+        {
+            bail!("Compressed XISF image exceeds 16 MiB typed readback limit");
+        }
+        if image
+            .id
+            .is_some_and(|id| id.is_empty() || id.len() > 4096 || !valid_xml_text(id))
+        {
+            bail!("XISF image identifier contains invalid XML text");
+        }
+        image_id_bytes = image_id_bytes
+            .checked_add(image.id.map_or(0, str::len))
+            .context("XISF image ID bytes overflow")?;
+        if image_id_bytes > MAX_SCALAR_METADATA_BYTES {
+            bail!("XISF image IDs exceed writer byte limit");
+        }
     }
+    validate_properties(properties, images.len())?;
     let scratch = Scratch::new(path)?;
     let mut spool = OpenOptions::new()
         .write(true)
@@ -133,8 +192,30 @@ pub fn write_xisf_u16(
             subblocks,
         });
     }
+    let mut property_payloads = vec![None; properties.len()];
+    for (index, property) in properties.iter().enumerate() {
+        if let XisfPropertyValue::ByteArray(bytes) = property.value {
+            let spool_start = spool.stream_position()?;
+            spool.write_all(bytes)?;
+            property_payloads[index] = Some(payloads.len());
+            payloads.push(Payload {
+                spool_start,
+                stored: u64::try_from(bytes.len())?,
+                decoded: u64::try_from(bytes.len())?,
+                checksum: format!("{:x}", Sha256::digest(bytes)),
+                subblocks: Vec::new(),
+            });
+        }
+    }
     drop(spool);
-    let (xml, offsets) = layout(images, &payloads, codec, shuffled)?;
+    let (xml, offsets) = layout(
+        images,
+        properties,
+        &property_payloads,
+        &payloads,
+        codec,
+        shuffled,
+    )?;
     let mut created = false;
     let result = (|| -> Result<()> {
         let mut output = OpenOptions::new().write(true).create_new(true).open(path)?;
@@ -178,23 +259,56 @@ pub fn xisf_output_bound_u16(
     codec: XisfCodec,
     shuffled: bool,
 ) -> Result<u64> {
+    xisf_output_bound_with_properties(images, &[], codec, shuffled)
+}
+
+/// Complete XISF output bound including explicit String and ByteArray
+/// properties. The caller must additionally reserve the spool size, bounded
+/// by the sum of image decoded bytes and supplied binary property lengths.
+pub fn xisf_output_bound_with_properties(
+    images: &[U16ImageSpec<'_>],
+    properties: &[XisfPropertySpec<'_>],
+    codec: XisfCodec,
+    shuffled: bool,
+) -> Result<u64> {
     if images.is_empty() || images.len() > 10_000 {
         bail!("XISF writer requires 1 to 10000 images");
     }
     if shuffled && codec == XisfCodec::Uncompressed {
         bail!("XISF shuffle requires compression");
     }
+    validate_properties(properties, images.len())?;
     let mut payloads = Vec::new();
+    let mut total_subblocks = 0usize;
+    let mut image_id_bytes = 0usize;
     for image in images {
         let count = image.sample_count()?;
+        if image
+            .id
+            .is_some_and(|id| id.is_empty() || id.len() > 4096 || !valid_xml_text(id))
+        {
+            bail!("XISF image identifier contains invalid XML text");
+        }
+        image_id_bytes = image_id_bytes
+            .checked_add(image.id.map_or(0, str::len))
+            .context("XISF image ID bytes overflow")?;
+        if image_id_bytes > MAX_SCALAR_METADATA_BYTES {
+            bail!("XISF image IDs exceed writer byte limit");
+        }
         let byte_count = count
             .checked_mul(2)
             .context("XISF decoded byte count overflows")?;
+        if codec != XisfCodec::Uncompressed && byte_count > MAX_COMPRESSED_IMAGE_BYTES {
+            bail!("Compressed XISF image exceeds 16 MiB typed readback limit");
+        }
         if shuffled && byte_count > MAX_SHUFFLED_IMAGE_BYTES {
             bail!("XISF shuffled image exceeds 16 MiB writer limit");
         }
         let parts = count.div_ceil(CHUNK_SAMPLES);
-        if parts > MAX_SUBBLOCKS_PER_IMAGE {
+        total_subblocks = total_subblocks
+            .checked_add(parts)
+            .context("XISF subblock count overflows")?;
+        if parts > MAX_SUBBLOCKS_PER_IMAGE || total_subblocks > MAX_TOTAL_SUBBLOCKS {
             bail!("XISF image exceeds writer subblock count limit");
         }
         let mut subblocks = Vec::new();
@@ -215,13 +329,67 @@ pub fn xisf_output_bound_u16(
             subblocks,
         });
     }
-    let (_, offsets) = layout(images, &payloads, codec, shuffled)?;
+    let mut property_payloads = vec![None; properties.len()];
+    for (index, property) in properties.iter().enumerate() {
+        if let XisfPropertyValue::ByteArray(bytes) = property.value {
+            let length = u64::try_from(bytes.len())?;
+            property_payloads[index] = Some(payloads.len());
+            payloads.push(Payload {
+                spool_start: 0,
+                stored: length,
+                decoded: length,
+                checksum: "0".repeat(64),
+                subblocks: Vec::new(),
+            });
+        }
+    }
+    let (_, offsets) = layout(
+        images,
+        properties,
+        &property_payloads,
+        &payloads,
+        codec,
+        shuffled,
+    )?;
     offsets
         .last()
         .copied()
         .unwrap_or(0)
         .checked_add(payloads.last().map_or(0, |payload| payload.stored))
         .context("XISF output bound overflows")
+}
+
+fn validate_properties(properties: &[XisfPropertySpec<'_>], images: usize) -> Result<()> {
+    if properties.len() > 10_000 {
+        bail!("XISF property count exceeds writer limit");
+    }
+    let mut scalar_bytes = 0usize;
+    for property in properties {
+        if property.id.is_empty() || property.id.len() > 4096 || !valid_xml_text(property.id) {
+            bail!("XISF property ID contains invalid XML text");
+        }
+        scalar_bytes = scalar_bytes
+            .checked_add(property.id.len())
+            .context("XISF metadata byte count overflows")?;
+        if property.image_index.is_some_and(|index| index >= images) {
+            bail!("XISF property refers to an absent image");
+        }
+        if matches!(property.value, XisfPropertyValue::ByteArray(bytes) if bytes.is_empty()) {
+            bail!("XISF binary property must not be empty");
+        }
+        if matches!(property.value, XisfPropertyValue::String(value) if !valid_xml_text(value)) {
+            bail!("XISF String property contains invalid XML text");
+        }
+        if let XisfPropertyValue::String(value) = property.value {
+            scalar_bytes = scalar_bytes
+                .checked_add(value.len())
+                .context("XISF metadata byte count overflows")?;
+        }
+        if scalar_bytes > MAX_SCALAR_METADATA_BYTES {
+            bail!("XISF scalar metadata exceeds writer byte limit");
+        }
+    }
+    Ok(())
 }
 
 fn write_part(
@@ -257,19 +425,29 @@ fn write_part(
 
 fn layout(
     images: &[U16ImageSpec<'_>],
+    properties: &[XisfPropertySpec<'_>],
+    property_payloads: &[Option<usize>],
     payloads: &[Payload],
     codec: XisfCodec,
     shuffled: bool,
 ) -> Result<(String, Vec<u64>)> {
-    let mut offsets = vec![0u64; images.len()];
+    let mut offsets = vec![0u64; payloads.len()];
     for _ in 0..16 {
-        let xml = build_xml(images, payloads, &offsets, codec, shuffled)?;
+        let xml = build_xml(
+            images,
+            properties,
+            property_payloads,
+            payloads,
+            &offsets,
+            codec,
+            shuffled,
+        )?;
         let mut cursor = align(
             16u64
                 .checked_add(u64::try_from(xml.len())?)
                 .context("XISF XML end overflows")?,
         )?;
-        let mut next = Vec::with_capacity(images.len());
+        let mut next = Vec::with_capacity(payloads.len());
         for payload in payloads {
             next.push(cursor);
             cursor = align(
@@ -288,13 +466,25 @@ fn layout(
 
 fn build_xml(
     images: &[U16ImageSpec<'_>],
+    properties: &[XisfPropertySpec<'_>],
+    property_payloads: &[Option<usize>],
     payloads: &[Payload],
     offsets: &[u64],
     codec: XisfCodec,
     shuffled: bool,
 ) -> Result<String> {
     let mut xml = String::from("<?xml version=\"1.0\" encoding=\"UTF-8\"?><xisf version=\"1.0\">");
-    for ((image, payload), offset) in images.iter().zip(payloads).zip(offsets) {
+    write_properties(
+        &mut xml,
+        None,
+        properties,
+        property_payloads,
+        payloads,
+        offsets,
+    )?;
+    for (image_index, ((image, payload), offset)) in
+        images.iter().zip(payloads).zip(offsets).enumerate()
+    {
         xml.push_str("<Image geometry=\"");
         xml.push_str(&format!("{}:{}:1", image.width, image.height));
         xml.push_str("\" sampleFormat=\"UInt16\" colorSpace=\"Gray\" byteOrder=\"little\"");
@@ -325,13 +515,69 @@ fn build_xml(
             }
             xml.push('"');
         }
-        xml.push_str(&format!(" checksum=\"sha-256:{}\"/>", payload.checksum));
+        xml.push_str(&format!(" checksum=\"sha-256:{}\"", payload.checksum));
+        if properties
+            .iter()
+            .any(|property| property.image_index == Some(image_index))
+        {
+            xml.push('>');
+            write_properties(
+                &mut xml,
+                Some(image_index),
+                properties,
+                property_payloads,
+                payloads,
+                offsets,
+            )?;
+            xml.push_str("</Image>");
+        } else {
+            xml.push_str("/>");
+        }
     }
     xml.push_str("</xisf>");
     if xml.len() > 64 << 20 {
         bail!("XISF XML exceeds writer limit");
     }
     Ok(xml)
+}
+
+fn write_properties(
+    xml: &mut String,
+    parent_image: Option<usize>,
+    properties: &[XisfPropertySpec<'_>],
+    property_payloads: &[Option<usize>],
+    payloads: &[Payload],
+    offsets: &[u64],
+) -> Result<()> {
+    for (index, property) in properties.iter().enumerate() {
+        if property.image_index != parent_image {
+            continue;
+        }
+        xml.push_str("<Property id=\"");
+        escape_xml(xml, property.id);
+        match property.value {
+            XisfPropertyValue::String(value) => {
+                xml.push_str("\" type=\"String\" value=\"");
+                escape_xml(xml, value);
+                xml.push_str("\"/>");
+            }
+            XisfPropertyValue::ByteArray(bytes) => {
+                let payload_index =
+                    property_payloads[index].context("Missing binary property payload index")?;
+                let payload = payloads
+                    .get(payload_index)
+                    .context("Missing binary property payload")?;
+                let offset = offsets
+                    .get(payload_index)
+                    .context("Missing binary property offset")?;
+                xml.push_str(&format!(
+                    "\" type=\"ByteArray\" length=\"{}\" location=\"attachment:{}:{}\" checksum=\"sha-256:{}\"/>",
+                    bytes.len(), offset, payload.stored, payload.checksum,
+                ));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn escape_xml(out: &mut String, value: &str) {
@@ -342,9 +588,16 @@ fn escape_xml(out: &mut String, value: &str) {
             '>' => out.push_str("&gt;"),
             '"' => out.push_str("&quot;"),
             '\'' => out.push_str("&apos;"),
+            '\t' => out.push_str("&#9;"),
+            '\n' => out.push_str("&#10;"),
+            '\r' => out.push_str("&#13;"),
             _ => out.push(ch),
         }
     }
+}
+
+fn valid_xml_text(value: &str) -> bool {
+    value.chars().all(|ch| matches!(ch as u32, 0x9 | 0xA | 0xD | 0x20..=0xD7FF | 0xE000..=0xFFFD | 0x10000..=0x10FFFF))
 }
 
 fn align(value: u64) -> Result<u64> {

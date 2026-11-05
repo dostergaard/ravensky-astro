@@ -137,6 +137,50 @@ Current scope:
 - Exactly one non-skippable Zstandard frame per compression subblock, with whole-block unshuffle after subblock concatenation
 - Unknown foreign-namespace extension subtrees only when they are direct children of the XISF root
 
+## P1 typed image I/O
+
+`astro_io::typed` inventories all FITS HDUs and XISF `Image` elements before
+pixel access. FITS inventory retains ordered header cards and physical HDU
+byte extents; XISF inventory retains image associations, core XML elements,
+attachment extents, and the original XML. Unsupported sample formats and
+unrecognized core elements remain visible in the inventory. Inventory has
+explicit XML, card, element, HDU, and image limits. A cheap file observation
+rejects most source replacements between inventory and read; application
+transactions still need stronger source checks.
+
+`read_u16_chunk` and `U16ChunkReader` return exact logical unsigned 16-bit
+samples without going through `f32`. The reusable reader decodes a compressed
+XISF image once and serves bounded chunks from it. Its default decoded-image
+limit is 16 MiB; this is a per-reader buffer limit, not aggregate application
+memory admission. The FITS path accepts the standard `BITPIX=16`,
+`BSCALE=1`, `BZERO=32768` convention and rejects `BLANK` and unproved scaling.
+The XISF path supports uncompressed and zstd/zlib/LZ4, including tested byte
+shuffle variants and Revision 2 raw subblocks. The older `load_xisf` API
+retains its original first-image normalized-`f32` behavior and codec subset.
+
+`typed::write` accepts an explicit list of all output images and a bounded
+UInt16 pixel callback. FITS output supports uncompressed, RICE_1, GZIP_1, and
+GZIP_2. XISF output supports uncompressed, zstd, zlib, and LZ4; its writer
+calculates attachment offsets, uses Revision 2 raw fallback, and hashes stored
+attachment bytes. `write_xisf_u16_with_properties` also accepts explicit root
+or image-associated String and ByteArray properties. Other XISF property types
+remain available through inventory but cannot yet be written through this
+primitive. `typed::metadata` appends nonstructural FITS cards and HISTORY
+records, refreshing the HDU checksum. `read_ancillary_chunk` reads bounded
+raw FITS non-image HDU or XISF attachment bytes.
+
+`typed::compare::compare_u16_containers` performs full independent validation
+and compares every image's count, identity, geometry, logical type and exact
+samples. `typed::capability::assess` describes the narrow proven subset.
+`xisf_output_bound_u16` and its property-aware variant give conservative
+whole-file bounds for this writer; FITS whole-file bounds are explicitly
+unknown because native CFITSIO header/tile/table/heap worst cases have not
+been proved. A future disk planner must also reserve writer scratch space.
+
+These are low-level primitives. Metadata equivalence and loss approval belong
+to the next conversion phase; these APIs do not establish general FITS↔XISF
+conversion eligibility or a user-facing conversion workflow.
+
 ## Usage Examples
 
 ### Loading a FITS file

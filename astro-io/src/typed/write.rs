@@ -2,7 +2,10 @@
 //! deciding which source metadata may be mapped or discarded belongs to P2.
 
 mod xisf;
-pub use xisf::{write_xisf_u16, xisf_output_bound_u16, XisfCodec};
+pub use xisf::{
+    write_xisf_u16, write_xisf_u16_with_properties, xisf_output_bound_u16,
+    xisf_output_bound_with_properties, XisfCodec, XisfPropertySpec, XisfPropertyValue,
+};
 
 use anyhow::{bail, Context, Result};
 use fitsio::{
@@ -50,16 +53,18 @@ pub enum EncodedSizeBound {
     Unknown(&'static str),
 }
 
+impl EncodedSizeBound {
+    /// An unknown native bound is never eligible for preflight disk admission.
+    pub fn is_resource_safe(self) -> bool {
+        matches!(self, Self::Finite(_))
+    }
+}
+
 pub fn fits_output_bound_u16(
     images: &[U16ImageSpec<'_>],
     _codec: FitsCodec,
 ) -> Result<EncodedSizeBound> {
-    if images.is_empty() {
-        bail!("FITS writer requires at least one image");
-    }
-    for image in images {
-        image.sample_count()?;
-    }
+    validate_fits_specs(images)?;
     Ok(EncodedSizeBound::Unknown(
         "CFITSIO whole-file header, tile table and heap worst-case bound is not established",
     ))
@@ -86,15 +91,7 @@ pub fn write_fits_u16(
     codec: FitsCodec,
     mut read: impl FnMut(usize, u64, &mut [u16]) -> Result<()>,
 ) -> Result<()> {
-    if images.is_empty() {
-        bail!("FITS writer requires at least one image");
-    }
-    for (index, image) in images.iter().enumerate() {
-        image.sample_count()?;
-        if index > 0 && image.id.is_none() {
-            bail!("FITS extension image {index} requires an explicit identifier");
-        }
-    }
+    validate_fits_specs(images)?;
     if path.exists() {
         bail!("FITS output already exists: {}", path.display());
     }
@@ -106,6 +103,29 @@ pub fn write_fits_u16(
             compress_fits(&scratch.path, path, images.len(), native)
         }
     }
+}
+
+fn validate_fits_specs(images: &[U16ImageSpec<'_>]) -> Result<()> {
+    if images.is_empty() {
+        bail!("FITS writer requires at least one image");
+    }
+    for (index, image) in images.iter().enumerate() {
+        image.sample_count()?;
+        std::os::raw::c_long::try_from(image.width)
+            .context("FITS width exceeds native axis range")?;
+        std::os::raw::c_long::try_from(image.height)
+            .context("FITS height exceeds native axis range")?;
+        if index > 0 && image.id.is_none() {
+            bail!("FITS extension image {index} requires an explicit identifier");
+        }
+        if let Some(id) = image.id {
+            if id.is_empty() || id.len() > 68 || !id.bytes().all(|byte| (32..=126).contains(&byte))
+            {
+                bail!("FITS image identifier must be 1..=68 printable ASCII bytes");
+            }
+        }
+    }
+    Ok(())
 }
 
 fn write_uncompressed_fits(
@@ -134,6 +154,11 @@ fn write_uncompressed_fits(
                     &description,
                 )?
             };
+            if index == 0 {
+                if let Some(id) = image.id {
+                    hdu.write_key(&mut file, "EXTNAME", id)?;
+                }
+            }
             let count = image.sample_count()?;
             let mut buffer = [0u16; 65_536];
             for start in (0..count).step_by(buffer.len()) {
@@ -141,6 +166,11 @@ fn write_uncompressed_fits(
                 read(index, start as u64, &mut buffer[..size])?;
                 hdu.write_section(&mut file, start, start + size, &buffer[..size])?;
             }
+            let mut status = 0;
+            // SAFETY: this is the selected, writable HDU; native handle is
+            // live within the coordinated backend gate.
+            unsafe { fitsio::sys::ffpcks(file.as_raw(), &mut status) };
+            fitsio::errors::check_status(status)?;
         }
         Ok(())
     });
@@ -169,6 +199,11 @@ fn compress_fits(source: &Path, target: &Path, image_count: usize, codec: i32) -
             }
             fitsio::errors::check_status(status)
                 .with_context(|| format!("Failed to compress FITS image {index}"))?;
+            // CFITSIO may copy source metadata into the compressed table;
+            // refresh the checksum for the physical output HDU.
+            let mut checksum_status = 0;
+            unsafe { fitsio::sys::ffpcks(output.as_raw(), &mut checksum_status) };
+            fitsio::errors::check_status(checksum_status)?;
         }
         Ok(())
     });

@@ -1,6 +1,6 @@
 //! Exact image comparison after independent full container validation.
 
-use super::{read_u16_chunk, ContainerFormat, ContainerInventory, ImageRecord, PixelReadLimits};
+use super::{ContainerFormat, ContainerInventory, ImageRecord, PixelReadLimits, U16ChunkReader};
 use crate::validation::{validate_file, ValidationLevel, ValidationOptions};
 use anyhow::{bail, Result};
 use std::path::Path;
@@ -15,6 +15,11 @@ pub enum ImageMismatch {
         index: usize,
         source: Option<String>,
         output: Option<String>,
+    },
+    Association {
+        index: usize,
+        source: Vec<String>,
+        output: Vec<String>,
     },
     Geometry {
         index: usize,
@@ -67,6 +72,17 @@ pub fn compare_u16_containers(
                 output: right_id.map(str::to_owned),
             }));
         }
+        if source.format == ContainerFormat::Xisf && output.format == ContainerFormat::Xisf {
+            let source_links = xisf_associations(source, index);
+            let output_links = xisf_associations(output, index);
+            if source_links != output_links {
+                return Ok(Some(ImageMismatch::Association {
+                    index,
+                    source: source_links,
+                    output: output_links,
+                }));
+            }
+        }
         let left_shape = canonical_geometry(source.format, left);
         let right_shape = canonical_geometry(output.format, right);
         if left_shape != right_shape {
@@ -95,25 +111,13 @@ pub fn compare_u16_containers(
         let capacity = usize::try_from(count.min(limits.max_chunk_samples as u64))?;
         let mut left_pixels = vec![0u16; capacity];
         let mut right_pixels = vec![0u16; capacity];
+        let mut left_reader = U16ChunkReader::open(source_path, source, index, limits)?;
+        let mut right_reader = U16ChunkReader::open(output_path, output, index, limits)?;
         let mut start = 0u64;
         while start < count {
             let size = usize::try_from((count - start).min(capacity as u64))?;
-            read_u16_chunk(
-                source_path,
-                source,
-                index,
-                start,
-                &mut left_pixels[..size],
-                limits,
-            )?;
-            read_u16_chunk(
-                output_path,
-                output,
-                index,
-                start,
-                &mut right_pixels[..size],
-                limits,
-            )?;
+            left_reader.read_chunk(start, &mut left_pixels[..size])?;
+            right_reader.read_chunk(start, &mut right_pixels[..size])?;
             if let Some(position) = left_pixels[..size]
                 .iter()
                 .zip(&right_pixels[..size])
@@ -139,11 +143,35 @@ fn canonical_geometry(format: ContainerFormat, image: &ImageRecord) -> Vec<u64> 
     }
 }
 
-fn canonical_id<'a>(inventory: &'a ContainerInventory, index: usize) -> Option<&'a str> {
+fn canonical_id(inventory: &ContainerInventory, index: usize) -> Option<&str> {
     let id = inventory.images[index].id.as_deref();
     if inventory.format == ContainerFormat::Fits && index == 0 && id == Some("_PRIMARY") {
         None
     } else {
         id
     }
+}
+
+fn xisf_associations(inventory: &ContainerInventory, index: usize) -> Vec<String> {
+    let image_element = inventory.images[index].source_index;
+    inventory
+        .xisf_elements
+        .iter()
+        .filter(|element| {
+            element.parent_image_index == Some(index) && element.index != image_element
+        })
+        .map(|element| {
+            let identity = ["id", "name", "uid", "ref"]
+                .into_iter()
+                .filter_map(|key| {
+                    element
+                        .attributes
+                        .get(key)
+                        .map(|value| format!("{key}={value}"))
+                })
+                .collect::<Vec<_>>()
+                .join(",");
+            format!("{}:{identity}", element.name)
+        })
+        .collect()
 }
