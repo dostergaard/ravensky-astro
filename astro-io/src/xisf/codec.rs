@@ -54,6 +54,14 @@ pub(crate) struct Subblock {
     pub(crate) decoded: u64,
 }
 
+impl Subblock {
+    /// Revision 2 stores a subblock unchanged when compression would not
+    /// reduce its size. The rule also applies to shuffled whole blocks.
+    pub(crate) fn is_raw(self) -> bool {
+        self.stored == self.decoded
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Compression {
     codec: String,

@@ -595,20 +595,27 @@ fn decode(c: &mut Context<'_>, storage: &Storage, compression: &Compression) -> 
     let mut offset = 0;
     for part in compression.subblocks() {
         c.checkpoint()?;
-        match compression.codec() {
-            "zlib" => streaming::zlib(c, storage, offset, part.stored, part.decoded)?,
-            "zstd" => streaming::zstd(c, storage, offset, part.stored, part.decoded)?,
-            _ => {
-                // Raw LZ4 needs complete input and output blocks. Inline input is
-                // borrowed; attached input and decoded output own reservations.
-                let bytes = storage.part(c, offset, part.stored)?;
-                let size = usize::try_from(part.decoded)
-                    .map_err(|_| limit("LZ4 output exceeds address space"))?;
-                let mut decoded = c.memory.buffer(size)?;
-                let count = lz4_flex::block::decompress_into(&bytes, &mut decoded)
-                    .map_err(|e| integrity(format!("LZ4 decode: {e}")))?;
-                if count as u64 != part.decoded {
-                    return Err(integrity("LZ4 decoded size mismatch"));
+        if part.is_raw() {
+            // Read through the bounded input to verify the declared extent
+            // without allocating an entire incompressible subblock.
+            let mut input = storage.input(c, offset, part.stored)?;
+            std::io::copy(&mut input, &mut std::io::sink()).map_err(super::input::decode_error)?;
+        } else {
+            match compression.codec() {
+                "zlib" => streaming::zlib(c, storage, offset, part.stored, part.decoded)?,
+                "zstd" => streaming::zstd(c, storage, offset, part.stored, part.decoded)?,
+                _ => {
+                    // Raw LZ4 needs complete input and output blocks. Inline input is
+                    // borrowed; attached input and decoded output own reservations.
+                    let bytes = storage.part(c, offset, part.stored)?;
+                    let size = usize::try_from(part.decoded)
+                        .map_err(|_| limit("LZ4 output exceeds address space"))?;
+                    let mut decoded = c.memory.buffer(size)?;
+                    let count = lz4_flex::block::decompress_into(&bytes, &mut decoded)
+                        .map_err(|e| integrity(format!("LZ4 decode: {e}")))?;
+                    if count as u64 != part.decoded {
+                        return Err(integrity("LZ4 decoded size mismatch"));
+                    }
                 }
             }
         }

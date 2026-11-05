@@ -8,6 +8,32 @@ use std::{
     sync::atomic::{AtomicBool, AtomicU64, Ordering},
 };
 static NEXT: AtomicU64 = AtomicU64::new(0);
+
+#[test]
+fn xisf_revision_2_raw_and_mixed_zlib_subblocks_validate() {
+    let raw = [0x13, 0x57, 0x9b, 0xdf, 0x21, 0x65, 0xa9, 0xed];
+    let compressed = compressed_frame("zlib", &[0; 128]);
+    for (data, subblocks, decoded) in [
+        (raw.to_vec(), "8,8".to_owned(), 8),
+        (
+            [compressed.clone(), raw.to_vec()].concat(),
+            format!("{},128:8,8", compressed.len()),
+            136,
+        ),
+    ] {
+        let xml = format!(
+            "<xisf version=\"1.0\"><Image geometry=\"{decoded}:1:1\" sampleFormat=\"UInt8\" location=\"attachment:4096:{}\" compression=\"zlib:{decoded}\" subblocks=\"{subblocks}\"/></xisf>",
+            data.len()
+        );
+        let file = Fixture::new(&xisf(&xml, &data));
+        validate_file(
+            &file.0,
+            &ValidationOptions::default().with_level(ValidationLevel::Full),
+            None,
+        )
+        .expect("Revision 2 raw and mixed subblocks should validate");
+    }
+}
 #[path = "validation/compressed.rs"]
 mod compressed;
 struct Fixture(PathBuf);
@@ -1273,7 +1299,7 @@ fn binary_tform_optional_suffix_is_legal_and_not_reinterpreted() {
 fn compressed_corruption_and_unknown_codecs_cannot_be_full_success() {
     for codec in ["zlib", "lz4", "lz4hc", "zstd", "future"] {
         let xml = format!(
-            r#"<xisf version="1.0"><Image geometry="2:2:1" sampleFormat="UInt16" location="attachment:4096:8" compression="{codec}:8"/></xisf>"#
+            r#"<xisf version="1.0"><Image geometry="3:3:1" sampleFormat="UInt8" location="attachment:4096:8" compression="{codec}:9"/></xisf>"#
         );
         let f = Fixture::new(&xisf(&xml, &[0; 8]));
         let report = validate_file(&f.0, &ValidationOptions::default(), None).unwrap();

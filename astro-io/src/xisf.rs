@@ -506,6 +506,22 @@ fn decode_compressed_image<R: Read>(
     scratch.resize(65536, 0);
 
     for subblock in compression.subblocks() {
+        if subblock.is_raw() {
+            let size = usize::try_from(subblock.stored)
+                .context("XISF raw subblock exceeds address space")?;
+            let end = decoded
+                .len()
+                .checked_add(size)
+                .context("XISF decoded subblock length overflows")?;
+            if end > expected_bytes {
+                bail!("XISF raw subblock exceeds expected image length");
+            }
+            decoded.resize(end, 0);
+            reader
+                .read_exact(&mut decoded[end - size..end])
+                .context("Failed to read raw XISF subblock")?;
+            continue;
+        }
         let mut source = ReaderInput::new(reader, subblock.stored)?;
         let requirements = zstd_frame_requirements(
             source
@@ -1107,6 +1123,32 @@ mod tests {
         fs::remove_file(&path).unwrap();
 
         let (pixels, width, height) = result.expect("multi-subblock zstd+sh should load");
+        assert_eq!((width, height), (4, 1));
+        assert_eq!(
+            pixels,
+            values
+                .iter()
+                .map(|value| f32::from(*value) / 65535.0)
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn load_xisf_decodes_revision_2_raw_and_mixed_zstd_subblocks() {
+        let values = [0x0102, 0x0304, 0xa0b0, 0xc0d0];
+        let raw = u16_payload(&values);
+        let first = zstd_frame(&raw[..4]);
+        let mut stored = first.clone();
+        stored.extend_from_slice(&raw[4..]);
+        let xml = format!(
+            r#"<xisf><Image geometry="4:1:1" sampleFormat="UInt16" compression="zstd:8" subblocks="{},4:4,4" location="attachment:512:{}"/></xisf>"#,
+            first.len(),
+            stored.len()
+        );
+        let path = write_temp_xisf(&xml, &stored);
+        let result = load_xisf(&path);
+        fs::remove_file(&path).unwrap();
+        let (pixels, width, height) = result.expect("mixed Revision 2 subblocks should load");
         assert_eq!((width, height), (4, 1));
         assert_eq!(
             pixels,
