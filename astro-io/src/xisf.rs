@@ -266,10 +266,10 @@ impl XisfImageMetadata {
     }
 }
 
-struct MonolithicHeader {
-    xml: Vec<u8>,
-    source_len: u64,
-    xml_end: u64,
+pub(crate) struct MonolithicHeader {
+    pub(crate) xml: Vec<u8>,
+    pub(crate) source_len: u64,
+    pub(crate) xml_end: u64,
 }
 
 struct PendingProperty {
@@ -473,7 +473,12 @@ fn load_xisf_from_reader<R: Read + Seek>(reader: &mut R) -> Result<(Vec<f32>, us
         .context("Failed to seek to image data")?;
 
     let data = if let Some(compression) = &image.compression {
-        decode_compressed_image(reader, compression, image.decoding.expected_bytes)?
+        decode_compressed_image(
+            reader,
+            compression,
+            image.decoding.expected_bytes,
+            128 << 20,
+        )?
     } else {
         let mut data = Vec::new();
         data.try_reserve_exact(image.data_size)
@@ -490,10 +495,11 @@ fn load_xisf_from_reader<R: Read + Seek>(reader: &mut R) -> Result<(Vec<f32>, us
     Ok((pixels, image.width, image.height))
 }
 
-fn decode_compressed_image<R: Read>(
+pub(crate) fn decode_compressed_image<R: Read>(
     reader: &mut R,
     compression: &Compression,
     expected_bytes: usize,
+    max_stored_subblock_bytes: u64,
 ) -> Result<Vec<u8>> {
     let mut decoded = Vec::new();
     decoded
@@ -506,6 +512,19 @@ fn decode_compressed_image<R: Read>(
     scratch.resize(65536, 0);
 
     for subblock in compression.subblocks() {
+        if subblock.stored > max_stored_subblock_bytes {
+            bail!("XISF subblock exceeds configured stored-byte limit");
+        }
+        let decoded_end = decoded
+            .len()
+            .checked_add(
+                usize::try_from(subblock.decoded)
+                    .context("XISF decoded subblock exceeds address space")?,
+            )
+            .context("XISF decoded subblock length overflows")?;
+        if decoded_end > expected_bytes {
+            bail!("XISF subblock exceeds expected image length");
+        }
         if subblock.is_raw() {
             let size = usize::try_from(subblock.stored)
                 .context("XISF raw subblock exceeds address space")?;
@@ -522,32 +541,77 @@ fn decode_compressed_image<R: Read>(
                 .context("Failed to read raw XISF subblock")?;
             continue;
         }
-        let mut source = ReaderInput::new(reader, subblock.stored)?;
-        let requirements = zstd_frame_requirements(
-            source
-                .fill_buf()
-                .context("Failed to read Zstandard frame header")?,
-        )
-        .map_err(anyhow::Error::new)?;
-        if requirements.history_bytes() > MAX_LOADER_ZSTD_HISTORY {
-            bail!(
-                "Zstandard history requirement {} exceeds loader limit {}",
-                requirements.history_bytes(),
-                MAX_LOADER_ZSTD_HISTORY
-            );
+        match compression.codec() {
+            "zstd" => {
+                let mut source = ReaderInput::new(reader, subblock.stored)?;
+                let requirements = zstd_frame_requirements(
+                    source
+                        .fill_buf()
+                        .context("Failed to read Zstandard frame header")?,
+                )
+                .map_err(anyhow::Error::new)?;
+                if requirements.history_bytes() > MAX_LOADER_ZSTD_HISTORY {
+                    bail!(
+                        "Zstandard history requirement {} exceeds loader limit {}",
+                        requirements.history_bytes(),
+                        MAX_LOADER_ZSTD_HISTORY
+                    );
+                }
+                decode_zstd_frame(
+                    source,
+                    subblock.decoded,
+                    requirements,
+                    &mut scratch,
+                    || Ok(()),
+                    |bytes| {
+                        decoded.extend_from_slice(bytes);
+                        Ok(())
+                    },
+                )
+                .context("Failed to decode XISF Zstandard subblock")?;
+            }
+            "zlib" => {
+                let source = ReaderInput::new(reader, subblock.stored)?;
+                let mut decoder = flate2::bufread::ZlibDecoder::new(source);
+                decoded.resize(decoded_end, 0);
+                decoder
+                    .read_exact(&mut decoded[decoded_end - subblock.decoded as usize..decoded_end])
+                    .context("Failed to decode XISF zlib subblock")?;
+                let mut extra = [0u8; 1];
+                if decoder
+                    .read(&mut extra)
+                    .context("Failed to finish XISF zlib subblock")?
+                    != 0
+                {
+                    bail!("XISF zlib subblock decoded more than declared");
+                }
+                if decoder.into_inner().logical_consumed() != subblock.stored {
+                    bail!("XISF zlib subblock contains trailing bytes");
+                }
+            }
+            "lz4" | "lz4hc" => {
+                let stored = usize::try_from(subblock.stored)
+                    .context("XISF LZ4 subblock exceeds address space")?;
+                let mut input = Vec::new();
+                input
+                    .try_reserve_exact(stored)
+                    .context("Failed to allocate XISF LZ4 input")?;
+                input.resize(stored, 0);
+                reader
+                    .read_exact(&mut input)
+                    .context("Failed to read XISF LZ4 subblock")?;
+                decoded.resize(decoded_end, 0);
+                let count = lz4_flex::block::decompress_into(
+                    &input,
+                    &mut decoded[decoded_end - subblock.decoded as usize..decoded_end],
+                )
+                .map_err(|error| anyhow!("XISF LZ4 decode: {error}"))?;
+                if count as u64 != subblock.decoded {
+                    bail!("XISF LZ4 decoded size mismatch");
+                }
+            }
+            codec => bail!("Unsupported XISF compression codec {codec}"),
         }
-        decode_zstd_frame(
-            source,
-            subblock.decoded,
-            requirements,
-            &mut scratch,
-            || Ok(()),
-            |bytes| {
-                decoded.extend_from_slice(bytes);
-                Ok(())
-            },
-        )
-        .context("Failed to decode XISF Zstandard subblock")?;
     }
     if decoded.len() != expected_bytes {
         bail!(
@@ -583,6 +647,13 @@ pub fn read_metadata_records<R: Read + Seek>(reader: &mut R) -> Result<XisfMetad
 }
 
 fn read_monolithic_header<R: Read + Seek>(reader: &mut R) -> Result<MonolithicHeader> {
+    read_monolithic_header_limited(reader, u64::MAX)
+}
+
+pub(crate) fn read_monolithic_header_limited<R: Read + Seek>(
+    reader: &mut R,
+    max_xml_bytes: u64,
+) -> Result<MonolithicHeader> {
     let source_len = reader
         .seek(SeekFrom::End(0))
         .context("Failed to determine XISF source extent")?;
@@ -599,6 +670,12 @@ fn read_monolithic_header<R: Read + Seek>(reader: &mut R) -> Result<MonolithicHe
         .read_exact(&mut prefix)
         .context("Failed to read XISF monolithic prefix")?;
     let envelope = MonolithicEnvelope::parse(&prefix, source_len).map_err(anyhow::Error::new)?;
+    if envelope.xml_len() > max_xml_bytes {
+        bail!(
+            "XISF XML length {} exceeds inventory limit {max_xml_bytes}",
+            envelope.xml_len()
+        );
+    }
     let range = envelope.xml_range();
     let header_size = usize::try_from(envelope.xml_len())
         .context("XISF XML header exceeds this platform's address space")?;

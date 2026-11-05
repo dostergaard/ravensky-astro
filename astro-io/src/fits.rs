@@ -96,6 +96,15 @@ pub fn read_header_cards(
     fits_file: &mut FitsFile,
     hdu_index: usize,
 ) -> Result<Vec<FitsHeaderCard>> {
+    read_header_cards_limited(fits_file, hdu_index, usize::MAX)
+}
+
+/// Inventory admission checks the native card count before allocating it.
+pub(crate) fn read_header_cards_limited(
+    fits_file: &mut FitsFile,
+    hdu_index: usize,
+    max_cards: usize,
+) -> Result<Vec<FitsHeaderCard>> {
     backend::with_cfitsio(|| {
         let _ = fits_file
             .hdu(hdu_index)
@@ -113,7 +122,15 @@ pub fn read_header_cards(
         check_status(status)
             .with_context(|| format!("Failed to enumerate header cards for HDU {}", hdu_index))?;
 
-        let mut cards = Vec::with_capacity(num_keys as usize);
+        let count = usize::try_from(num_keys).context("Negative FITS header card count")?;
+        if count > max_cards {
+            bail!("FITS header card count {count} exceeds inventory limit {max_cards}");
+        }
+
+        let mut cards = Vec::new();
+        cards
+            .try_reserve_exact(count)
+            .context("Failed to allocate FITS header card inventory")?;
         for card_index in 1..=num_keys {
             let raw_card = read_raw_card(raw_fits, card_index).with_context(|| {
                 format!(
@@ -194,7 +211,7 @@ pub fn normalize_pixels(pixels: &[f32]) -> Vec<f32> {
     pixels.iter().map(|&p| (p - min_val) / range).collect()
 }
 
-fn read_num_hdus(fits_file: &mut FitsFile) -> Result<usize> {
+pub(crate) fn read_num_hdus(fits_file: &mut FitsFile) -> Result<usize> {
     let raw_fits = unsafe { fits_file.as_raw() };
     let mut num_hdus = 0;
     let mut status = 0;
