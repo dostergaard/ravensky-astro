@@ -121,6 +121,16 @@ pub enum SemanticRole {
     Unknown,
 }
 
+/// Whether P2 interprets a source fact or only carries its exact supported
+/// FITS representation. Opaque preservation is not a loss approval.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum SemanticUnderstanding {
+    Recognized,
+    Uninterpreted,
+    Structural,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 #[serde(tag = "format", rename_all = "kebab-case")]
 pub enum SourceRef {
@@ -152,6 +162,8 @@ pub struct SemanticRecord {
     pub identifier: String,
     pub declared_type: String,
     pub text: Option<String>,
+    /// Original FITS value spelling, including significant quoted spaces.
+    pub lexical_value: Option<String>,
     pub comment: Option<String>,
     pub binary_length: Option<u64>,
     pub encoding: Option<String>,
@@ -182,6 +194,7 @@ pub struct ImpactItem {
     pub identifier: String,
     pub original_type: String,
     pub original_value: Option<String>,
+    pub original_lexical_value: Option<String>,
     pub original_comment: Option<String>,
     pub original_binary_length: Option<u64>,
     pub destination_representation: Option<String>,
@@ -190,6 +203,7 @@ pub struct ImpactItem {
     pub category: Option<LossCategory>,
     pub severity: Severity,
     pub reversible_native: bool,
+    pub semantic_understanding: SemanticUnderstanding,
     pub description: String,
 }
 
@@ -398,6 +412,7 @@ pub fn semantic_inventory(input: &ContainerInventory) -> Result<SemanticInventor
                             hdu.kind.clone()
                         },
                         text: None,
+                        lexical_value: None,
                         comment: None,
                         binary_length: Some(hdu.data.length),
                         encoding: None,
@@ -426,6 +441,11 @@ pub fn semantic_inventory(input: &ContainerInventory) -> Result<SemanticInventor
                                     .trim_end()
                                     .to_owned()
                             })
+                        }),
+                        lexical_value: card.raw_card.as_deref().and_then(|raw| {
+                            (!matches!(card.keyword.as_str(), "COMMENT" | "HISTORY"))
+                                .then(|| fits_lexical_value(raw))
+                                .flatten()
                         }),
                         comment: if matches!(card.keyword.as_str(), "HISTORY" | "COMMENT") {
                             None
@@ -505,6 +525,9 @@ pub fn semantic_inventory(input: &ContainerInventory) -> Result<SemanticInventor
                     identifier: id.clone(),
                     declared_type,
                     text,
+                    lexical_value: (element.name == "FITSKeyword")
+                        .then(|| element.attributes.get("value").cloned())
+                        .flatten(),
                     comment: element.attributes.get("comment").cloned(),
                     binary_length: element.attachment.map(|extent| extent.length),
                     encoding: element.attributes.get("compression").cloned(),
@@ -547,6 +570,36 @@ fn fits_type(raw: Option<&str>, value: Option<&str>) -> &'static str {
     }
 }
 
+/// Extract one ordinary FITS value without CFITSIO's normalization, which
+/// removes trailing spaces inside quoted strings. A slash in a quoted value is
+/// data; a slash outside it begins the comment. CONTINUE remains unsupported.
+fn fits_lexical_value(raw: &str) -> Option<String> {
+    let bytes = raw.as_bytes();
+    if bytes.len() < 10 || bytes.len() > 80 || bytes.get(8..10) != Some(b"= ") || !raw.is_ascii() {
+        return None;
+    }
+    let mut quoted = false;
+    let mut end = bytes.len();
+    let mut index = 10;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'\'' if quoted && bytes.get(index + 1) == Some(&b'\'') => index += 1,
+            b'\'' => quoted = !quoted,
+            b'/' if !quoted => {
+                end = index;
+                break;
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    if quoted {
+        return None;
+    }
+    let value = raw.get(10..end)?.trim();
+    valid_fits_literal(value).then(|| value.to_owned())
+}
+
 fn native_fits_keyword(name: &str) -> bool {
     !name.is_empty()
         && name.len() <= 8
@@ -554,7 +607,7 @@ fn native_fits_keyword(name: &str) -> bool {
             byte.is_ascii_uppercase() || byte.is_ascii_digit() || matches!(byte, b'-' | b'_')
         })
         && !structural_fits(name)
-        && role_for_fits(name) != SemanticRole::Unknown
+        && !matches!(name, "HIERARCH" | "CONTINUE")
 }
 
 fn loss_category(role: SemanticRole) -> Option<LossCategory> {
@@ -591,6 +644,7 @@ fn item(
         identifier: record.identifier.clone(),
         original_type: record.declared_type.clone(),
         original_value: record.text.clone(),
+        original_lexical_value: record.lexical_value.clone(),
         original_comment: record.comment.clone(),
         original_binary_length: record.binary_length,
         destination_representation: destination.map(str::to_owned),
@@ -601,6 +655,13 @@ fn item(
         reversible_native: destination.is_some()
             && category.is_none()
             && state != ImpactState::Unsupported,
+        semantic_understanding: if record.role == SemanticRole::Structural {
+            SemanticUnderstanding::Structural
+        } else if record.role == SemanticRole::Unknown {
+            SemanticUnderstanding::Uninterpreted
+        } else {
+            SemanticUnderstanding::Recognized
+        },
         description: format!("{}: {}", reason.as_str(), record.identifier),
     }
 }
@@ -617,6 +678,7 @@ pub fn inspect(input: &ContainerInventory, destination: ContainerFormat) -> Resu
             identifier: "images".into(),
             original_type: "none".into(),
             original_value: None,
+            original_lexical_value: None,
             original_comment: None,
             original_binary_length: None,
             destination_representation: None,
@@ -625,6 +687,7 @@ pub fn inspect(input: &ContainerInventory, destination: ContainerFormat) -> Resu
             category: None,
             severity: Severity::High,
             reversible_native: false,
+            semantic_understanding: SemanticUnderstanding::Structural,
             description: "No image array is available for the P1 writer".into(),
         });
     }
@@ -637,7 +700,7 @@ pub fn inspect(input: &ContainerInventory, destination: ContainerFormat) -> Resu
             _ => &[],
         };
         if image.sample_format != "UInt16" || shape.len() != 2 || shape.contains(&0) {
-            items.push(ImpactItem { source: SourceRef::Image { image: image.index }, association: Some(image.index), identifier: image.id.clone().unwrap_or_else(|| format!("image:{}", image.index)), original_type: image.sample_format.clone(), original_value: None, original_comment: None, original_binary_length: None, destination_representation: None, state: ImpactState::Unsupported, reason: ReasonCode::ImageCapability, category: None, severity: Severity::High, reversible_native: false, description: "Image array lacks an exact P1 writer/reader capability; metadata approval cannot authorize its loss".into() });
+            items.push(ImpactItem { source: SourceRef::Image { image: image.index }, association: Some(image.index), identifier: image.id.clone().unwrap_or_else(|| format!("image:{}", image.index)), original_type: image.sample_format.clone(), original_value: None, original_lexical_value: None, original_comment: None, original_binary_length: None, destination_representation: None, state: ImpactState::Unsupported, reason: ReasonCode::ImageCapability, category: None, severity: Severity::High, reversible_native: false, semantic_understanding: SemanticUnderstanding::Structural, description: "Image array lacks an exact P1 writer/reader capability; metadata approval cannot authorize its loss".into() });
         }
     }
     for record in &source.records {
@@ -901,12 +964,35 @@ fn valid_fits_literal(value: &str) -> bool {
     !value.is_empty()
         && value.len() <= 70
         && value.bytes().all(|byte| (32..=126).contains(&byte))
-        && (value.starts_with('\'') && value.ends_with('\'')
+        && (valid_quoted_fits_string(value)
             || decimal_key(value).is_some()
             || matches!(value, "T" | "F"))
 }
 
+fn valid_quoted_fits_string(value: &str) -> bool {
+    let Some(inner) = value
+        .strip_prefix('\'')
+        .and_then(|text| text.strip_suffix('\''))
+    else {
+        return false;
+    };
+    let mut bytes = inner.bytes().peekable();
+    while let Some(byte) = bytes.next() {
+        if byte == b'\'' && bytes.next() != Some(b'\'') {
+            return false;
+        }
+    }
+    true
+}
+
 fn projected_fits_literal(record: &SemanticRecord) -> Option<String> {
+    if !matches!(record.identifier.as_str(), "COMMENT" | "HISTORY") {
+        return record
+            .lexical_value
+            .as_deref()
+            .filter(|value| valid_fits_literal(value))
+            .map(str::to_owned);
+    }
     let value = record.text.as_deref()?;
     let literal = match record.declared_type.as_str() {
         "String" => format!("'{}'", value.replace('\'', "''")),
@@ -1421,6 +1507,7 @@ fn validate_impact(record: &SemanticRecord, impact: &ImpactItem) -> Result<()> {
         || record.identifier != impact.identifier
         || record.declared_type != impact.original_type
         || record.text != impact.original_value
+        || record.lexical_value != impact.original_lexical_value
         || record.comment != impact.original_comment
         || record.binary_length != impact.original_binary_length
     {

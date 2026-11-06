@@ -12,6 +12,7 @@ use astro_metadata::fidelity::provenance::{
 use astro_metadata::fidelity::{
     compare_metadata, compare_metadata_files, compare_metadata_with_provenance, inspect,
     mapped_fits_cards, mapped_xisf_keywords, Eligibility, ImpactState, LossCategory,
+    SemanticUnderstanding,
 };
 use fitsio::{
     tables::{ColumnDataType, ColumnDescription},
@@ -456,7 +457,7 @@ fn repeated_commentary_is_counted_and_stale_ledgers_are_rejected() {
 }
 
 #[test]
-fn nina_style_cards_map_per_hdu_and_unknown_keyword_blocks() {
+fn nina_style_cards_map_per_hdu_and_preserve_unknown_keyword() {
     let file = Fixture::path("fits");
     let images = [
         U16ImageSpec {
@@ -512,11 +513,117 @@ fn nina_style_cards_map_per_hdu_and_unknown_keyword_blocks() {
     assert!(mapped
         .iter()
         .any(|value| value.name == "NINA-VER" && value.image_index == 0));
-    assert!(ledger
-        .items
+    assert!(mapped
         .iter()
-        .any(|item| item.identifier == "ZZZ-VER" && item.state == ImpactState::Unsupported));
-    assert_eq!(ledger.eligibility, Eligibility::Blocked);
+        .any(|value| value.name == "ZZZ-VER" && value.image_index == 0));
+    assert!(ledger.items.iter().any(|item| item.identifier == "ZZZ-VER"
+        && item.state == ImpactState::ChangedRepresentation
+        && item.semantic_understanding == SemanticUnderstanding::Uninterpreted));
+    assert_eq!(ledger.eligibility, Eligibility::NoKnownLoss);
+}
+
+#[test]
+fn unknown_cards_preserve_lexical_value_comments_duplicates_and_associations() {
+    let source = Fixture::path("fits");
+    let xisf = Fixture::path("xisf");
+    let recovered = Fixture::path("fits");
+    let images = [
+        U16ImageSpec {
+            id: None,
+            width: 2,
+            height: 2,
+        },
+        U16ImageSpec {
+            id: Some("LIGHT"),
+            width: 2,
+            height: 2,
+        },
+    ];
+    let fill = |_: usize, _: u64, out: &mut [u16]| -> anyhow::Result<()> {
+        out.fill(7);
+        Ok(())
+    };
+    write_fits_u16(&source.0, &images, FitsCodec::Uncompressed, fill).unwrap();
+    let card = |text: &str| format!("{text:<80}");
+    append_fits_raw_cards(
+        &source.0,
+        0,
+        &[
+            card("ZCUSTOM = 'alpha  ' / original spacing"),
+            card("ZCUSTOM = 'second' / duplicate"),
+            card("OBJECT  = 'M42' / recognized"),
+        ],
+    )
+    .unwrap();
+    append_fits_raw_cards(
+        &source.0,
+        1,
+        &[card("ZCUSTOM = 1.2300E+02 / exact spelling")],
+    )
+    .unwrap();
+    let si = inventory(&source.0, InventoryLimits::default()).unwrap();
+    let outbound = inspect(&si, ContainerFormat::Xisf).unwrap();
+    assert_eq!(outbound.eligibility, Eligibility::NoKnownLoss);
+    let projected = mapped_xisf_keywords(&si, &outbound).unwrap();
+    let custom: Vec<_> = projected
+        .iter()
+        .filter(|value| value.name == "ZCUSTOM")
+        .collect();
+    assert_eq!(custom.len(), 3);
+    assert_eq!(custom[0].value, "'alpha  '");
+    assert_eq!(custom[0].comment.as_deref(), Some("original spacing"));
+    assert_eq!(custom[1].value, "'second'");
+    assert_eq!(custom[2].value, "1.2300E+02");
+    assert_eq!(custom[2].image_index, 1);
+    assert!(!projected.iter().any(|value| value.name == "NAXIS"));
+    let specs: Vec<_> = projected
+        .iter()
+        .map(|value| XisfKeywordSpec {
+            image_index: Some(value.image_index),
+            name: &value.name,
+            value: &value.value,
+            comment: value.comment.as_deref(),
+        })
+        .collect();
+    write_xisf_u16_with_metadata(
+        &xisf.0,
+        &images,
+        &[],
+        &specs,
+        XisfCodec::Uncompressed,
+        false,
+        fill,
+    )
+    .unwrap();
+    let xi = inventory(&xisf.0, InventoryLimits::default()).unwrap();
+    assert!(compare_metadata(&si, &xi, &outbound).unwrap().passed);
+    let inbound = inspect(&xi, ContainerFormat::Fits).unwrap();
+    assert_eq!(inbound.eligibility, Eligibility::NoKnownLoss);
+    let cards = mapped_fits_cards(&xi, &inbound).unwrap();
+    write_fits_u16(&recovered.0, &images, FitsCodec::Uncompressed, fill).unwrap();
+    for image_index in 0..2 {
+        let raw: Vec<_> = cards
+            .iter()
+            .filter(|card| card.image_index == image_index)
+            .map(|card| card.raw_card.clone())
+            .collect();
+        append_fits_raw_cards(&recovered.0, image_index, &raw).unwrap();
+    }
+    let ri = inventory(&recovered.0, InventoryLimits::default()).unwrap();
+    assert!(compare_metadata(&xi, &ri, &inbound).unwrap().passed);
+}
+
+#[test]
+fn unrepresentable_keyword_syntax_is_not_approved_as_unknown_metadata() {
+    assert!(astro_metadata::fidelity::fits_card_for_keyword("HIERARCH LONG", "1", None).is_err());
+    assert!(astro_metadata::fidelity::fits_card_for_keyword("NAXIS1", "2", None).is_err());
+    assert!(astro_metadata::fidelity::fits_card_for_keyword("BAD NAME", "1", None).is_err());
+    assert!(
+        astro_metadata::fidelity::fits_card_for_keyword("ZCUSTOM", "opaque text", None).is_err()
+    );
+    assert!(
+        astro_metadata::fidelity::fits_card_for_keyword("ZCUSTOM", "'broken'quote'", None).is_err()
+    );
 }
 
 #[test]
