@@ -28,7 +28,7 @@ use anyhow::{anyhow, bail, Context, Result};
 use log::debug;
 use std::convert::Infallible;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Read, Seek, SeekFrom};
+use std::io::{self, BufRead, BufReader, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 
 use codec::{decode_zstd_frame, unshuffle, zstd_frame_requirements, BoundedBufRead, Compression};
@@ -505,40 +505,61 @@ pub(crate) fn decode_compressed_image<R: Read>(
     decoded
         .try_reserve_exact(expected_bytes)
         .context("Failed to allocate decompressed XISF image data")?;
+    decode_compressed_image_into(
+        reader,
+        compression,
+        expected_bytes as u64,
+        max_stored_subblock_bytes,
+        expected_bytes as u64,
+        &mut decoded,
+    )?;
+    if let Some(item_size) = compression.shuffle() {
+        return unshuffle(
+            &decoded,
+            usize::try_from(item_size).context("XISF shuffle item size exceeds address space")?,
+        )
+        .map_err(anyhow::Error::new);
+    }
+    Ok(decoded)
+}
+
+/// Stream the decoded byte stream in source order. Shuffling is deliberately
+/// retained: XISF's byte planes span the entire image, so a typed reader can
+/// gather them from an owned spool without allocating the whole image.
+pub(crate) fn decode_compressed_image_into<R: Read, W: Write>(
+    reader: &mut R,
+    compression: &Compression,
+    expected_bytes: u64,
+    max_stored_subblock_bytes: u64,
+    max_decoded_subblock_bytes: u64,
+    output: &mut W,
+) -> Result<()> {
     let mut scratch = Vec::new();
     scratch
         .try_reserve_exact(65536)
         .context("Failed to allocate Zstandard output buffer")?;
     scratch.resize(65536, 0);
 
+    let mut decoded_total = 0u64;
     for subblock in compression.subblocks() {
         if subblock.stored > max_stored_subblock_bytes {
             bail!("XISF subblock exceeds configured stored-byte limit");
         }
-        let decoded_end = decoded
-            .len()
-            .checked_add(
-                usize::try_from(subblock.decoded)
-                    .context("XISF decoded subblock exceeds address space")?,
-            )
+        if subblock.decoded > max_decoded_subblock_bytes {
+            bail!("XISF subblock exceeds configured decoded-byte limit");
+        }
+        decoded_total = decoded_total
+            .checked_add(subblock.decoded)
             .context("XISF decoded subblock length overflows")?;
-        if decoded_end > expected_bytes {
+        if decoded_total > expected_bytes {
             bail!("XISF subblock exceeds expected image length");
         }
         if subblock.is_raw() {
-            let size = usize::try_from(subblock.stored)
-                .context("XISF raw subblock exceeds address space")?;
-            let end = decoded
-                .len()
-                .checked_add(size)
-                .context("XISF decoded subblock length overflows")?;
-            if end > expected_bytes {
-                bail!("XISF raw subblock exceeds expected image length");
-            }
-            decoded.resize(end, 0);
-            reader
-                .read_exact(&mut decoded[end - size..end])
+            let copied = io::copy(&mut reader.take(subblock.stored), output)
                 .context("Failed to read raw XISF subblock")?;
+            if copied != subblock.stored {
+                bail!("XISF raw subblock is truncated");
+            }
             continue;
         }
         match compression.codec() {
@@ -563,27 +584,17 @@ pub(crate) fn decode_compressed_image<R: Read>(
                     requirements,
                     &mut scratch,
                     || Ok(()),
-                    |bytes| {
-                        decoded.extend_from_slice(bytes);
-                        Ok(())
-                    },
+                    |bytes| output.write_all(bytes),
                 )
                 .context("Failed to decode XISF Zstandard subblock")?;
             }
             "zlib" => {
                 let source = ReaderInput::new(reader, subblock.stored)?;
                 let mut decoder = flate2::bufread::ZlibDecoder::new(source);
-                decoded.resize(decoded_end, 0);
-                decoder
-                    .read_exact(&mut decoded[decoded_end - subblock.decoded as usize..decoded_end])
+                let copied = io::copy(&mut decoder.by_ref().take(subblock.decoded + 1), output)
                     .context("Failed to decode XISF zlib subblock")?;
-                let mut extra = [0u8; 1];
-                if decoder
-                    .read(&mut extra)
-                    .context("Failed to finish XISF zlib subblock")?
-                    != 0
-                {
-                    bail!("XISF zlib subblock decoded more than declared");
+                if copied != subblock.decoded {
+                    bail!("XISF zlib decoded length mismatch");
                 }
                 if decoder.into_inner().logical_consumed() != subblock.stored {
                     bail!("XISF zlib subblock contains trailing bytes");
@@ -600,33 +611,23 @@ pub(crate) fn decode_compressed_image<R: Read>(
                 reader
                     .read_exact(&mut input)
                     .context("Failed to read XISF LZ4 subblock")?;
-                decoded.resize(decoded_end, 0);
-                let count = lz4_flex::block::decompress_into(
-                    &input,
-                    &mut decoded[decoded_end - subblock.decoded as usize..decoded_end],
-                )
-                .map_err(|error| anyhow!("XISF LZ4 decode: {error}"))?;
+                let mut decoded = vec![0u8; usize::try_from(subblock.decoded)?];
+                let count = lz4_flex::block::decompress_into(&input, &mut decoded)
+                    .map_err(|error| anyhow!("XISF LZ4 decode: {error}"))?;
                 if count as u64 != subblock.decoded {
                     bail!("XISF LZ4 decoded size mismatch");
                 }
+                output.write_all(&decoded)?;
             }
             codec => bail!("Unsupported XISF compression codec {codec}"),
         }
     }
-    if decoded.len() != expected_bytes {
+    if decoded_total != expected_bytes {
         bail!(
-            "XISF decompressed image length mismatch: expected exactly {expected_bytes} bytes, got {}",
-            decoded.len()
+            "XISF decompressed image length mismatch: expected exactly {expected_bytes} bytes, got {decoded_total}"
         );
     }
-    if let Some(item_size) = compression.shuffle() {
-        return unshuffle(
-            &decoded,
-            usize::try_from(item_size).context("XISF shuffle item size exceeds address space")?,
-        )
-        .map_err(anyhow::Error::new);
-    }
-    Ok(decoded)
+    Ok(())
 }
 
 /// Read raw XISF metadata records through the shared structural parser.
@@ -947,6 +948,7 @@ mod tests {
     use std::io::Write;
     use std::path::PathBuf;
     use std::process;
+    use std::sync::atomic::{AtomicU64, Ordering};
     use std::time::{SystemTime, UNIX_EPOCH};
 
     #[test]
@@ -1623,14 +1625,16 @@ mod tests {
     }
 
     fn temp_xisf_path() -> PathBuf {
+        static NEXT: AtomicU64 = AtomicU64::new(0);
         let unique = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
         std::env::temp_dir().join(format!(
-            "ravensky-astro-xisf-{}-{}.xisf",
+            "ravensky-astro-xisf-{}-{}-{}.xisf",
             process::id(),
-            unique
+            unique,
+            NEXT.fetch_add(1, Ordering::Relaxed),
         ))
     }
 

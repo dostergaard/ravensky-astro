@@ -16,7 +16,7 @@ use std::path::Path;
 const MAX_RECORDS: usize = 1_100_000;
 const MAX_BINARY_PROPERTY_BYTES: u64 = 16 << 20;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum LossCategory {
     CustomProperty,
@@ -131,7 +131,7 @@ pub enum SemanticUnderstanding {
     Structural,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, serde::Deserialize)]
 #[serde(tag = "format", rename_all = "kebab-case")]
 pub enum SourceRef {
     FitsCard { hdu: usize, card: usize },
@@ -303,6 +303,14 @@ fn structural_fits(name: &str) -> bool {
             | "CHECKSUM"
             | "DATASUM"
             | "ZIMAGE"
+            | "ZSIMPLE"
+            | "ZTENSION"
+            | "ZEXTEND"
+            | "ZBLOCKED"
+            | "ZPCOUNT"
+            | "ZGCOUNT"
+            | "ZHECKSUM"
+            | "ZDATASUM"
             | "ZBITPIX"
             | "ZCMPTYPE"
             | "ZBZERO"
@@ -310,6 +318,7 @@ fn structural_fits(name: &str) -> bool {
             | "ZBLANK"
             | "EXTNAME"
             | "EXTVER"
+            | "THEAP"
     ) || [
         "NAXIS", "ZNAXIS", "ZTILE", "ZNAME", "ZVAL", "TTYPE", "TFORM", "TUNIT", "TDIM",
     ]

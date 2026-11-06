@@ -4,6 +4,7 @@ use super::{ContainerFormat, ContainerInventory, ImageRecord, PixelReadLimits, U
 use crate::validation::{validate_file, ValidationLevel, ValidationOptions};
 use anyhow::{bail, Result};
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ImageMismatch {
@@ -50,9 +51,52 @@ pub fn compare_u16_containers(
     output: &ContainerInventory,
     limits: PixelReadLimits,
 ) -> Result<Option<ImageMismatch>> {
+    compare_u16_containers_in(
+        source_path,
+        source,
+        output_path,
+        output,
+        limits,
+        &std::env::temp_dir(),
+    )
+}
+
+/// Exact comparator with an application-selected scratch filesystem. Both
+/// compressed XISF readers can coexist, so reserve their decoded image sizes
+/// on this filesystem before calling it.
+pub fn compare_u16_containers_in(
+    source_path: &Path,
+    source: &ContainerInventory,
+    output_path: &Path,
+    output: &ContainerInventory,
+    limits: PixelReadLimits,
+    scratch_directory: &Path,
+) -> Result<Option<ImageMismatch>> {
+    compare_u16_containers_in_with_cancel(
+        source_path,
+        source,
+        output_path,
+        output,
+        limits,
+        scratch_directory,
+        None,
+    )
+}
+
+/// Cancellable exact readback. Cancellation is cooperative at validation and
+/// pixel chunk boundaries; a native codec call can delay observation.
+pub fn compare_u16_containers_in_with_cancel(
+    source_path: &Path,
+    source: &ContainerInventory,
+    output_path: &Path,
+    output: &ContainerInventory,
+    limits: PixelReadLimits,
+    scratch_directory: &Path,
+    cancel: Option<&AtomicBool>,
+) -> Result<Option<ImageMismatch>> {
     let options = ValidationOptions::default().with_level(ValidationLevel::Full);
-    validate_file(source_path, &options, None)?;
-    validate_file(output_path, &options, None)?;
+    validate_file(source_path, &options, cancel)?;
+    validate_file(output_path, &options, cancel)?;
     if source.images.len() != output.images.len() {
         return Ok(Some(ImageMismatch::ImageCount {
             source: source.images.len(),
@@ -111,10 +155,15 @@ pub fn compare_u16_containers(
         let capacity = usize::try_from(count.min(limits.max_chunk_samples as u64))?;
         let mut left_pixels = vec![0u16; capacity];
         let mut right_pixels = vec![0u16; capacity];
-        let mut left_reader = U16ChunkReader::open(source_path, source, index, limits)?;
-        let mut right_reader = U16ChunkReader::open(output_path, output, index, limits)?;
+        let mut left_reader =
+            U16ChunkReader::open_in(source_path, source, index, limits, scratch_directory)?;
+        let mut right_reader =
+            U16ChunkReader::open_in(output_path, output, index, limits, scratch_directory)?;
         let mut start = 0u64;
         while start < count {
+            if cancel.is_some_and(|cancel| cancel.load(Ordering::Relaxed)) {
+                bail!("Exact image comparison cancelled");
+            }
             let size = usize::try_from((count - start).min(capacity as u64))?;
             left_reader.read_chunk(start, &mut left_pixels[..size])?;
             right_reader.read_chunk(start, &mut right_pixels[..size])?;

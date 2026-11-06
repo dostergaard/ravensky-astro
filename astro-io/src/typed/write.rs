@@ -46,8 +46,8 @@ pub enum FitsCodec {
     Gzip2,
 }
 
-/// Native CFITSIO output has no proven whole-file worst-case bound in P1.
-/// A caller must not use an expected compression ratio as a disk reservation.
+/// An unknown native bound is not usable as a disk reservation. Uncompressed
+/// output has a finite bound for this writer's fixed UInt16 HDU schema.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EncodedSizeBound {
     Finite(u64),
@@ -63,12 +63,93 @@ impl EncodedSizeBound {
 
 pub fn fits_output_bound_u16(
     images: &[U16ImageSpec<'_>],
-    _codec: FitsCodec,
+    codec: FitsCodec,
+) -> Result<EncodedSizeBound> {
+    fits_output_bound_with_cards(images, codec, 0)
+}
+
+/// Complete FITS bound, allowing `extra_cards` additional 80-byte
+/// cards anywhere among the HDUs. The fixed writer creates at most 16 cards
+/// per image HDU including END, unsigned scaling, EXTNAME and checksums. All
+/// extra cards are charged against every HDU, deliberately overcounting when
+/// their distribution is not yet known. FITS headers and image data occupy
+/// separate 2880-byte records.
+pub fn fits_output_bound_with_cards(
+    images: &[U16ImageSpec<'_>],
+    codec: FitsCodec,
+    extra_cards: u64,
 ) -> Result<EncodedSizeBound> {
     validate_fits_specs(images)?;
-    Ok(EncodedSizeBound::Unknown(
-        "CFITSIO whole-file header, tile table and heap worst-case bound is not established",
-    ))
+    if codec != FitsCodec::Uncompressed {
+        // CFITSIO 3.49 uses one full-width row tile for these UInt16 codecs.
+        // Rice's maximum is 2*n + n/32 + 6 bytes. For GZIP, charge zlib's
+        // general gzip-wrapped deflateBound: n + ceil(n/8) + ceil(n/64) + 23.
+        // A row has an 8-byte VLA descriptor; charge up to one FITS block of
+        // heap alignment per row. The fixed CFITSIO BINTABLE/Z* writer path
+        // plus translated source-writer cards uses fewer than 64 cards before
+        // caller metadata, which is charged to every image HDU.
+        let cards = 64u64
+            .checked_add(extra_cards)
+            .context("FITS compressed card count overflows")?;
+        let header_records = cards
+            .checked_mul(80)
+            .context("FITS compressed header overflows")?
+            .div_ceil(2880);
+        let mut total = 5760u64; // Blank primary HDU: at most two FITS records.
+        for image in images {
+            let width = u64::try_from(image.width)?;
+            let height = u64::try_from(image.height)?;
+            let raw_tile = width.checked_mul(2).context("FITS tile size overflows")?;
+            if raw_tile > 16 << 20 {
+                bail!("Compressed FITS row tile exceeds 16 MiB native working limit");
+            }
+            let tile_bound = match codec {
+                FitsCodec::Rice => raw_tile
+                    .checked_add(width / 32)
+                    .and_then(|n| n.checked_add(6)),
+                FitsCodec::Gzip1 | FitsCodec::Gzip2 => raw_tile
+                    .checked_add(raw_tile.div_ceil(8))
+                    .and_then(|n| n.checked_add(raw_tile.div_ceil(64)))
+                    .and_then(|n| n.checked_add(23)),
+                FitsCodec::Uncompressed => None,
+            }
+            .context("FITS compressed tile bound overflows")?;
+            let per_row = tile_bound
+                .checked_add(8 + 2880)
+                .context("FITS row bound overflows")?;
+            let data = per_row
+                .checked_mul(height)
+                .context("FITS compressed heap bound overflows")?;
+            let hdu = header_records
+                .checked_add(data.div_ceil(2880))
+                .and_then(|records| records.checked_mul(2880))
+                .context("FITS compressed HDU bound overflows")?;
+            total = total
+                .checked_add(hdu)
+                .context("FITS complete compressed bound overflows")?;
+        }
+        return Ok(EncodedSizeBound::Finite(total));
+    }
+    let header_cards = 16u64
+        .checked_add(extra_cards)
+        .context("FITS card count overflows")?;
+    let header_bytes = header_cards
+        .checked_mul(80)
+        .context("FITS header bytes overflow")?;
+    let header_records = header_bytes.div_ceil(2880);
+    let mut total = 0u64;
+    for image in images {
+        let pixels = u64::try_from(image.sample_count()?)?;
+        let data_bytes = pixels.checked_mul(2).context("FITS pixel bytes overflow")?;
+        let hdu = header_records
+            .checked_add(data_bytes.div_ceil(2880))
+            .and_then(|records| records.checked_mul(2880))
+            .context("FITS complete HDU bound overflows")?;
+        total = total
+            .checked_add(hdu)
+            .context("FITS complete output bound overflows")?;
+    }
+    Ok(EncodedSizeBound::Finite(total))
 }
 
 impl FitsCodec {
@@ -93,6 +174,9 @@ pub fn write_fits_u16(
     mut read: impl FnMut(usize, u64, &mut [u16]) -> Result<()>,
 ) -> Result<()> {
     validate_fits_specs(images)?;
+    if codec != FitsCodec::Uncompressed && images.iter().any(|image| image.width > (16 << 20) / 2) {
+        bail!("Compressed FITS row tile exceeds 16 MiB native working limit");
+    }
     if path.exists() {
         bail!("FITS output already exists: {}", path.display());
     }
@@ -138,7 +222,8 @@ fn write_uncompressed_fits(
     let result = crate::fits::backend::with_cfitsio(|| {
         let first = ImageDescription {
             data_type: ImageType::UnsignedShort,
-            dimensions: &[images[0].width, images[0].height],
+            // fitsio reverses Rust dimension order when writing FITS axes.
+            dimensions: &[images[0].height, images[0].width],
         };
         let mut file = FitsFile::create(path).with_custom_primary(&first).open()?;
         created = true;
@@ -148,7 +233,7 @@ fn write_uncompressed_fits(
             } else {
                 let description = ImageDescription {
                     data_type: ImageType::UnsignedShort,
-                    dimensions: &[image.width, image.height],
+                    dimensions: &[image.height, image.width],
                 };
                 file.create_image(
                     image.id.context("Missing FITS extension ID")?.to_owned(),

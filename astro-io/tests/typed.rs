@@ -4,10 +4,10 @@ use astro_io::typed::capability::{
 use astro_io::typed::compare::{compare_u16_containers, ImageMismatch};
 use astro_io::typed::metadata::{append_fits_history, append_fits_raw_cards};
 use astro_io::typed::write::{
-    fits_output_bound_u16, write_fits_u16, write_xisf_u16, write_xisf_u16_with_metadata,
-    write_xisf_u16_with_properties, xisf_output_bound_u16, xisf_output_bound_with_metadata,
-    xisf_output_bound_with_properties, EncodedSizeBound, FitsCodec, U16ImageSpec, XisfCodec,
-    XisfKeywordSpec, XisfPropertySpec, XisfPropertyValue,
+    fits_output_bound_u16, fits_output_bound_with_cards, write_fits_u16, write_xisf_u16,
+    write_xisf_u16_with_metadata, write_xisf_u16_with_properties, xisf_output_bound_u16,
+    xisf_output_bound_with_metadata, xisf_output_bound_with_properties, EncodedSizeBound,
+    FitsCodec, U16ImageSpec, XisfCodec, XisfKeywordSpec, XisfPropertySpec, XisfPropertyValue,
 };
 use astro_io::typed::{
     inventory, read_ancillary_chunk, read_u16_chunk, AncillaryReference, ContainerFormat,
@@ -365,13 +365,13 @@ fn fits_writer_roundtrips_every_image_and_supported_integer_codec() {
     let images = [
         U16ImageSpec {
             id: None,
-            width: 16,
-            height: 16,
+            width: 32,
+            height: 8,
         },
         U16ImageSpec {
             id: Some("MASK"),
-            width: 16,
-            height: 16,
+            width: 8,
+            height: 32,
         },
     ];
     for codec in [
@@ -388,6 +388,15 @@ fn fits_writer_roundtrips_every_image_and_supported_integer_codec() {
         .unwrap();
         let found = inventory(&fixture.0, InventoryLimits::default()).unwrap();
         assert_eq!(found.images.len(), 2, "{codec:?}");
+        assert_eq!(found.images[0].axes, vec![32, 8], "{codec:?}");
+        assert_eq!(found.images[1].axes, vec![8, 32], "{codec:?}");
+        let EncodedSizeBound::Finite(bound) = fits_output_bound_u16(&images, codec).unwrap() else {
+            panic!("FITS codec should have a bound");
+        };
+        assert!(
+            fs::metadata(&fixture.0).unwrap().len() <= bound,
+            "{codec:?}"
+        );
         assert_eq!(found.images[1].id.as_deref(), Some("MASK"), "{codec:?}");
         astro_io::validation::validate_file(
             &fixture.0,
@@ -404,6 +413,58 @@ fn fits_writer_roundtrips_every_image_and_supported_integer_codec() {
                 assert_eq!(&pixels, *source, "{codec:?} image {index}");
             }
         });
+    }
+}
+
+#[test]
+fn incompressible_fits_tiles_and_header_growth_stay_inside_complete_bounds() {
+    let images = [U16ImageSpec {
+        id: Some("NOISE"),
+        width: 2048,
+        height: 1024,
+    }];
+    let cards = (0..500)
+        .map(|index| {
+            let mut card = format!("HISTORY P4 bound test metadata record {index:04}");
+            card.extend(std::iter::repeat_n(' ', 80 - card.len()));
+            card
+        })
+        .collect::<Vec<_>>();
+    for codec in [FitsCodec::Rice, FitsCodec::Gzip1, FitsCodec::Gzip2] {
+        let output = Fixture::path("fz");
+        write_fits_u16(&output.0, &images, codec, |_, start, pixels| {
+            for (offset, pixel) in pixels.iter_mut().enumerate() {
+                let mut value = start + offset as u64;
+                value ^= value >> 30;
+                value = value.wrapping_mul(0xbf58_476d_1ce4_e5b9);
+                value ^= value >> 27;
+                value = value.wrapping_mul(0x94d0_49bb_1331_11eb);
+                *pixel = (value ^ (value >> 31)) as u16;
+            }
+            Ok(())
+        })
+        .unwrap();
+        let found = inventory(&output.0, InventoryLimits::default()).unwrap();
+        astro_io::typed::metadata::append_fits_raw_cards(
+            &output.0,
+            found.images[0].source_index,
+            &cards,
+        )
+        .unwrap();
+        let EncodedSizeBound::Finite(bound) =
+            fits_output_bound_with_cards(&images, codec, cards.len() as u64).unwrap()
+        else {
+            panic!("{codec:?} must have a finite bound");
+        };
+        let actual = fs::metadata(&output.0).unwrap().len();
+        assert!(actual <= bound, "{codec:?}: actual={actual}, bound={bound}");
+        astro_io::validation::validate_file(
+            &output.0,
+            &astro_io::validation::ValidationOptions::default()
+                .with_level(astro_io::validation::ValidationLevel::Full),
+            None,
+        )
+        .unwrap();
     }
 }
 
@@ -779,10 +840,10 @@ fn output_bounds_are_conservative_or_explicitly_unknown() {
     let compressed = xisf_output_bound_u16(&images, XisfCodec::Zstd, false).unwrap();
     assert!(compressed >= uncompressed);
     assert!(matches!(
-        fits_output_bound_u16(&images, FitsCodec::Rice).unwrap(),
-        EncodedSizeBound::Unknown(_)
+        fits_output_bound_u16(&images, FitsCodec::Uncompressed).unwrap(),
+        EncodedSizeBound::Finite(_)
     ));
-    assert!(!fits_output_bound_u16(&images, FitsCodec::Rice)
+    assert!(fits_output_bound_u16(&images, FitsCodec::Rice)
         .unwrap()
         .is_resource_safe());
     let oversized = [U16ImageSpec {
@@ -791,18 +852,162 @@ fn output_bounds_are_conservative_or_explicitly_unknown() {
         height: 2,
     }];
     assert!(xisf_output_bound_u16(&oversized, XisfCodec::Zstd, false).is_err());
-    let beyond_readback = [U16ImageSpec {
+    let beyond_old_limit = [U16ImageSpec {
         id: None,
         width: 4096,
         height: 4096,
     }];
-    assert!(xisf_output_bound_u16(&beyond_readback, XisfCodec::Zstd, false).is_err());
+    assert!(xisf_output_bound_u16(&beyond_old_limit, XisfCodec::Zstd, false).is_ok());
     let invalid_id = [U16ImageSpec {
         id: Some("bad\0id"),
         width: 2,
         height: 2,
     }];
     assert!(xisf_output_bound_u16(&invalid_id, XisfCodec::Uncompressed, false).is_err());
+}
+
+#[test]
+fn uncompressed_fits_bound_covers_complete_multi_hdu_file() {
+    let output = Fixture::path("fits");
+    let images = [
+        U16ImageSpec {
+            id: Some("LIGHT"),
+            width: 2049,
+            height: 7,
+        },
+        U16ImageSpec {
+            id: Some("WEIGHT"),
+            width: 17,
+            height: 11,
+        },
+        U16ImageSpec {
+            id: Some("MASK"),
+            width: 2,
+            height: 3,
+        },
+    ];
+    write_fits_u16(
+        &output.0,
+        &images,
+        FitsCodec::Uncompressed,
+        |image, start, pixels| {
+            for (offset, pixel) in pixels.iter_mut().enumerate() {
+                *pixel = ((start + offset as u64 + image as u64) % 65536) as u16;
+            }
+            Ok(())
+        },
+    )
+    .unwrap();
+    let EncodedSizeBound::Finite(bound) =
+        fits_output_bound_u16(&images, FitsCodec::Uncompressed).unwrap()
+    else {
+        panic!("uncompressed writer must expose a finite bound");
+    };
+    assert!(fs::metadata(&output.0).unwrap().len() <= bound);
+    let found = inventory(&output.0, InventoryLimits::default()).unwrap();
+    for (image, observed) in images.iter().zip(found.images.iter()) {
+        assert_eq!(observed.axes, vec![image.width as u64, image.height as u64]);
+    }
+}
+
+#[test]
+fn xisf_byte_array_bound_uses_declared_length_without_payload() {
+    let images = [U16ImageSpec {
+        id: Some("LIGHT"),
+        width: 7,
+        height: 9,
+    }];
+    let bytes = vec![17u8; 65_537];
+    let real = [XisfPropertySpec {
+        image_index: Some(0),
+        id: "User:Payload",
+        value: XisfPropertyValue::ByteArray(&bytes),
+    }];
+    let length_only = [XisfPropertySpec {
+        image_index: Some(0),
+        id: "User:Payload",
+        value: XisfPropertyValue::ByteArrayLength(bytes.len() as u64),
+    }];
+    let actual_bound =
+        xisf_output_bound_with_properties(&images, &real, XisfCodec::Zstd, false).unwrap();
+    let planned_bound =
+        xisf_output_bound_with_properties(&images, &length_only, XisfCodec::Zstd, false).unwrap();
+    assert_eq!(planned_bound, actual_bound);
+    let output = Fixture::path("xisf");
+    assert!(write_xisf_u16_with_properties(
+        &output.0,
+        &images,
+        &length_only,
+        XisfCodec::Zstd,
+        false,
+        |_, _, pixels| {
+            pixels.fill(1);
+            Ok(())
+        }
+    )
+    .is_err());
+    assert!(!output.0.exists());
+}
+
+#[test]
+fn xisf_binary_property_streams_from_checked_file_extent() {
+    let input = Fixture::path("bin");
+    let output = Fixture::path("xisf");
+    let payload = (0..131_073u64)
+        .map(|n| n.wrapping_mul(73) as u8)
+        .collect::<Vec<_>>();
+    let mut source = vec![9u8; 13];
+    source.extend_from_slice(&payload);
+    fs::write(&input.0, source).unwrap();
+    let images = [U16ImageSpec {
+        id: Some("LIGHT"),
+        width: 7,
+        height: 9,
+    }];
+    let property = [XisfPropertySpec {
+        image_index: Some(0),
+        id: "User:Payload",
+        value: XisfPropertyValue::ByteArrayFile {
+            path: &input.0,
+            offset: 13,
+            length: payload.len() as u64,
+        },
+    }];
+    write_xisf_u16_with_properties(
+        &output.0,
+        &images,
+        &property,
+        XisfCodec::Zstd,
+        false,
+        |_, _, pixels| {
+            pixels.fill(1);
+            Ok(())
+        },
+    )
+    .unwrap();
+    let found = inventory(&output.0, InventoryLimits::default()).unwrap();
+    let element = found
+        .xisf_elements
+        .iter()
+        .find(|element| {
+            element.name == "Property"
+                && element.attributes.get("id").map(String::as_str) == Some("User:Payload")
+        })
+        .unwrap();
+    let mut copied = vec![0u8; payload.len()];
+    read_ancillary_chunk(
+        &output.0,
+        &found,
+        AncillaryReference::XisfElement(element.index),
+        0,
+        &mut copied,
+        payload.len(),
+    )
+    .unwrap();
+    assert_eq!(copied, payload);
+    let bound =
+        xisf_output_bound_with_properties(&images, &property, XisfCodec::Zstd, false).unwrap();
+    assert!(fs::metadata(&output.0).unwrap().len() <= bound);
 }
 
 #[test]
@@ -994,7 +1199,7 @@ fn capability_registry_rejects_unproved_types_codecs_and_resource_limits() {
             ..base
         }),
         Capability::Supported {
-            output_bound: EncodedSizeBound::Unknown(_),
+            output_bound: EncodedSizeBound::Finite(_),
             ..
         }
     ));
@@ -1242,4 +1447,204 @@ fn writer_emits_revision_2_raw_and_compressed_subblocks_and_cleans_failed_output
     .unwrap_err();
     assert!(format!("{error:#}").contains("injected XISF pixel source failure"));
     assert!(!failed_xisf.0.exists());
+}
+
+#[test]
+fn compressed_xisf_larger_than_old_limit_roundtrips_with_bounded_chunks() {
+    let width = 4096usize;
+    let height = 2304usize; // 18 MiB of decoded UInt16 samples.
+    let count = (width * height) as u64;
+    for shuffled in [false, true] {
+        let output = Fixture::path("xisf");
+        let images = [U16ImageSpec {
+            id: Some("LIGHT"),
+            width,
+            height,
+        }];
+        write_xisf_u16(
+            &output.0,
+            &images,
+            XisfCodec::Zstd,
+            shuffled,
+            |_, start, pixels| {
+                for (offset, pixel) in pixels.iter_mut().enumerate() {
+                    let position = start + offset as u64;
+                    *pixel = (position ^ (position >> 13)).wrapping_mul(31) as u16;
+                }
+                Ok(())
+            },
+        )
+        .unwrap();
+        let found = inventory(&output.0, InventoryLimits::default()).unwrap();
+        let mut reader =
+            astro_io::typed::U16ChunkReader::open(&output.0, &found, 0, PixelReadLimits::default())
+                .unwrap();
+        let mut pixels = [0u16; 65_536];
+        for start in (0..count).step_by(pixels.len()) {
+            let size = (count - start).min(pixels.len() as u64) as usize;
+            reader.read_chunk(start, &mut pixels[..size]).unwrap();
+            for (offset, pixel) in pixels[..size].iter().enumerate() {
+                let position = start + offset as u64;
+                assert_eq!(
+                    *pixel,
+                    (position ^ (position >> 13)).wrapping_mul(31) as u16
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn full_resolution_shuffled_xisf_preserves_two_images() {
+    let output = Fixture::path("xisf");
+    let images = [
+        U16ImageSpec {
+            id: Some("LIGHT"),
+            width: 8288,
+            height: 5648,
+        },
+        U16ImageSpec {
+            id: Some("WEIGHT"),
+            width: 16,
+            height: 16,
+        },
+    ];
+    write_xisf_u16(
+        &output.0,
+        &images,
+        XisfCodec::Zstd,
+        true,
+        |image, start, pixels| {
+            for (offset, pixel) in pixels.iter_mut().enumerate() {
+                let position = start + offset as u64;
+                *pixel = (position.wrapping_mul(7919) ^ (position >> 9) ^ image as u64) as u16;
+            }
+            Ok(())
+        },
+    )
+    .unwrap();
+    let found = inventory(&output.0, InventoryLimits::default()).unwrap();
+    assert_eq!(found.images.len(), images.len());
+    assert_eq!(found.images[0].id.as_deref(), Some("LIGHT"));
+    assert_eq!(found.images[1].id.as_deref(), Some("WEIGHT"));
+    for (image_index, image) in images.iter().enumerate() {
+        let count = (image.width * image.height) as u64;
+        let mut reader = astro_io::typed::U16ChunkReader::open(
+            &output.0,
+            &found,
+            image_index,
+            PixelReadLimits::default(),
+        )
+        .unwrap();
+        let mut pixels = [0u16; 65_536];
+        for start in (0..count).step_by(pixels.len()) {
+            let size = (count - start).min(pixels.len() as u64) as usize;
+            reader.read_chunk(start, &mut pixels[..size]).unwrap();
+            for (offset, pixel) in pixels[..size].iter().enumerate() {
+                let position = start + offset as u64;
+                assert_eq!(
+                    *pixel,
+                    (position.wrapping_mul(7919) ^ (position >> 9) ^ image_index as u64) as u16
+                );
+            }
+        }
+    }
+}
+
+#[test]
+#[ignore = "opt-in 256 MiB decoded image; set ASTROMUNINN_P4_GIB_STRESS=1 for 1 GiB"]
+fn very_large_shuffled_xisf_streams_exact_pixels() {
+    let output = Fixture::path("xisf");
+    let width = 16_384usize;
+    let height = if std::env::var_os("ASTROMUNINN_P4_GIB_STRESS").is_some() {
+        32_768usize
+    } else {
+        8192usize
+    };
+    let images = [U16ImageSpec {
+        id: Some("LIGHT"),
+        width,
+        height,
+    }];
+    write_xisf_u16(
+        &output.0,
+        &images,
+        XisfCodec::Zstd,
+        true,
+        |_, start, pixels| {
+            for (offset, pixel) in pixels.iter_mut().enumerate() {
+                let position = start + offset as u64;
+                *pixel = (position ^ (position >> 13)).wrapping_mul(31) as u16;
+            }
+            Ok(())
+        },
+    )
+    .unwrap();
+    let found = inventory(&output.0, InventoryLimits::default()).unwrap();
+    assert_eq!(&found.images[0].axes[..2], &[width as u64, height as u64]);
+    assert!(found.images[0].axes[2..].iter().all(|axis| *axis == 1));
+    let mut reader =
+        astro_io::typed::U16ChunkReader::open(&output.0, &found, 0, PixelReadLimits::default())
+            .unwrap();
+    let mut pixels = [0u16; 65_536];
+    let count = (width * height) as u64;
+    for start in (0..count).step_by(pixels.len()) {
+        let size = (count - start).min(pixels.len() as u64) as usize;
+        reader.read_chunk(start, &mut pixels[..size]).unwrap();
+        for (offset, pixel) in pixels[..size].iter().enumerate() {
+            let position = start + offset as u64;
+            assert_eq!(
+                *pixel,
+                (position ^ (position >> 13)).wrapping_mul(31) as u16
+            );
+        }
+    }
+}
+
+#[test]
+fn full_resolution_gzip2_fits_stays_within_bound_and_reads_exactly() {
+    let output = Fixture::path("fits");
+    let images = [U16ImageSpec {
+        id: Some("LIGHT"),
+        width: 8288,
+        height: 5648,
+    }];
+    write_fits_u16(&output.0, &images, FitsCodec::Gzip2, |_, start, pixels| {
+        for (offset, pixel) in pixels.iter_mut().enumerate() {
+            let position = start + offset as u64;
+            *pixel = (position ^ (position >> 13)).wrapping_mul(31) as u16;
+        }
+        Ok(())
+    })
+    .unwrap();
+    let EncodedSizeBound::Finite(bound) = fits_output_bound_u16(&images, FitsCodec::Gzip2).unwrap()
+    else {
+        panic!("GZIP_2 output must have a bound");
+    };
+    assert!(fs::metadata(&output.0).unwrap().len() <= bound);
+    let found = inventory(&output.0, InventoryLimits::default()).unwrap();
+    assert_eq!(found.images[0].axes, vec![8288, 5648]);
+    astro_io::validation::validate_file(
+        &output.0,
+        &astro_io::validation::ValidationOptions::default()
+            .with_level(astro_io::validation::ValidationLevel::Full),
+        None,
+    )
+    .unwrap();
+    let count = 8288u64 * 5648;
+    let mut reader =
+        astro_io::typed::U16ChunkReader::open(&output.0, &found, 0, PixelReadLimits::default())
+            .unwrap();
+    let mut pixels = [0u16; 65_536];
+    for start in (0..count).step_by(pixels.len()) {
+        let size = (count - start).min(pixels.len() as u64) as usize;
+        reader.read_chunk(start, &mut pixels[..size]).unwrap();
+        for (offset, pixel) in pixels[..size].iter().enumerate() {
+            let position = start + offset as u64;
+            assert_eq!(
+                *pixel,
+                (position ^ (position >> 13)).wrapping_mul(31) as u16
+            );
+        }
+    }
 }

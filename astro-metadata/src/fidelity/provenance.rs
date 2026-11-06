@@ -5,7 +5,7 @@
 use super::{ComparisonReport, LossCategory};
 use anyhow::{bail, Result};
 use astro_io::typed::{compare::ImageMismatch, ContainerFormat, ContainerInventory};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy)]
 pub struct PreliminaryVerified {
@@ -37,7 +37,7 @@ pub struct ProvenanceInput<'a> {
     pub approved_losses: &'a [LossCategory],
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProvenanceRecord {
     pub(super) application: String,
     pub(super) application_version: String,

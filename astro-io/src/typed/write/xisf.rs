@@ -10,8 +10,6 @@ use std::{
 };
 
 const CHUNK_SAMPLES: usize = 32_768;
-const MAX_SHUFFLED_IMAGE_BYTES: usize = 16 << 20;
-const MAX_COMPRESSED_IMAGE_BYTES: usize = 16 << 20;
 const ALIGNMENT: u64 = 4096;
 const MAX_SUBBLOCKS_PER_IMAGE: usize = 1_000_000;
 const MAX_TOTAL_SUBBLOCKS: usize = 100_000;
@@ -31,6 +29,15 @@ pub enum XisfCodec {
 pub enum XisfPropertyValue<'a> {
     String(&'a str),
     ByteArray(&'a [u8]),
+    /// Copy a checked byte extent incrementally from a source file.
+    ByteArrayFile {
+        path: &'a Path,
+        offset: u64,
+        length: u64,
+    },
+    /// Length-only form for output-bound calculation. The writer rejects it:
+    /// callers must supply the bytes when actually serializing the property.
+    ByteArrayLength(u64),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -71,10 +78,34 @@ struct Payload {
     subblocks: Vec<(u64, u64)>,
 }
 
+struct ShuffleScratch {
+    path: std::path::PathBuf,
+    file: File,
+}
+
+impl ShuffleScratch {
+    fn new(directory: &Path, name: &str) -> Result<Self> {
+        let path = directory.join(name);
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create_new(true)
+            .open(&path)?;
+        Ok(Self { path, file })
+    }
+}
+
+impl Drop for ShuffleScratch {
+    fn drop(&mut self) {
+        let _ = fs::remove_file(&self.path);
+    }
+}
+
 /// Write a complete sequence of UInt16 images without fixed attachment
 /// offsets. Compressed data use independently decodable subblocks and Revision
-/// 2 raw fallback. The callback fills bounded pixel chunks. Whole-block
-/// shuffling is limited to 16 MiB decoded per image. The output must not exist.
+/// 2 raw fallback. The callback fills bounded pixel chunks. Byte-plane
+/// shuffling uses two owned scratch files, keeping memory independent of the
+/// total image size. The output must not exist.
 pub fn write_xisf_u16(
     path: &Path,
     images: &[U16ImageSpec<'_>],
@@ -131,12 +162,6 @@ pub fn write_xisf_u16_with_metadata(
         if parts > MAX_SUBBLOCKS_PER_IMAGE || total_subblocks > MAX_TOTAL_SUBBLOCKS {
             bail!("XISF image exceeds writer subblock count limit");
         }
-        if codec != XisfCodec::Uncompressed
-            && count.checked_mul(2).context("XISF byte count overflows")?
-                > MAX_COMPRESSED_IMAGE_BYTES
-        {
-            bail!("Compressed XISF image exceeds 16 MiB typed readback limit");
-        }
         if image
             .id
             .is_some_and(|id| id.is_empty() || id.len() > 4096 || !valid_xml_text(id))
@@ -152,6 +177,12 @@ pub fn write_xisf_u16_with_metadata(
     }
     validate_properties(properties, images.len())?;
     validate_keywords(keywords, images.len())?;
+    if properties
+        .iter()
+        .any(|property| matches!(property.value, XisfPropertyValue::ByteArrayLength(_)))
+    {
+        bail!("Length-only XISF property cannot be written");
+    }
     let scratch = Scratch::new(path)?;
     let mut spool = OpenOptions::new()
         .write(true)
@@ -168,30 +199,47 @@ pub fn write_xisf_u16_with_metadata(
         let mut hasher = Sha256::new();
         let mut subblocks = Vec::new();
         if shuffled {
-            let byte_count = count
-                .checked_mul(2)
-                .context("XISF shuffled byte count overflows")?;
-            if byte_count > MAX_SHUFFLED_IMAGE_BYTES {
-                bail!("XISF shuffled image exceeds 16 MiB writer limit");
-            }
-            let mut raw = Vec::new();
-            raw.try_reserve_exact(byte_count)
-                .context("Failed to allocate XISF shuffle input")?;
+            let mut low = ShuffleScratch::new(&scratch.directory, "low")?;
+            let mut high = ShuffleScratch::new(&scratch.directory, "high")?;
             let mut pixels = [0u16; CHUNK_SAMPLES];
+            let mut low_bytes = [0u8; CHUNK_SAMPLES];
+            let mut high_bytes = [0u8; CHUNK_SAMPLES];
             for start in (0..count).step_by(CHUNK_SAMPLES) {
                 let size = (count - start).min(CHUNK_SAMPLES);
                 read(index, start as u64, &mut pixels[..size])?;
-                for value in &pixels[..size] {
-                    raw.extend_from_slice(&value.to_le_bytes());
+                for (offset, value) in pixels[..size].iter().enumerate() {
+                    let pair = value.to_le_bytes();
+                    low_bytes[offset] = pair[0];
+                    high_bytes[offset] = pair[1];
+                }
+                low.file.write_all(&low_bytes[..size])?;
+                high.file.write_all(&high_bytes[..size])?;
+            }
+            low.file.rewind()?;
+            high.file.rewind()?;
+            let mut part = [0u8; CHUNK_SAMPLES * 2];
+            let mut filled = 0usize;
+            for plane in [&mut low.file, &mut high.file] {
+                let mut remaining = count;
+                while remaining > 0 {
+                    let size = remaining.min(part.len() - filled);
+                    plane.read_exact(&mut part[filled..filled + size])?;
+                    filled += size;
+                    if filled == part.len() {
+                        write_part(&mut spool, &mut hasher, &mut subblocks, codec, &part)?;
+                        filled = 0;
+                    }
+                    remaining -= size;
                 }
             }
-            let mut shuffled_bytes = vec![0u8; byte_count];
-            for sample in 0..count {
-                shuffled_bytes[sample] = raw[2 * sample];
-                shuffled_bytes[count + sample] = raw[2 * sample + 1];
-            }
-            for part in shuffled_bytes.chunks(CHUNK_SAMPLES * 2) {
-                write_part(&mut spool, &mut hasher, &mut subblocks, codec, part)?;
+            if filled > 0 {
+                write_part(
+                    &mut spool,
+                    &mut hasher,
+                    &mut subblocks,
+                    codec,
+                    &part[..filled],
+                )?;
             }
         } else {
             let mut pixels = [0u16; CHUNK_SAMPLES];
@@ -220,15 +268,50 @@ pub fn write_xisf_u16_with_metadata(
     }
     let mut property_payloads = vec![None; properties.len()];
     for (index, property) in properties.iter().enumerate() {
-        if let XisfPropertyValue::ByteArray(bytes) = property.value {
+        if matches!(
+            property.value,
+            XisfPropertyValue::ByteArray(_) | XisfPropertyValue::ByteArrayFile { .. }
+        ) {
             let spool_start = spool.stream_position()?;
-            spool.write_all(bytes)?;
+            let mut hasher = Sha256::new();
+            let length = match property.value {
+                XisfPropertyValue::ByteArray(bytes) => {
+                    spool.write_all(bytes)?;
+                    hasher.update(bytes);
+                    u64::try_from(bytes.len())?
+                }
+                XisfPropertyValue::ByteArrayFile {
+                    path,
+                    offset,
+                    length,
+                } => {
+                    let end = offset
+                        .checked_add(length)
+                        .context("Binary property extent overflows")?;
+                    if end > fs::metadata(path)?.len() {
+                        bail!("Binary property source extent is truncated");
+                    }
+                    let mut source = File::open(path)?;
+                    source.seek(SeekFrom::Start(offset))?;
+                    let mut remaining = length;
+                    let mut buffer = [0u8; 65_536];
+                    while remaining > 0 {
+                        let size = usize::try_from(remaining.min(buffer.len() as u64))?;
+                        source.read_exact(&mut buffer[..size])?;
+                        spool.write_all(&buffer[..size])?;
+                        hasher.update(&buffer[..size]);
+                        remaining -= size as u64;
+                    }
+                    length
+                }
+                _ => unreachable!(),
+            };
             property_payloads[index] = Some(payloads.len());
             payloads.push(Payload {
                 spool_start,
-                stored: u64::try_from(bytes.len())?,
-                decoded: u64::try_from(bytes.len())?,
-                checksum: format!("{:x}", Sha256::digest(bytes)),
+                stored: length,
+                decoded: length,
+                checksum: format!("{:x}", hasher.finalize()),
                 subblocks: Vec::new(),
             });
         }
@@ -337,12 +420,6 @@ pub fn xisf_output_bound_with_metadata(
         let byte_count = count
             .checked_mul(2)
             .context("XISF decoded byte count overflows")?;
-        if codec != XisfCodec::Uncompressed && byte_count > MAX_COMPRESSED_IMAGE_BYTES {
-            bail!("Compressed XISF image exceeds 16 MiB typed readback limit");
-        }
-        if shuffled && byte_count > MAX_SHUFFLED_IMAGE_BYTES {
-            bail!("XISF shuffled image exceeds 16 MiB writer limit");
-        }
         let parts = count.div_ceil(CHUNK_SAMPLES);
         total_subblocks = total_subblocks
             .checked_add(parts)
@@ -370,8 +447,13 @@ pub fn xisf_output_bound_with_metadata(
     }
     let mut property_payloads = vec![None; properties.len()];
     for (index, property) in properties.iter().enumerate() {
-        if let XisfPropertyValue::ByteArray(bytes) = property.value {
-            let length = u64::try_from(bytes.len())?;
+        let length = match property.value {
+            XisfPropertyValue::ByteArray(bytes) => Some(u64::try_from(bytes.len())?),
+            XisfPropertyValue::ByteArrayFile { length, .. } => Some(length),
+            XisfPropertyValue::ByteArrayLength(length) => Some(length),
+            XisfPropertyValue::String(_) => None,
+        };
+        if let Some(length) = length {
             property_payloads[index] = Some(payloads.len());
             payloads.push(Payload {
                 spool_start: 0,
@@ -414,7 +496,13 @@ fn validate_properties(properties: &[XisfPropertySpec<'_>], images: usize) -> Re
         if property.image_index.is_some_and(|index| index >= images) {
             bail!("XISF property refers to an absent image");
         }
-        if matches!(property.value, XisfPropertyValue::ByteArray(bytes) if bytes.is_empty()) {
+        if matches!(property.value, XisfPropertyValue::ByteArray(bytes) if bytes.is_empty())
+            || matches!(
+                property.value,
+                XisfPropertyValue::ByteArrayFile { length: 0, .. }
+            )
+            || matches!(property.value, XisfPropertyValue::ByteArrayLength(0))
+        {
             bail!("XISF binary property must not be empty");
         }
         if matches!(property.value, XisfPropertyValue::String(value) if !valid_xml_text(value)) {
@@ -660,7 +748,15 @@ fn write_properties(
                 escape_xml(xml, value);
                 xml.push_str("\"/>");
             }
-            XisfPropertyValue::ByteArray(bytes) => {
+            XisfPropertyValue::ByteArray(_)
+            | XisfPropertyValue::ByteArrayFile { .. }
+            | XisfPropertyValue::ByteArrayLength(_) => {
+                let length = match property.value {
+                    XisfPropertyValue::ByteArray(bytes) => bytes.len() as u64,
+                    XisfPropertyValue::ByteArrayFile { length, .. } => length,
+                    XisfPropertyValue::ByteArrayLength(length) => length,
+                    XisfPropertyValue::String(_) => unreachable!(),
+                };
                 let payload_index =
                     property_payloads[index].context("Missing binary property payload index")?;
                 let payload = payloads
@@ -671,7 +767,7 @@ fn write_properties(
                     .context("Missing binary property offset")?;
                 xml.push_str(&format!(
                     "\" type=\"ByteArray\" length=\"{}\" location=\"attachment:{}:{}\" checksum=\"sha-256:{}\"/>",
-                    bytes.len(), offset, payload.stored, payload.checksum,
+                    length, offset, payload.stored, payload.checksum,
                 ));
             }
         }

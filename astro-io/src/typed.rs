@@ -18,9 +18,10 @@ use anyhow::{anyhow, bail, Context, Result};
 use fitsio::{hdu::HduInfo, sys::ffghadll, FitsFile};
 use std::{
     collections::BTreeMap,
-    fs::File,
-    io::{Read, Seek, SeekFrom},
-    path::Path,
+    fs::{self, File, OpenOptions},
+    io::{Read, Seek, SeekFrom, Write},
+    path::{Path, PathBuf},
+    sync::atomic::{AtomicU64, Ordering},
     time::SystemTime,
 };
 
@@ -49,7 +50,7 @@ impl Default for InventoryLimits {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ContainerFormat {
     Fits,
@@ -156,9 +157,9 @@ impl ContainerInventory {
 #[derive(Debug, Clone, Copy)]
 pub struct PixelReadLimits {
     pub max_chunk_samples: usize,
-    /// Whole-block decoding is bounded because XISF shuffling applies before
-    /// subblock division. Larger images are explicitly unsupported here.
-    pub max_decoded_image_bytes: u64,
+    /// Each XISF subblock is bounded; total image size is limited by available
+    /// scratch storage, the format, and the caller's resource admission.
+    pub max_decoded_subblock_bytes: u64,
     pub max_stored_subblock_bytes: u64,
 }
 
@@ -166,21 +167,67 @@ impl Default for PixelReadLimits {
     fn default() -> Self {
         Self {
             max_chunk_samples: 65_536,
-            max_decoded_image_bytes: 16 << 20,
+            max_decoded_subblock_bytes: 16 << 20,
             max_stored_subblock_bytes: 32 << 20,
         }
     }
 }
 
-/// Reusable exact reader. For compressed XISF it decodes a bounded image once,
-/// then serves multiple chunks from that exact byte buffer. Callers coordinate
-/// aggregate memory if multiple readers coexist.
+/// Owned decoded XISF spool. The file is removed on drop, including after a
+/// failed decode. The caller must reserve its declared decoded image size on
+/// the selected scratch filesystem before opening a large reader.
+struct DecodedSpool {
+    path: PathBuf,
+    file: File,
+    shuffled: bool,
+    samples: u64,
+}
+
+impl DecodedSpool {
+    fn create(directory: &Path) -> Result<Self> {
+        static NEXT: AtomicU64 = AtomicU64::new(0);
+        for _ in 0..64 {
+            let path = directory.join(format!(
+                ".astro-io-decode-{}-{}",
+                std::process::id(),
+                NEXT.fetch_add(1, Ordering::Relaxed)
+            ));
+            match OpenOptions::new()
+                .read(true)
+                .write(true)
+                .create_new(true)
+                .open(&path)
+            {
+                Ok(file) => {
+                    return Ok(Self {
+                        path,
+                        file,
+                        shuffled: false,
+                        samples: 0,
+                    })
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+                Err(error) => return Err(error).context("Could not create XISF decode scratch"),
+            }
+        }
+        bail!("Could not allocate a unique XISF decode scratch path")
+    }
+}
+
+impl Drop for DecodedSpool {
+    fn drop(&mut self) {
+        let _ = fs::remove_file(&self.path);
+    }
+}
+
+/// Reusable exact reader. Compressed XISF is decoded into an owned spool with
+/// bounded per-subblock memory; byte-shuffled images remain in byte-plane order.
 pub struct U16ChunkReader<'a> {
     path: &'a Path,
     inventory: &'a ContainerInventory,
     image_index: usize,
     limits: PixelReadLimits,
-    decoded_xisf: Option<Vec<u8>>,
+    decoded_xisf: Option<DecodedSpool>,
     big_endian: bool,
 }
 
@@ -190,6 +237,18 @@ impl<'a> U16ChunkReader<'a> {
         inventory: &'a ContainerInventory,
         image_index: usize,
         limits: PixelReadLimits,
+    ) -> Result<Self> {
+        Self::open_in(path, inventory, image_index, limits, &std::env::temp_dir())
+    }
+
+    /// Select the scratch filesystem explicitly so an application can reserve
+    /// and monitor the decoded image's full byte count there.
+    pub fn open_in(
+        path: &'a Path,
+        inventory: &'a ContainerInventory,
+        image_index: usize,
+        limits: PixelReadLimits,
+        scratch_directory: &Path,
     ) -> Result<Self> {
         inventory.ensure_source(path)?;
         let image = inventory
@@ -211,9 +270,6 @@ impl<'a> U16ChunkReader<'a> {
                         .context("Image sample count overflows")
                 })?;
                 let expected = count.checked_mul(2).context("XISF byte count overflows")?;
-                if expected > limits.max_decoded_image_bytes {
-                    bail!("Compressed XISF decoded image exceeds configured byte limit");
-                }
                 let attachment = image
                     .attachment
                     .context("XISF image is not attachment-backed")?;
@@ -231,12 +287,19 @@ impl<'a> U16ChunkReader<'a> {
                 }
                 let mut file = File::open(path)?;
                 file.seek(SeekFrom::Start(attachment.offset))?;
-                decoded_xisf = Some(crate::xisf::decode_compressed_image(
+                let mut spool = DecodedSpool::create(scratch_directory)?;
+                crate::xisf::decode_compressed_image_into(
                     &mut file,
                     &compression,
-                    usize::try_from(expected)?,
+                    expected,
                     limits.max_stored_subblock_bytes,
-                )?);
+                    limits.max_decoded_subblock_bytes,
+                    &mut spool.file,
+                )?;
+                spool.file.flush()?;
+                spool.shuffled = compression.shuffle().is_some();
+                spool.samples = count;
+                decoded_xisf = Some(spool);
             }
         }
         Ok(Self {
@@ -250,7 +313,7 @@ impl<'a> U16ChunkReader<'a> {
     }
 
     pub fn read_chunk(&mut self, start: u64, output: &mut [u16]) -> Result<()> {
-        let Some(decoded) = &self.decoded_xisf else {
+        let Some(decoded) = &mut self.decoded_xisf else {
             return read_u16_chunk(
                 self.path,
                 self.inventory,
@@ -260,6 +323,7 @@ impl<'a> U16ChunkReader<'a> {
                 self.limits,
             );
         };
+        self.inventory.ensure_source(self.path)?;
         if self.limits.max_chunk_samples == 0 || output.len() > self.limits.max_chunk_samples {
             bail!("UInt16 chunk exceeds configured sample limit");
         }
@@ -272,15 +336,42 @@ impl<'a> U16ChunkReader<'a> {
         let byte_end = byte_start
             .checked_add(byte_count)
             .context("XISF chunk byte range overflows")?;
-        let bytes = decoded
-            .get(byte_start..byte_end)
-            .context("UInt16 chunk exceeds decoded image")?;
-        for (sample, pair) in output.iter_mut().zip(bytes.as_chunks::<2>().0) {
-            *sample = if self.big_endian {
-                u16::from_be_bytes(*pair)
-            } else {
-                u16::from_le_bytes(*pair)
-            };
+        let image_bytes = decoded
+            .samples
+            .checked_mul(2)
+            .context("XISF size overflows")?;
+        if byte_end as u64 > image_bytes {
+            bail!("UInt16 chunk exceeds decoded image");
+        }
+        let mut bytes = vec![0u8; byte_count];
+        if decoded.shuffled {
+            let sample_start = start;
+            let sample_count = output.len();
+            let mut high = vec![0u8; sample_count];
+            decoded.file.seek(SeekFrom::Start(sample_start))?;
+            decoded.file.read_exact(&mut bytes[..sample_count])?;
+            decoded
+                .file
+                .seek(SeekFrom::Start(decoded.samples + sample_start))?;
+            decoded.file.read_exact(&mut high)?;
+            for (index, sample) in output.iter_mut().enumerate() {
+                let pair = [bytes[index], high[index]];
+                *sample = if self.big_endian {
+                    u16::from_be_bytes(pair)
+                } else {
+                    u16::from_le_bytes(pair)
+                };
+            }
+        } else {
+            decoded.file.seek(SeekFrom::Start(byte_start as u64))?;
+            decoded.file.read_exact(&mut bytes)?;
+            for (sample, pair) in output.iter_mut().zip(bytes.as_chunks::<2>().0) {
+                *sample = if self.big_endian {
+                    u16::from_be_bytes(*pair)
+                } else {
+                    u16::from_le_bytes(*pair)
+                };
+            }
         }
         Ok(())
     }
@@ -361,44 +452,9 @@ pub fn read_u16_chunk(
             }
             let mut file = File::open(path)?;
             if let Some(descriptor) = &image.compression {
-                if expected > limits.max_decoded_image_bytes {
-                    bail!("Compressed XISF decoded image exceeds configured byte limit");
-                }
-                let compression = Compression::parse(
-                    Some(descriptor),
-                    image.source_attributes.get("subblocks").map(String::as_str),
-                    attachment.length,
-                )?
-                .context("Missing XISF compression descriptor")?;
-                if compression.decoded() != expected {
-                    bail!("XISF compression length does not match image geometry");
-                }
-                if compression.shuffle().is_some_and(|size| size != 2) {
-                    bail!("XISF UInt16 shuffle item size must be two bytes");
-                }
-                file.seek(SeekFrom::Start(attachment.offset))?;
-                let decoded = crate::xisf::decode_compressed_image(
-                    &mut file,
-                    &compression,
-                    usize::try_from(expected)?,
-                    limits.max_stored_subblock_bytes,
-                )?;
-                let byte_start =
-                    usize::try_from(start.checked_mul(2).context("XISF byte offset overflows")?)?;
-                let byte_end = byte_start
-                    .checked_add(output.len() * 2)
-                    .context("XISF byte range overflows")?;
-                for (sample, pair) in output
-                    .iter_mut()
-                    .zip(decoded[byte_start..byte_end].as_chunks::<2>().0)
-                {
-                    *sample = if order == "little" {
-                        u16::from_le_bytes([pair[0], pair[1]])
-                    } else {
-                        u16::from_be_bytes([pair[0], pair[1]])
-                    };
-                }
-                return Ok(());
+                let _ = descriptor;
+                return U16ChunkReader::open(path, inventory, image_index, limits)?
+                    .read_chunk(start, output);
             }
             if attachment.length != expected {
                 bail!("XISF UInt16 attachment length mismatch");
