@@ -39,14 +39,14 @@ pub struct ProvenanceInput<'a> {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ProvenanceRecord {
-    pub application: String,
-    pub application_version: String,
-    pub source_format: ContainerFormat,
-    pub output_format: ContainerFormat,
-    pub actual_method: String,
-    pub operation_id: Option<String>,
-    pub verified: bool,
-    pub approved_losses: Vec<LossCategory>,
+    pub(super) application: String,
+    pub(super) application_version: String,
+    pub(super) source_format: ContainerFormat,
+    pub(super) output_format: ContainerFormat,
+    pub(super) actual_method: String,
+    pub(super) operation_id: Option<String>,
+    pub(super) verified: bool,
+    pub(super) approved_losses: Vec<LossCategory>,
 }
 
 impl ProvenanceRecord {
@@ -187,6 +187,9 @@ pub fn verify_provenance(
     expected: &ProvenanceRecord,
 ) -> ProvenanceCheck {
     let mut differences = Vec::new();
+    if !expected.verified {
+        differences.push("verification-claim".into());
+    }
     if output.format != expected.output_format {
         differences.push("output-format".into());
     } else if output.format == ContainerFormat::Fits {
