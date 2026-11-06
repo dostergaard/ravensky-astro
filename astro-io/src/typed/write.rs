@@ -3,8 +3,9 @@
 
 mod xisf;
 pub use xisf::{
-    write_xisf_u16, write_xisf_u16_with_properties, xisf_output_bound_u16,
-    xisf_output_bound_with_properties, XisfCodec, XisfPropertySpec, XisfPropertyValue,
+    write_xisf_u16, write_xisf_u16_with_metadata, write_xisf_u16_with_properties,
+    xisf_output_bound_u16, xisf_output_bound_with_metadata, xisf_output_bound_with_properties,
+    XisfCodec, XisfKeywordSpec, XisfPropertySpec, XisfPropertyValue,
 };
 
 use anyhow::{bail, Context, Result};

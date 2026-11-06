@@ -42,6 +42,16 @@ pub struct XisfPropertySpec<'a> {
     pub value: XisfPropertyValue<'a>,
 }
 
+/// One literal FITS-style keyword represented by a native XISF
+/// `FITSKeyword` element. The value retains FITS quoting/number spelling.
+#[derive(Debug, Clone, Copy)]
+pub struct XisfKeywordSpec<'a> {
+    pub image_index: Option<usize>,
+    pub name: &'a str,
+    pub value: &'a str,
+    pub comment: Option<&'a str>,
+}
+
 impl XisfCodec {
     fn label(self) -> Option<&'static str> {
         match self {
@@ -82,6 +92,21 @@ pub fn write_xisf_u16_with_properties(
     path: &Path,
     images: &[U16ImageSpec<'_>],
     properties: &[XisfPropertySpec<'_>],
+    codec: XisfCodec,
+    shuffled: bool,
+    read: impl FnMut(usize, u64, &mut [u16]) -> Result<()>,
+) -> Result<()> {
+    write_xisf_u16_with_metadata(path, images, properties, &[], codec, shuffled, read)
+}
+
+/// Variant that also writes ordered root/image `FITSKeyword` elements. A
+/// semantic caller decides which cards are eligible; this function validates
+/// only their format-level syntax and associations.
+pub fn write_xisf_u16_with_metadata(
+    path: &Path,
+    images: &[U16ImageSpec<'_>],
+    properties: &[XisfPropertySpec<'_>],
+    keywords: &[XisfKeywordSpec<'_>],
     codec: XisfCodec,
     shuffled: bool,
     mut read: impl FnMut(usize, u64, &mut [u16]) -> Result<()>,
@@ -126,6 +151,7 @@ pub fn write_xisf_u16_with_properties(
         }
     }
     validate_properties(properties, images.len())?;
+    validate_keywords(keywords, images.len())?;
     let scratch = Scratch::new(path)?;
     let mut spool = OpenOptions::new()
         .write(true)
@@ -211,6 +237,7 @@ pub fn write_xisf_u16_with_properties(
     let (xml, offsets) = layout(
         images,
         properties,
+        keywords,
         &property_payloads,
         &payloads,
         codec,
@@ -271,6 +298,17 @@ pub fn xisf_output_bound_with_properties(
     codec: XisfCodec,
     shuffled: bool,
 ) -> Result<u64> {
+    xisf_output_bound_with_metadata(images, properties, &[], codec, shuffled)
+}
+
+/// Whole-output bound including explicit FITSKeyword elements.
+pub fn xisf_output_bound_with_metadata(
+    images: &[U16ImageSpec<'_>],
+    properties: &[XisfPropertySpec<'_>],
+    keywords: &[XisfKeywordSpec<'_>],
+    codec: XisfCodec,
+    shuffled: bool,
+) -> Result<u64> {
     if images.is_empty() || images.len() > 10_000 {
         bail!("XISF writer requires 1 to 10000 images");
     }
@@ -278,6 +316,7 @@ pub fn xisf_output_bound_with_properties(
         bail!("XISF shuffle requires compression");
     }
     validate_properties(properties, images.len())?;
+    validate_keywords(keywords, images.len())?;
     let mut payloads = Vec::new();
     let mut total_subblocks = 0usize;
     let mut image_id_bytes = 0usize;
@@ -346,6 +385,7 @@ pub fn xisf_output_bound_with_properties(
     let (_, offsets) = layout(
         images,
         properties,
+        keywords,
         &property_payloads,
         &payloads,
         codec,
@@ -392,6 +432,41 @@ fn validate_properties(properties: &[XisfPropertySpec<'_>], images: usize) -> Re
     Ok(())
 }
 
+fn validate_keywords(keywords: &[XisfKeywordSpec<'_>], images: usize) -> Result<()> {
+    if keywords.len() > 100_000 {
+        bail!("XISF FITSKeyword count exceeds writer limit");
+    }
+    let mut bytes = 0usize;
+    for keyword in keywords {
+        if keyword.image_index.is_some_and(|index| index >= images) {
+            bail!("XISF FITSKeyword refers to an absent image");
+        }
+        if keyword.name.is_empty()
+            || keyword.name.len() > 8
+            || !keyword.name.bytes().all(|byte| {
+                byte.is_ascii_uppercase() || byte.is_ascii_digit() || matches!(byte, b'-' | b'_')
+            })
+            || keyword.value.is_empty()
+            || keyword.value.len() > 70
+            || !keyword.value.bytes().all(|byte| (32..=126).contains(&byte))
+            || keyword.comment.is_some_and(|comment| {
+                comment.len() > 70 || !comment.bytes().all(|byte| (32..=126).contains(&byte))
+            })
+        {
+            bail!("Invalid FITSKeyword name, value or comment");
+        }
+        bytes = bytes
+            .checked_add(keyword.name.len())
+            .and_then(|n| n.checked_add(keyword.value.len()))
+            .and_then(|n| n.checked_add(keyword.comment.map_or(0, str::len)))
+            .context("FITSKeyword metadata size overflows")?;
+        if bytes > MAX_SCALAR_METADATA_BYTES {
+            bail!("XISF FITSKeyword metadata exceeds writer byte limit");
+        }
+    }
+    Ok(())
+}
+
 fn write_part(
     spool: &mut File,
     hash: &mut Sha256,
@@ -426,6 +501,7 @@ fn write_part(
 fn layout(
     images: &[U16ImageSpec<'_>],
     properties: &[XisfPropertySpec<'_>],
+    keywords: &[XisfKeywordSpec<'_>],
     property_payloads: &[Option<usize>],
     payloads: &[Payload],
     codec: XisfCodec,
@@ -435,7 +511,7 @@ fn layout(
     for _ in 0..16 {
         let xml = build_xml(
             images,
-            properties,
+            (properties, keywords),
             property_payloads,
             payloads,
             &offsets,
@@ -466,13 +542,14 @@ fn layout(
 
 fn build_xml(
     images: &[U16ImageSpec<'_>],
-    properties: &[XisfPropertySpec<'_>],
+    metadata: (&[XisfPropertySpec<'_>], &[XisfKeywordSpec<'_>]),
     property_payloads: &[Option<usize>],
     payloads: &[Payload],
     offsets: &[u64],
     codec: XisfCodec,
     shuffled: bool,
 ) -> Result<String> {
+    let (properties, keywords) = metadata;
     let mut xml = String::from("<?xml version=\"1.0\" encoding=\"UTF-8\"?><xisf version=\"1.0\">");
     write_properties(
         &mut xml,
@@ -482,6 +559,7 @@ fn build_xml(
         payloads,
         offsets,
     )?;
+    write_keywords(&mut xml, None, keywords);
     for (image_index, ((image, payload), offset)) in
         images.iter().zip(payloads).zip(offsets).enumerate()
     {
@@ -519,6 +597,9 @@ fn build_xml(
         if properties
             .iter()
             .any(|property| property.image_index == Some(image_index))
+            || keywords
+                .iter()
+                .any(|keyword| keyword.image_index == Some(image_index))
         {
             xml.push('>');
             write_properties(
@@ -529,6 +610,7 @@ fn build_xml(
                 payloads,
                 offsets,
             )?;
+            write_keywords(&mut xml, Some(image_index), keywords);
             xml.push_str("</Image>");
         } else {
             xml.push_str("/>");
@@ -539,6 +621,23 @@ fn build_xml(
         bail!("XISF XML exceeds writer limit");
     }
     Ok(xml)
+}
+
+fn write_keywords(xml: &mut String, parent_image: Option<usize>, keywords: &[XisfKeywordSpec<'_>]) {
+    for keyword in keywords
+        .iter()
+        .filter(|keyword| keyword.image_index == parent_image)
+    {
+        xml.push_str("<FITSKeyword name=\"");
+        escape_xml(xml, keyword.name);
+        xml.push_str("\" value=\"");
+        escape_xml(xml, keyword.value);
+        if let Some(comment) = keyword.comment {
+            xml.push_str("\" comment=\"");
+            escape_xml(xml, comment);
+        }
+        xml.push_str("\"/>");
+    }
 }
 
 fn write_properties(

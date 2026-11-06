@@ -4,9 +4,10 @@ use astro_io::typed::capability::{
 use astro_io::typed::compare::{compare_u16_containers, ImageMismatch};
 use astro_io::typed::metadata::{append_fits_history, append_fits_raw_cards};
 use astro_io::typed::write::{
-    fits_output_bound_u16, write_fits_u16, write_xisf_u16, write_xisf_u16_with_properties,
-    xisf_output_bound_u16, xisf_output_bound_with_properties, EncodedSizeBound, FitsCodec,
-    U16ImageSpec, XisfCodec, XisfPropertySpec, XisfPropertyValue,
+    fits_output_bound_u16, write_fits_u16, write_xisf_u16, write_xisf_u16_with_metadata,
+    write_xisf_u16_with_properties, xisf_output_bound_u16, xisf_output_bound_with_metadata,
+    xisf_output_bound_with_properties, EncodedSizeBound, FitsCodec, U16ImageSpec, XisfCodec,
+    XisfKeywordSpec, XisfPropertySpec, XisfPropertyValue,
 };
 use astro_io::typed::{
     inventory, read_ancillary_chunk, read_u16_chunk, AncillaryReference, ContainerFormat,
@@ -55,6 +56,113 @@ fn write_xisf_fixture(xml: &str, payload: &[u8]) -> Fixture {
     bytes.extend_from_slice(payload);
     fs::write(&fixture.0, bytes).unwrap();
     fixture
+}
+
+#[test]
+fn thumbnail_bytes_are_bounded_ancillary_data() {
+    let xml = "<xisf version=\"1.0\"><Image id=\"LIGHT\" geometry=\"2:2:1\" sampleFormat=\"UInt16\" location=\"attachment:4096:8\"><Thumbnail geometry=\"1:1:1\" sampleFormat=\"UInt8\" location=\"attachment:4104:4\"/></Image></xisf>";
+    let fixture = write_xisf_fixture(xml, &[0; 12]);
+    let found = inventory(&fixture.0, InventoryLimits::default()).unwrap();
+    let thumbnail = found
+        .xisf_elements
+        .iter()
+        .find(|element| element.name == "Thumbnail")
+        .unwrap();
+    let mut bytes = [0u8; 4];
+    read_ancillary_chunk(
+        &fixture.0,
+        &found,
+        AncillaryReference::XisfElement(thumbnail.index),
+        0,
+        &mut bytes,
+        4,
+    )
+    .unwrap();
+    assert!(read_ancillary_chunk(
+        &fixture.0,
+        &found,
+        AncillaryReference::XisfElement(thumbnail.index),
+        0,
+        &mut bytes,
+        3
+    )
+    .is_err());
+}
+
+#[test]
+fn xisf_writer_preserves_ordered_image_keywords() {
+    let file = Fixture::path("xisf");
+    let images = [U16ImageSpec {
+        id: Some("LIGHT"),
+        width: 2,
+        height: 2,
+    }];
+    let keywords = [
+        XisfKeywordSpec {
+            image_index: Some(0),
+            name: "OBJECT",
+            value: "'M42'",
+            comment: None,
+        },
+        XisfKeywordSpec {
+            image_index: Some(0),
+            name: "OBJECT",
+            value: "'M43'",
+            comment: Some("alternate"),
+        },
+    ];
+    write_xisf_u16_with_metadata(
+        &file.0,
+        &images,
+        &[],
+        &keywords,
+        XisfCodec::Uncompressed,
+        false,
+        |_, _, out| {
+            out.fill(1);
+            Ok(())
+        },
+    )
+    .unwrap();
+    let found = inventory(&file.0, InventoryLimits::default()).unwrap();
+    let values: Vec<_> = found
+        .xisf_elements
+        .iter()
+        .filter(|element| element.name == "FITSKeyword")
+        .collect();
+    assert_eq!(values.len(), 2);
+    assert_eq!(
+        values[0].attributes.get("value").map(String::as_str),
+        Some("'M42'")
+    );
+    assert_eq!(
+        values[1].attributes.get("value").map(String::as_str),
+        Some("'M43'")
+    );
+    assert!(values
+        .iter()
+        .all(|element| element.parent_image_index == Some(0)));
+    let bound =
+        xisf_output_bound_with_metadata(&images, &[], &keywords, XisfCodec::Uncompressed, false)
+            .unwrap();
+    assert!(fs::metadata(&file.0).unwrap().len() <= bound);
+    astro_io::validation::validate_file(
+        &file.0,
+        &astro_io::validation::ValidationOptions::default()
+            .with_level(astro_io::validation::ValidationLevel::Full),
+        None,
+    )
+    .unwrap();
+    let bad = [XisfKeywordSpec {
+        image_index: Some(9),
+        name: "OBJECT",
+        value: "'M42'",
+        comment: None,
+    }];
+    assert!(
+        xisf_output_bound_with_metadata(&images, &[], &bad, XisfCodec::Uncompressed, false)
+            .is_err()
+    );
 }
 
 fn encode(codec: &str, bytes: &[u8]) -> Vec<u8> {

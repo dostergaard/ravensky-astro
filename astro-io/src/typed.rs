@@ -49,7 +49,8 @@ impl Default for InventoryLimits {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum ContainerFormat {
     Fits,
     Xisf,
@@ -456,7 +457,10 @@ pub fn read_ancillary_chunk(
                 .xisf_elements
                 .get(index)
                 .context("XISF element is not inventoried")?;
-            if matches!(element.name.as_str(), "Image" | "Thumbnail") {
+            // A Thumbnail is display ancillary content, not one of the
+            // mandatory science Image arrays. Its bytes still need bounded
+            // access so metadata policy can identify and verify its loss.
+            if element.name == "Image" {
                 bail!("XISF element is an image, not ancillary content");
             }
             element
@@ -765,6 +769,26 @@ fn inventory_xisf(
             }
             XmlEvent::End { .. } => {
                 stack.pop();
+            }
+            XmlEvent::IgnoredExtension {
+                element_attributes: Some(_),
+            } => {
+                // The structural visitor deliberately does not expose foreign
+                // extension syntax. A marker ensures semantic conversion can
+                // never mistake its omitted subtree for an empty document.
+                if elements.len() >= limits.max_elements {
+                    bail!("XISF XML element count exceeds inventory limit");
+                }
+                let index = elements.len();
+                elements.push(XisfElementRecord {
+                    index,
+                    parent_index: None,
+                    parent_image_index: None,
+                    name: "ForeignExtension".into(),
+                    attributes: BTreeMap::new(),
+                    text: String::new(),
+                    attachment: None,
+                });
             }
             XmlEvent::IgnoredExtension { .. } => {}
         }
