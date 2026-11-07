@@ -18,6 +18,7 @@ flate2.workspace = true
 sha2 = "0.10.9"
 zstd = { version = "0.14.0", default-features = false, features = ["vendored"] }
 ctrlc = "3.5.2"
+fs4 = "1.1.0"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

@@ -13,6 +13,20 @@ use std::{
 
 const CHUNK: usize = 65536;
 const MANIFEST_LIMIT: u64 = 1024 * 1024;
+const MIN_HOST_HEADROOM: u64 = 1024 * 1024 * 1024;
+
+/// Keep a host reserve in addition to the recipe's worst-case scratch quota.
+/// This is admission only: concurrent external writes can still reduce space.
+pub fn check_scratch_capacity(requested: u64, available: u64, headroom: u64) -> Result<()> {
+    let required = requested
+        .checked_add(headroom)
+        .context("scratch admission overflow")?;
+    ensure!(
+        available >= required,
+        "insufficient benchmark scratch space: {available} bytes available, {required} required"
+    );
+    Ok(())
+}
 mod fits_gzip;
 static NEXT: AtomicU64 = AtomicU64::new(0);
 
@@ -192,6 +206,12 @@ impl FixtureSet {
     pub fn generate(parent: &Path, recipe: Recipe, cancel: &AtomicBool) -> Result<Self> {
         let decoded = recipe.validate()?;
         checkpoint(cancel)?;
+        let headroom = recipe.max_disk_bytes.max(MIN_HOST_HEADROOM);
+        check_scratch_capacity(
+            recipe.max_disk_bytes,
+            fs4::available_space(parent)?,
+            headroom,
+        )?;
         let stamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos();
         let directory = parent.join(format!(
             "astro-bench-{}-{stamp}-{}",
@@ -212,6 +232,7 @@ impl FixtureSet {
         let mut remaining = set.manifest.recipe.max_disk_bytes - MANIFEST_LIMIT;
         for index in 0..set.manifest.recipe.frames {
             checkpoint(cancel)?;
+            check_scratch_capacity(0, fs4::available_space(&set.directory)?, headroom)?;
             let name = filename(index, set.manifest.recipe.encoding);
             let path = set.directory.join(&name);
             generate_file(&path, &set.manifest.recipe, index, remaining, cancel)?;
@@ -541,6 +562,12 @@ fn generate_file(
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn scratch_admission_refuses_insufficient_capacity_and_overflow() {
+        assert!(super::check_scratch_capacity(64, 127, 64).is_err());
+        super::check_scratch_capacity(64, 128, 64).unwrap();
+        assert!(super::check_scratch_capacity(u64::MAX, u64::MAX, 1).is_err());
+    }
     use super::*;
 
     #[test]

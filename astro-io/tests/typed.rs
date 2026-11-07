@@ -1554,13 +1554,39 @@ fn full_resolution_shuffled_xisf_preserves_two_images() {
 #[test]
 #[ignore = "opt-in 256 MiB decoded image; set ASTROMUNINN_P4_GIB_STRESS=1 for 1 GiB"]
 fn very_large_shuffled_xisf_streams_exact_pixels() {
-    let output = Fixture::path("xisf");
     let width = 16_384usize;
     let height = if std::env::var_os("ASTROMUNINN_P4_GIB_STRESS").is_some() {
         32_768usize
     } else {
         8192usize
     };
+    let decoded = (width as u64) * (height as u64) * 2;
+    let disk_budget_mib: u64 = std::env::var("ASTROMUNINN_P4_STRESS_DISK_MIB")
+        .expect("Set explicit ASTROMUNINN_P4_STRESS_DISK_MIB before opt-in stress")
+        .parse()
+        .expect("Stress disk budget must be integer MiB");
+    let memory_budget_mib: u64 = std::env::var("ASTROMUNINN_P4_STRESS_MEMORY_MIB")
+        .expect("Set explicit ASTROMUNINN_P4_STRESS_MEMORY_MIB before opt-in stress")
+        .parse()
+        .expect("Stress memory budget must be integer MiB");
+    let disk_budget = disk_budget_mib
+        .checked_mul(1 << 20)
+        .expect("Disk budget overflow");
+    let required_scratch = decoded.checked_mul(4).expect("Scratch estimate overflow");
+    assert!(
+        disk_budget >= required_scratch,
+        "Stress disk budget must cover 4x decoded bytes"
+    );
+    assert!(
+        (256..=1024).contains(&memory_budget_mib),
+        "Stress memory budget must be 256..=1024 MiB"
+    );
+    let available = fs4::available_space(std::env::temp_dir()).expect("Observe scratch free space");
+    assert!(
+        available >= disk_budget.saturating_add(disk_budget.max(2 << 30)),
+        "Stress refused: scratch budget plus host headroom unavailable"
+    );
+    let output = Fixture::path("xisf");
     let images = [U16ImageSpec {
         id: Some("LIGHT"),
         width,

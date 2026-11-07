@@ -24,6 +24,17 @@ cargo run -p astro-bench --example p1_typed_io --features fitsio/src-cmake
 cargo run -p astro-bench --example p1_typed_io --features fitsio/src-cmake -- --smooth
 ```
 
+For P4 direct codec characterization, run the same example in release mode with
+`--output REPORT.json` (and optionally `--smooth`). The versioned report records
+per-codec encoded bytes, encode and exact-readback times, the complete FITS
+output bound, and process-lifetime peak RSS. This is separate from full P4
+transaction timing, which AstroMuninn measures in its opt-in benchmark test.
+The probe reserves a 128 MiB scratch budget and refuses to start unless an
+additional 1 GiB of host free space is available. The general fixture generator
+now also checks its recipe quota and host headroom before and during generation.
+The 10 ms subprocess sampler in `scripts/p4_measure_test.py` accepts `--ignored`
+for opt-in test binaries; its sampled peaks can miss shorter-lived files.
+
 The explicit CMake backend feature builds bundled CFITSIO out of source when
 the Cargo registry is read-only. Record hardware, build profile, storage and
 cache conditions when comparing timings.

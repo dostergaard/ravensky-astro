@@ -34,3 +34,6 @@ zstd = { version = "0.14.0", default-features = false, features = ["vendored"] }
 sha1 = "0.10.6"
 sha2 = "0.10.9"
 sha3 = "0.10.8"
+
+[dev-dependencies]
+fs4 = "1.1.0"
