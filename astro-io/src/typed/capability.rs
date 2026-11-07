@@ -51,8 +51,9 @@ pub enum Capability {
         lossless: bool,
         backend: Backend,
         output_bound: EncodedSizeBound,
-        /// None for uncompressed random-access input; compressed XISF typed
-        /// reads currently require a bounded full decoded image.
+        /// Whole-image decoded-byte ceiling, if the reader requires one.
+        /// Compressed XISF is spooled to disk and instead enforces per-subblock
+        /// limits through `PixelReadLimits` and caller-owned scratch admission.
         max_decoded_read_bytes: Option<u64>,
     },
     Unsupported {
@@ -92,7 +93,7 @@ pub fn assess(query: &CapabilityQuery) -> Capability {
         width: query.width,
         height: query.height,
     };
-    let Some(decoded) = query
+    let Some(_decoded) = query
         .width
         .checked_mul(query.height)
         .and_then(|count| count.checked_mul(2))
@@ -153,9 +154,6 @@ pub fn assess(query: &CapabilityQuery) -> Capability {
                     reason: "XISF byte shuffle requires compression",
                 };
             }
-            if codec != XisfCodec::Uncompressed && decoded > 16 << 20 {
-                return Unsupported { reason: "Compressed XISF typed reader is limited to 16 MiB decoded per image by default" };
-            }
             let bound = match xisf_output_bound_u16(&[image], codec, query.byte_shuffle) {
                 Ok(bound) => bound,
                 Err(_) => {
@@ -170,7 +168,7 @@ pub fn assess(query: &CapabilityQuery) -> Capability {
                 lossless: true,
                 backend: Backend::RustXisf,
                 output_bound: EncodedSizeBound::Finite(bound),
-                max_decoded_read_bytes: (codec != XisfCodec::Uncompressed).then_some(16 << 20),
+                max_decoded_read_bytes: None,
             }
         }
     }

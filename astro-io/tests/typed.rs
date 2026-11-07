@@ -1151,7 +1151,7 @@ fn fits_metadata_primitives_preserve_raw_card_and_history_with_valid_checksum() 
 }
 
 #[test]
-fn capability_registry_rejects_unproved_types_codecs_and_resource_limits() {
+fn capability_registry_accepts_disk_spooled_compressed_xisf_images() {
     let base = CapabilityQuery {
         format: ContainerFormat::Xisf,
         sample_type: SampleType::UInt16,
@@ -1183,14 +1183,25 @@ fn capability_registry_rejects_unproved_types_codecs_and_resource_limits() {
         }),
         Capability::Unsupported { .. }
     ));
-    assert!(matches!(
-        assess(&CapabilityQuery {
-            width: 4096,
-            height: 4096,
-            ..base.clone()
-        }),
-        Capability::Unsupported { .. }
-    ));
+    for (width, height) in [(4096, 4096), (8288, 5648)] {
+        for byte_shuffle in [false, true] {
+            assert!(matches!(
+                assess(&CapabilityQuery {
+                    width,
+                    height,
+                    byte_shuffle,
+                    ..base.clone()
+                }),
+                Capability::Supported {
+                    exact_reader: true,
+                    exact_writer: true,
+                    output_bound: EncodedSizeBound::Finite(_),
+                    max_decoded_read_bytes: None,
+                    ..
+                }
+            ));
+        }
+    }
     assert!(matches!(
         assess(&CapabilityQuery {
             format: ContainerFormat::Fits,
