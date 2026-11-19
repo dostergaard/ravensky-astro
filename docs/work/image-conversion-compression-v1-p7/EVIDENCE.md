@@ -1,0 +1,179 @@
+# P7-A RavenSky Astro publication preparation evidence
+
+## Starting audit and publication inventory, 2026-11-19
+
+The release worktree starts at RavenSky Astro
+`4689ec495ff7a8d70af84b24d17f4eb36d5cb3e2` on
+`release/ravensky-astro-p7-preparation`. Its original checked-out `master`
+has only an unrelated unstaged `.gitignore` edit. `origin/master` matched the
+starting commit by `git ls-remote`. AstroMuninn `master` and `origin/master`
+matched `b1f0a12dd68daa660cd8890f86292845980a09f3` and its checkout was
+clean. The signed/annotated status of prior tags was not relied upon; `v0.6.2`
+resolves to release source commit `0d8c57a053cf922cbe8075fc77e82b69192f9aeb`.
+The previous publication order and matching published archives are recorded in
+`docs/work/release-0.6.2/EVIDENCE.md`.
+
+The official crates.io API reported 0.6.2 as the latest non-yanked version of
+each of the four public crates. Its public owner list names `dostergaard` for
+each. This establishes registry ownership, not proof that this machine has a
+working upload credential. No credential contents were read.
+
+| Crate | Published | Proposed | API/role assessment | Why a new package is needed |
+| --- | --- | --- | --- | --- |
+| `astro-io` | 0.6.2 | **0.7.0** | Additive typed inventory, bounded exact UInt16 reader/writers, comparison, codec capability, XISF Revision 2 raw-subblock handling; no existing exported signature removed | Substantial new public capability, not a 0.6.2 bugfix; source for AstroMuninn |
+| `astro-metadata` | 0.6.2 | **0.7.0** | Additive `fidelity` semantic inventory, impact ledger, metadata comparison and provenance; existing metadata surface retained | Depends on `astro-io 0.7.0` and must expose the tested fidelity APIs |
+| `astro-metrics` | 0.6.2 | **0.7.0** | Source-level public API unchanged; dependency edges move to the new shared pair | Avoids old 0.6.2 shared crates in the facade graph and preserves the coordinated release line |
+| `ravensky-astro` | 0.6.2 | **0.7.0** | Thin re-export surface unchanged, but re-exports new crate versions and APIs | Facade must select a single aligned 0.7.0 graph |
+| `astro-bench` | unpublished | **unpublished** | Synthetic benchmark and measurement tooling, `publish = false` | Not a public release artifact |
+
+The root workspace declares one version and three version-qualified path
+dependencies. `astro-metadata` depends on `astro-io`; `astro-metrics` depends on
+both; the facade depends on all three. Publication order is therefore
+`astro-io` → `astro-metadata` → `astro-metrics` → `ravensky-astro`.
+The published 0.6.2 crates cannot be overwritten. A 0.6.3 release would signal
+a patch line while introducing substantial new public modules. Cargo's
+pre-1.0 compatibility convention treats 0.7 as a new compatibility line; it
+is a deliberate choice for these public APIs and dependency identities, not
+a claim that an existing exported signature was removed. The coupled metrics
+and facade updates are required to avoid two versions of the shared types in
+the public release graph. `astro-bench` inherits the workspace version for
+local testing but remains unpublishable.
+
+## API compatibility assessment against `v0.6.2`
+
+`git diff v0.6.2..master` shows only `pub mod typed` added to `astro-io`'s
+existing public module tree and `pub mod fidelity` added to `astro-metadata`'s.
+The other changes to existing FITS/XISF source are implementation or
+`pub(crate)` visibility changes; no existing exported function signature,
+public field, trait bound, enum variant or Cargo feature changed. The new
+modules contain public types/functions, including `ContainerInventory`,
+`U16ChunkReader`, `write_fits_u16`, `write_xisf_u16`,
+`compare_u16_containers`, `ImpactLedger`, `inspect`, `compare_metadata_files`
+and provenance types. No crate exposes a new feature flag. Rust MSRV remains
+1.94, and the normal FITS path still uses CFITSIO via `fitsio`; it is not a
+pure-Rust backend.
+
+Existing `load_fits` and `load_xisf` signatures remain. The XISF decoder now
+accepts specification Revision 2 equal-length raw compression subblocks and
+rejects older nonconformant equal-length compressed encodings rather than
+guessing their meaning. The new typed writer's exact transport contract is
+two-dimensional monochrome UInt16; parsing, metadata inspection and file
+validation cover broader structures but do not imply they can be rewritten.
+Metadata translation is separately classified and may require explicit loss
+approval. This is a behavioral expansion with a documented strictness edge,
+not a universal FITS/XISF conversion promise.
+
+No `cargo-semver-checks` or `cargo-public-api` executable is installed on this
+host. The source-level comparison and release tests are the available API
+review; an automated external-consumer semver diff remains unverified.
+
+## CI and qualification scope
+
+The latest two RavenSky `master` GitHub Rust runs for the integration commits
+were cancelled, including the run at `4689ec4`; a green cross-platform CI
+result is therefore not yet available for this preparation branch. Local
+qualification and package evidence are recorded below as they complete.
+The previous integrated local baseline passed 197 tests with three ignored,
+strict Clippy, formatting and optimized workspace builds on macOS ARM64.
+
+No crate is uploaded during this preparation assignment.
+
+## Prepared 0.7.0 candidate and local qualification
+
+The candidate changes the root workspace and four public package versions to
+0.7.0, updates all internal path-plus-version edges to 0.7.0, and updates the
+lockfile's five workspace package identities only. `astro-bench` still inherits
+the workspace version for benchmark provenance but remains `publish = false`;
+no external dependency was added or upgraded for this preparation. Public
+crate metadata now carries science keywords/categories. Each subcrate has a
+copy of the root MIT and Apache license texts (with one trailing blank line
+removed from each Apache copy for `git diff --check`); `astro-io` also
+retains its CFITSIO, HCOMPRESS and fitskit notices.
+
+READMEs and new buildable, read-only examples distinguish inventory, validation,
+exact UInt16 pixels, metadata impact and application-level conversion. Public
+rustdoc and capability/error strings no longer use internal P1–P4 labels.
+The draft release notes are `docs/releases/RavenSkyAstro-0.7.0-draft.md`; the
+changelog and current release procedure were updated. The root package excludes
+work records, benchmark evidence, local/configuration material, large image
+fixtures and the official XISF specification. Subcrate README links to repo
+material use stable repository URLs rather than paths outside their archives.
+
+On macOS ARM64 with Rust 1.94.0 and `fitsio/src-cmake` for local CFITSIO build:
+
+- `cargo +1.94.0 fmt --all --check`: passed after formatting the two examples.
+- `cargo +1.94.0 test --locked --workspace --all-targets --all-features --features fitsio/src-cmake -- --test-threads=1`: 215 passed, 0 failed, 3 intentionally ignored across 26 test executables. An immediate rerun captured the exact count and no warnings in `/private/tmp/ravensky-p7-all-target-tests.log`.
+- `cargo +1.94.0 test --locked --workspace --all-features --features fitsio/src-cmake --doc`: 4 passed, 0 failed.
+- `cargo +1.94.0 clippy --locked --workspace --all-targets --all-features --features fitsio/src-cmake -- -D warnings`: passed.
+- `RUSTDOCFLAGS='-D warnings' cargo +1.94.0 doc --locked --workspace --all-features --features fitsio/src-cmake --no-deps`: passed.
+- `cargo +1.94.0 build --locked --release --workspace --all-features --features fitsio/src-cmake --examples`: passed, including the two new public API examples.
+- `git diff --check`: passed. Later README and module-doc edits have no Rust behavior effect; the final clean commit is checked again below.
+
+The ordinary full workspace package verification using Cargo 1.94.0 passed for
+all four candidates from a fresh precommit target directory,
+`/private/tmp/ravensky-p7-precommit-package`, with `--locked --workspace
+--exclude astro-bench --allow-dirty`. Cargo used its temporary local registry
+to resolve the unpublished 0.7.0 sibling crates. It packaged and verified:
+
+| Crate | Files | Compressed archive bytes | Local package verification |
+| --- | ---: | ---: | --- |
+| `astro-io` | 38 | 132,082 | Passed |
+| `astro-metadata` | 18 | 50,692 | Passed |
+| `astro-metrics` | 13 | 20,667 | Passed |
+| `ravensky-astro` | 42 | 163,545 | Passed |
+
+Archive inspection confirmed source, README, manifest, both licenses, new
+examples where applicable, and the three `astro-io` third-party notices.
+Normalized registry manifests require exactly `0.7.0` on internal edges.
+No archive contained the official XISF specification, `docs/work`, benchmark
+reports, `.continue`, `.agents`, `.github`, local test image archives, or
+machine-specific/credential markers. The archive members are regular files
+with safe relative paths. These precommit archive hashes are deliberately not
+a final publication identity; Cargo's VCS metadata changes with the final
+commit and the final clean archives must be regenerated.
+
+`cargo +1.94.0 publish --dry-run --locked --allow-dirty -p astro-io` passed and
+ended with Cargo's expected `warning: aborting upload due to dry run`.
+Equivalent nonuploading dry-runs for `astro-metadata`, `astro-metrics` and
+`ravensky-astro` stopped during registry resolution because crates.io has no
+`astro-io = ^0.7.0` yet. This is the intended dependency gate, not a package
+verification failure. After approval, repeat each downstream dry-run only
+once its prerequisites are published and indexed. No real upload was invoked.
+
+The public crates.io owner API lists `dostergaard` for all four crates. This
+does not verify that the local machine's token is configured or authorized;
+no credential was inspected. The latest candidate CI run is still only the
+cancelled `master` integration run; no P7 branch was pushed. Cross-platform
+CI and native Windows qualification remain future gates.
+
+## Read-only AstroMuninn P7-B/P7-C findings
+
+AstroMuninn root `Cargo.toml` declares workspace/CLI/core 0.11.0 and registry
+requirements `astro-io`/`astro-metadata` 0.6.2 with Git patches pinned to
+RavenSky commit `4689ec4`; the independent `fitsio-sys` patch points to
+`vendor/fitsio-sys`. Lite's Cargo manifest and `tauri.conf.json` both declare
+0.4.0. Lite About reads `CARGO_PKG_VERSION`; the CLI uses Clap's package
+version. The release workflow checks CLI workspace and both Lite version
+sources against their respective tags. `astromuninn-core` inherits workspace
+version and uses it for provenance, but configuration and job schema versions
+are separate values; changing the product version must not change them.
+
+`release-product.yml` builds CLI macOS ARM64/Linux x86-64 tarballs and Windows
+x86-64 GNU ZIP through cargo-dist. Lite uses Tauri macOS ARM64 DMG, Windows
+x86-64 MSVC NSIS setup EXE and Linux x86-64 AppImage. The public downloads
+channel stages named assets and SHA256SUMS. Existing docs describe unsigned
+installation. The Lite macOS install script currently strips quarantine from
+the installed app silently; its installation page also recommends manual
+`xattr -dr` removal. That conflicts with the approved P7-C per-app security
+workflow and must be changed during P7-C before product publication. The
+Windows installer script invokes `Unblock-File`; evaluate this during native
+Windows qualification. Apple's current user guidance supports System Settings
+> Privacy & Security > Open Anyway after the user first attempts to open a
+trusted downloaded app. Microsoft's current Smart App Control FAQ says Windows
+11 may block unsigned apps without a per-app exception. Sources:
+[Apple](https://support.apple.com/en-us/102445),
+[Microsoft](https://support.microsoft.com/en-gb/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions).
+
+No AstroMuninn files, versions, lockfile, build products, tags or distribution
+artifacts were changed or created in this assignment. Detailed later-stage
+steps and the native installation matrix are in PLAN.md.
