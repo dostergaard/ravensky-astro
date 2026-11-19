@@ -872,8 +872,15 @@ impl_hdecompress!(
 mod tests {
     use super::*;
 
+    // CFITSIO's direct HCOMPRESS encoder and decoder use process-global bitstream
+    // counters even in reentrant builds. Keep the native oracle fixtures apart.
+    static NATIVE_HCOMPRESS_TEST: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
     #[test]
     fn native_hcompress_roundtrips_signed_samples_and_odd_geometry() {
+        let _native_guard = NATIVE_HCOMPRESS_TEST
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         crate::fits::backend::with_cfitsio(|| {
             for (width, height) in [(4, 4), (5, 7), (33, 17), (1, 10), (10, 1)] {
                 let original: Vec<i32> = (0..width * height)
@@ -938,6 +945,9 @@ mod tests {
 
     #[test]
     fn lossy_transform_matches_native_and_observes_cancellation() {
+        let _native_guard = NATIVE_HCOMPRESS_TEST
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         crate::fits::backend::with_cfitsio(|| {
             let mut source: Vec<i32> = (0..64).map(|i| (i * 1237) % 16384 - 8192).collect();
             let mut compressed = vec![0u8; 4096];

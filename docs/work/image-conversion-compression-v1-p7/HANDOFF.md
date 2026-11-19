@@ -41,15 +41,23 @@ Cargo default-registry token entry is configured locally, but its identity
 and upload rights were not proven; no secret value was displayed. A real
 upload has not been attempted.
 
-## Final checkpoint procedure
+## Later candidate run and final checkpoint procedure
 
-The evidence-only commit that records the successful 6267d11 run changes
-Cargo's packaged VCS metadata. Run the existing CI workflow on the final
-pushed evidence commit, then regenerate all four archives from that clean
-commit in a fresh target directory and report their final hashes. Reconfirm
-branch/master refs and worktree cleanliness. Exact final-commit CI and
-archive results belong in the user approval checkpoint; the 6267d11 results
-above remain the durable code-qualification evidence.
+The evidence-only commit `1590d7ea577be5f097ef66a5b14ac1c82551e2c8`
+received [CI run 44609029486](https://github.com/dostergaard/ravensky-astro/actions/runs/44609029486).
+Linux, macOS and naming passed. Windows GNU failed two intermittently
+corrupted direct native HCOMPRESS oracle tests after its Clippy and optimized
+build steps passed. Bundled CFITSIO has process-global HCOMPRESS bitstream
+counters; a test-only mutex now serializes those two direct native fixtures
+without narrowing the CI matrix. Focused local parallel execution and strict
+Clippy passed. EVIDENCE.md contains the failure and source analysis.
+
+Qualify the next correction commit with the complete existing CI workflow.
+Regenerate all four archives from that final clean commit in a fresh target
+directory and report their hashes. Reconfirm branch/master refs, worktree
+cleanliness and public registry versions. Exact final-commit CI and archive
+results belong in the user approval checkpoint; the earlier 6267d11 green
+run and the 1590d7e failure remain durable diagnostic evidence.
 
 Stop before real `cargo publish`, merge, tag, GitHub Release, AstroMuninn
 changes, or product distribution. After separate publication authorization,

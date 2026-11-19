@@ -271,3 +271,34 @@ checked Cargo environment variables. The official crates.io owner API lists
 `ravensky-astro`. File presence and public ownership do not prove which
 account the token represents or that an upload will be authorized. No upload
 was attempted.
+
+## Final-commit Windows HCOMPRESS oracle race and correction
+
+[Third manual candidate run 44609029486](https://github.com/dostergaard/ravensky-astro/actions/runs/44609029486)
+used documentation-only commit
+`1590d7ea577be5f097ef66a5b14ac1c82551e2c8`. Retired naming, Linux
+x86-64 GNU and macOS ARM64 passed their complete configured jobs, including
+all Rust 1.94 checks and Linux four-crate packaging. Windows GNU passed
+formatting, strict Clippy and optimized builds, then failed two
+`astro-io::validation::fits::hcompress` unit tests. The Windows unit result
+was 50 passed, 2 failed, 1 ignored; Windows doctests and rustdoc were skipped
+because the test step failed. The run conclusion was `failure`, not a pass.
+
+The failures were corrupted native oracle results from direct
+`fits_hcompress`/`fits_hdecompress` calls in tests run concurrently by Rust's
+ordinary test harness. The previous [run 44608168246](https://github.com/dostergaard/ravensky-astro/actions/runs/44608168246)
+passed those tests without a source change, establishing intermittence.
+Inspection of bundled CFITSIO 3.49 source in `fitsio-sys 0.5.7` found
+process-global mutable bitstream state in `fits_hcompress.c` (`noutchar`,
+`bitcount`, `bitbuffer`) and `fits_hdecompress.c` (`nextchar`). The two direct
+native oracle fixtures were therefore serialized with a test-only mutex;
+all test cases and assertions remain enabled. No production API or writer
+behavior changed, and the CI test matrix was not narrowed or serialized.
+
+Local Rust 1.94 `cargo fmt --all --check`, focused parallel harness execution
+of both HCOMPRESS tests (2 passed), and strict all-target/all-feature
+`astro-io` Clippy with `fitsio/src-cmake` passed after the fix. The next
+candidate commit includes the test-only correction and this evidence; it
+must receive a complete new CI run before the approval checkpoint. Final
+archive hashes must be regenerated from that exact commit because Cargo
+embeds Git commit identity in `.cargo_vcs_info.json`.
