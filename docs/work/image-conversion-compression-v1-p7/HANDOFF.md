@@ -65,3 +65,33 @@ repeat each downstream registry dry-run as its 0.7.0 prerequisite becomes
 available, upload in dependency order, then verify registry archives/docs.rs
 and an independent registry-only consumer. P7-B and P7-C remain planned but
 unexecuted; see PLAN.md.
+
+## Qualified candidate and remaining review
+
+The test-only correction commit
+`d091319580004840ef2b28bfd15f04d3053c0096` passed all four jobs in
+[CI run 44610247661](https://github.com/dostergaard/ravensky-astro/actions/runs/44610247661):
+retired naming, Linux x86-64 GNU, macOS ARM64 and Windows x86-64 GNU. Rust
+1.94 formatting, strict Clippy, optimized builds, tests, doctests and strict
+rustdoc passed on each configured platform. Linux four-crate packaging
+passed; the other platforms correctly skipped that Linux-only step.
+
+Fresh verified 0.7.0 archives at that commit have SHA-256 values, in
+dependency/publication order:
+
+- `astro-io`: `d77948cc89c80d9c81a692ebfc6791b3dca34ae85831630bc2408211264a1b80`
+- `astro-metadata`: `91a65e7a402f56ce0d49cdc34206ec09c7945072bcef28a51ea2f545ce4495e9`
+- `astro-metrics`: `4485817bfdbd65fd2a29e0cf1c797c494aae6caf47a51548d2a3890c3a6084c9`
+- `ravensky-astro`: `ffd8ebca2698f04b8a26a324f5baffdd6a36f2d784552590846376fd7494b3d5`
+
+Bundled CFITSIO's HCOMPRESS implementation has process-global mutable
+bitstream state, including when called by high-level compressed image reads.
+The test-only fixture lock resolves the observed CI race, but production
+concurrent HCOMPRESS reads are not established safe by this run. The public
+backend gate permits independent calls when CFITSIO reports a reentrant
+build. Treat this as a focused technical review item before depending on
+concurrent HCOMPRESS behavior; the candidate did not change that contract.
+
+This handoff update itself changes the Git commit identity embedded by Cargo
+in `.cargo_vcs_info.json`. For the exact final documentation commit, rerun
+CI and regenerate archive hashes before requesting publication approval.

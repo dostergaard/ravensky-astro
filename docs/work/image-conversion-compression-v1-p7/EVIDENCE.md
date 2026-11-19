@@ -302,3 +302,40 @@ candidate commit includes the test-only correction and this evidence; it
 must receive a complete new CI run before the approval checkpoint. Final
 archive hashes must be regenerated from that exact commit because Cargo
 embeds Git commit identity in `.cargo_vcs_info.json`.
+
+## Qualified HCOMPRESS correction candidate
+
+Commit `d091319580004840ef2b28bfd15f04d3053c0096` contains the
+test-only HCOMPRESS oracle serialization and this evidence. Its
+[manual candidate CI run 44610247661](https://github.com/dostergaard/ravensky-astro/actions/runs/44610247661)
+completed `success`: retired naming, Linux x86-64 GNU, macOS ARM64 and
+Windows x86-64 GNU all passed. Each configured platform passed Rust 1.94
+formatting, strict Clippy, optimized examples, tests, doctests and strict
+rustdoc. Linux also passed four-crate package verification. Package
+verification was intentionally skipped on macOS and Windows, and only the
+configured three-package subset ran on Windows because `sep-sys` does not
+support that target. Native setup steps for other platforms were skipped as
+configured. No test or documentation job was cancelled in this run.
+
+A fresh Cargo 1.94 `cargo package --locked --workspace --exclude astro-bench`
+verification and archive inspection from this clean commit passed. The
+archives retain dual licenses, README/source and relevant examples;
+`astro-io` retains the CFITSIO/HCOMPRESS/fitskit notices. Internal normalized
+requirements are 0.7.0, and documentation sources, work artifacts, local
+paths and credential markers are absent. Archive identity is:
+
+| Archive | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| `astro-io-0.7.0.crate` | 38 | 132,237 | `d77948cc89c80d9c81a692ebfc6791b3dca34ae85831630bc2408211264a1b80` |
+| `astro-metadata-0.7.0.crate` | 18 | 50,685 | `91a65e7a402f56ce0d49cdc34206ec09c7945072bcef28a51ea2f545ce4495e9` |
+| `astro-metrics-0.7.0.crate` | 13 | 20,664 | `4485817bfdbd65fd2a29e0cf1c797c494aae6caf47a51548d2a3890c3a6084c9` |
+| `ravensky-astro-0.7.0.crate` | 42 | 163,475 | `ffd8ebca2698f04b8a26a324f5baffdd6a36f2d784552590846376fd7494b3d5` |
+
+The bundled CFITSIO source also shows that high-level compressed image
+operations call the same native HCOMPRESS functions with process-global
+mutable state. This CI result proves the direct test fixtures no longer race;
+it does not establish safety of concurrent production HCOMPRESS reads through
+independent CFITSIO handles. The existing `with_cfitsio` gate admits such
+calls when `fits_is_reentrant()` reports true. Assess that native concurrency
+contract before relying on concurrent HCOMPRESS reads in a release. No
+production concurrency behavior was changed in this candidate.
