@@ -177,7 +177,7 @@ fn print_metadata_report(
             }
             if !display_function.parameters.is_empty() {
                 let mut parameters: Vec<_> = display_function.parameters.iter().collect();
-                parameters.sort_by(|(left, _), (right, _)| left.cmp(right));
+                parameters.sort_by_key(|(left, _)| *left);
                 let formatted = parameters
                     .into_iter()
                     .map(|(key, value)| format!("{}={}", key, value))

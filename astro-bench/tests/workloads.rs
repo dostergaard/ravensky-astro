@@ -35,7 +35,9 @@ fn compressed_fits_fixtures_match_native_pixels_and_are_reproducible() {
                 {
                     let bytes = std::fs::read(raw.directory().join(&original.name)).unwrap();
                     let expected: Vec<_> = bytes[2880..2880 + 70]
-                        .chunks_exact(2)
+                        .as_chunks::<2>()
+                        .0
+                        .iter()
                         .map(|b| u16::from_be_bytes([b[0], b[1]]) ^ 0x8000)
                         .collect();
                     astro_io::fits::backend::with_cfitsio(|| {
@@ -313,8 +315,10 @@ fn fits_and_xisf_store_the_same_logical_pixels_and_workers_visit_each_file_once(
         let a = std::fs::read(fits.directory().join(&fits.manifest().files[0].name)).unwrap();
         let b = std::fs::read(xisf.directory().join(&xisf.manifest().files[0].name)).unwrap();
         for (a, b) in a[2880..2880 + 512]
-            .chunks_exact(2)
-            .zip(b[4096..].chunks_exact(2))
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .zip(b[4096..].as_chunks::<2>().0.iter())
         {
             assert_eq!(
                 u16::from_be_bytes([a[0], a[1]]) ^ 0x8000,

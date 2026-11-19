@@ -489,7 +489,7 @@ fn write_element_csv<W: Write>(writer: W, stats: &StatsAccumulator) -> Result<()
     csv_writer.write_record(["metadata_element", "percent_of_files"])?;
 
     let mut elements: Vec<_> = stats.elements.iter().collect();
-    elements.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
+    elements.sort_unstable_by_key(|(left, _)| *left);
 
     for (element, element_stats) in elements {
         let percentage = percentage(element_stats.files_with_element, stats.files_processed);
@@ -505,7 +505,7 @@ fn write_value_csv<W: Write>(writer: W, stats: &StatsAccumulator) -> Result<()> 
     csv_writer.write_record(["metadata_element", "value", "percent_of_element"])?;
 
     let mut elements: Vec<_> = stats.elements.iter().collect();
-    elements.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
+    elements.sort_unstable_by_key(|(left, _)| *left);
 
     for (element, element_stats) in elements {
         if is_expected_to_vary_per_exposure(element)
@@ -516,7 +516,7 @@ fn write_value_csv<W: Write>(writer: W, stats: &StatsAccumulator) -> Result<()> 
         }
 
         let mut values: Vec<_> = element_stats.value_counts.iter().collect();
-        values.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
+        values.sort_unstable_by_key(|(left, _)| *left);
 
         for (value, count) in values {
             let percentage = percentage(*count, element_stats.files_with_element);
