@@ -144,7 +144,10 @@ fn main() -> Result<()> {
         );
         println!("{name},bytes={bytes},write_ms={write_ms},read_ms={read_ms},checksum={checksum}");
     }
-    let mut peak_rss = None;
+    #[cfg(unix)]
+    let mut peak_rss: Option<u64> = None;
+    #[cfg(not(unix))]
+    let peak_rss: Option<u64> = None;
     #[cfg(unix)]
     {
         let mut usage = std::mem::MaybeUninit::<libc::rusage>::uninit();

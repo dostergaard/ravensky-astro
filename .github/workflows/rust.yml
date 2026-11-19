@@ -43,7 +43,7 @@ jobs:
             target: x86_64-unknown-linux-gnu
             shell: bash
             packages: --workspace
-          - os: macos-14
+          - os: macos-15
             target: aarch64-apple-darwin
             shell: bash
             packages: --workspace
