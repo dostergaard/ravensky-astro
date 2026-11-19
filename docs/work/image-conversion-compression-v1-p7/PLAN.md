@@ -150,7 +150,9 @@ with Linux smoke coverage for the existing Linux artifacts. The current
 macOS ARM64 host can perform native macOS clean/upgrade and external-volume
 checks; Windows NSIS and CLI behavior require native Windows evidence or a
 separately approved qualified tester. Backend cross-compilation does not
-count as native installation evidence.
+count as native installation evidence. Current public docs specify supported
+architectures but no minimum macOS or Windows release number; define and test
+the OS version floor during P7-C before advertising one.
 
 | Scenario | macOS ARM64 | Windows x86-64 | Linux x86-64 |
 | --- | --- | --- | --- |

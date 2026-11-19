@@ -39,6 +39,18 @@ and facade updates are required to avoid two versions of the shared types in
 the public release graph. `astro-bench` inherits the workspace version for
 local testing but remains unpublishable.
 
+All five workspace packages inherit Rust 1.94, the GitHub repository and
+MIT OR Apache-2.0 license declaration. The four public crates also declare
+the project homepage, their matching docs.rs pages and README files. None declares a crate feature
+or optional dependency. `astro-io` has no internal library dependency;
+`astro-metadata` depends on `astro-io`; `astro-metrics` depends on both;
+`ravensky-astro` depends on all three; unpublished `astro-bench` depends on
+`astro-io`. The remaining direct dependencies are external registry crates
+listed in each manifest, including `fitsio`/CFITSIO for FITS and `sep-sys` for
+metrics. The facade publicly re-exports the three libraries. Tag history is
+`v0.2.0`, `v0.3.0`, `v0.5.0`, `v0.6.1`, `v0.6.2`; registry versions also include
+the published 0.6.0 and 0.6.2 packages.
+
 ## API compatibility assessment against `v0.6.2`
 
 `git diff v0.6.2..master` shows only `pub mod typed` added to `astro-io`'s
@@ -162,7 +174,10 @@ are separate values; changing the product version must not change them.
 x86-64 GNU ZIP through cargo-dist. Lite uses Tauri macOS ARM64 DMG, Windows
 x86-64 MSVC NSIS setup EXE and Linux x86-64 AppImage. The public downloads
 channel stages named assets and SHA256SUMS. Existing docs describe unsigned
-installation. The Lite macOS install script currently strips quarantine from
+installation. The public docs identify architectures but do not state a
+minimum macOS or Windows OS version; P7-C must establish and test an honest
+version floor rather than infer it from CI runner names. The Lite macOS
+install script currently strips quarantine from
 the installed app silently; its installation page also recommends manual
 `xattr -dr` removal. That conflicts with the approved P7-C per-app security
 workflow and must be changed during P7-C before product publication. The
