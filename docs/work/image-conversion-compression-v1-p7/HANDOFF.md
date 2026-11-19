@@ -1,52 +1,59 @@
-# P7-A release preparation handoff
+# P7-A candidate CI handoff
 
-## Goal and current status
+## Goal and current state
 
-P7-A prepares `astro-io`, `astro-metadata`, `astro-metrics` and
-`ravensky-astro` 0.7.0 for separate publication approval. The release
-worktree is `.worktrees/ravensky-astro-p7-preparation` on
-`release/ravensky-astro-p7-preparation` from RavenSky Astro
-`4689ec495ff7a8d70af84b24d17f4eb36d5cb3e2`. The original `master`
-checkout has an unrelated `.gitignore` edit and was not touched. AstroMuninn
-`master` remains `b1f0a12dd68daa660cd8890f86292845980a09f3` and was used
-read-only. No crates were uploaded, no tag/remote branch was created, and no
-AstroMuninn version or dependency was changed.
+P7-A has four proposed 0.7.0 crates: `astro-io`, `astro-metadata`,
+`astro-metrics`, and `ravensky-astro`, in that publication order.
+`astro-bench` remains unpublished. The isolated branch is
+`release/ravensky-astro-p7-preparation`; the original `master` checkout and
+its unrelated `.gitignore` edit are preserved. AstroMuninn remains untouched.
+The user authorized pushing this candidate for CI, not publishing crates,
+merging, tagging, or releasing applications.
 
-## Decisions and evidence
+The original candidate commit was
+`1c73ceabb66c8720fb38095a32eaae8bb454b9e4`.
+[CI run 44607491633](https://github.com/dostergaard/ravensky-astro/actions/runs/44607491633)
+was incomplete: Linux and naming passed, Windows Clippy failed in the
+unpublished benchmark example, and GitHub cancelled the unsupported
+`macos-14` ARM64 job before it ran. Commit
+`6267d1121d44714c984a0961c43e6fd93e7c295b` fixed the example's
+Windows type inference and selected GitHub's supported `macos-15` ARM64
+runner while preserving the full target matrix.
+[CI run 44608168246](https://github.com/dostergaard/ravensky-astro/actions/runs/44608168246)
+passed all four jobs. Linux/macOS each passed 215 tests plus 4 doctests with
+3 established ignores; Windows GNU's configured subset passed 187 tests
+plus 3 doctests with 2 ignores. Strict Clippy, formatting, optimized builds
+and strict rustdoc passed on each configured platform; Linux package
+verification passed for all four public crates. The Windows MSYS2 action
+issued a deprecation warning, and GitHub noted macOS ARM64 queue capacity.
+See EVIDENCE.md for exact job results and limitations.
 
-The four public crates advance together from registry 0.6.2 to proposed
-0.7.0. `astro-io` and `astro-metadata` add public typed/fidelity modules;
-`astro-metrics` and the facade need 0.7.0 package identities because their
-internal edges and re-exports must select the same graph. Existing API
-signatures remain; an automated semver tool was unavailable. `astro-bench`
-remains unpublished. See EVIDENCE.md for the version matrix and manual API
-review. The publication order is `astro-io` → `astro-metadata` →
-`astro-metrics` → `ravensky-astro`.
+The four clean 6267d11 package archives verified successfully. Their SHA-256
+values are, in publication order:
 
-Rust 1.94 full all-target tests, doctests, strict Clippy, strict rustdoc,
-optimized examples, Cargo four-package verification and package-content
-inspection passed. `astro-io` passed a nonuploading crates.io dry-run. The
-three downstream dry-runs are blocked until `astro-io 0.7.0` is in the
-registry; local multi-package verification passed for them. Latest `master`
-CI runs were cancelled, and no candidate branch CI has run. Public owner
-metadata names `dostergaard`; upload credential availability remains
-unverified. Package and test conditions and limitations are in EVIDENCE.md.
+- `astro-io`: `6e4aaaa66745342f4cf38b7328fb91d3eb6c13bef352a8d2291a1bbb2da49d84`
+- `astro-metadata`: `42385ee2eae9e65e9ba52af2531a75e8713ac2e03b954639764bbc66843e73ca`
+- `astro-metrics`: `678d2e3b62c988ec95b6fe2ed9e2389c6489fb1ecd402c314f7f704bb9d6082d`
+- `ravensky-astro`: `182275c21f35c70adea897555df13e9f681c29ba82d3f20118910ad2ddb93088`
 
-## Follow-up and stop condition
+The public crates.io owner API lists `dostergaard` on all four crates. A
+Cargo default-registry token entry is configured locally, but its identity
+and upload rights were not proven; no secret value was displayed. A real
+upload has not been attempted.
 
-After the final local commit, regenerate four clean archives in a fresh
-package target directory; inspect them and record their exact hashes and
-commit in the user checkpoint. Check `git diff --check`, branch cleanliness,
-remote refs and the unchanged original checkout. Then stop and request
-separate approval for the exact crates.io uploads. Do not run a real
-`cargo publish`, push a tag, push the P7 branch, or change AstroMuninn as
-part of this preparation assignment.
+## Final checkpoint procedure
 
-After explicit publication approval in a later task, repeat downstream
-registry dry-runs as prerequisites appear, upload in dependency order,
-verify registry archives/docs.rs and an independent registry-only consumer.
-P7-B then updates AstroMuninn registry requirements/1.0.0 metadata and tests
-old config/journals; P7-C separately qualifies unsigned distributables and
-actual installs. PLAN.md contains those detailed future steps. The Lite
-installer's current automatic quarantine removal is a P7-C correction, not
-an action taken here.
+The evidence-only commit that records the successful 6267d11 run changes
+Cargo's packaged VCS metadata. Run the existing CI workflow on the final
+pushed evidence commit, then regenerate all four archives from that clean
+commit in a fresh target directory and report their final hashes. Reconfirm
+branch/master refs and worktree cleanliness. Exact final-commit CI and
+archive results belong in the user approval checkpoint; the 6267d11 results
+above remain the durable code-qualification evidence.
+
+Stop before real `cargo publish`, merge, tag, GitHub Release, AstroMuninn
+changes, or product distribution. After separate publication authorization,
+repeat each downstream registry dry-run as its 0.7.0 prerequisite becomes
+available, upload in dependency order, then verify registry archives/docs.rs
+and an independent registry-only consumer. P7-B and P7-C remain planned but
+unexecuted; see PLAN.md.

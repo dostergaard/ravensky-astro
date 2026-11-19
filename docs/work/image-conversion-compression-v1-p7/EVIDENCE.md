@@ -154,9 +154,10 @@ once its prerequisites are published and indexed. No real upload was invoked.
 
 The public crates.io owner API lists `dostergaard` for all four crates. This
 does not verify that the local machine's token is configured or authorized;
-no credential was inspected. The latest candidate CI run is still only the
-cancelled `master` integration run; no P7 branch was pushed. Cross-platform
-CI and native Windows qualification remain future gates.
+no credential was inspected at that initial checkpoint. At that point, no P7
+branch had been pushed, and the latest `master` integration CI runs were
+cancelled. The subsequent candidate CI results are recorded below. Native
+AstroMuninn Windows qualification remains a later product gate.
 
 ## Read-only AstroMuninn P7-B/P7-C findings
 
@@ -192,3 +193,81 @@ trusted downloaded app. Microsoft's current Smart App Control FAQ says Windows
 No AstroMuninn files, versions, lockfile, build products, tags or distribution
 artifacts were changed or created in this assignment. Detailed later-stage
 steps and the native installation matrix are in PLAN.md.
+
+## Remote candidate CI qualification, 2026-11-19
+
+The repository has one GitHub Actions workflow, `.github/workflows/rust.yml`.
+Its push event is restricted to `master`/`main`; it also supports pull requests
+into those branches and manual `workflow_dispatch`. It contains no crates.io
+upload, release-tagging, binary-publication or GitHub Release step. The normal
+push of `release/ravensky-astro-p7-preparation` to `origin` started no workflow;
+`gh run list --branch` showed only the manually dispatched Rust runs below.
+`master` and its unrelated `.gitignore` edit were untouched.
+
+[First manual candidate run 44607491633](https://github.com/dostergaard/ravensky-astro/actions/runs/44607491633)
+used `1c73ceabb66c8720fb38095a32eaae8bb454b9e4`. Retired naming and Linux
+x86-64 GNU passed, including Linux four-crate package verification. Windows
+x86-64 GNU failed at strict Clippy with Rust E0282: `astro-bench`'s
+`examples/p1_typed_io.rs` left a Unix-only `peak_rss = None` without an
+inferred type on Windows; its later build/test/doc steps were skipped. GitHub
+cancelled macOS ARM64 before runner allocation, with annotation
+`The configuration 'macos-14-arm64-us-default' is not supported`; no macOS
+checks ran. The overall run conclusion was `cancelled`, not a pass.
+
+The narrow correction commit
+`6267d1121d44714c984a0961c43e6fd93e7c295b` gives the benchmark example
+an explicit `Option<u64>` on both cfg paths and moves the macOS ARM64 runner
+from `macos-14` to GitHub's currently listed `macos-15` ARM64 standard runner.
+The target remains `aarch64-apple-darwin` and the full macOS job remains in
+the matrix. GitHub's [current runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+lists `macos-15` for Apple Silicon. Local Rust 1.94 formatting, strict
+`astro-bench` all-target/all-feature Clippy, and affected benchmark tests
+passed (24 tests across the package and examples, no ignores). No public
+crate implementation or dependency requirement changed.
+
+[Second manual candidate run 44608168246](https://github.com/dostergaard/ravensky-astro/actions/runs/44608168246)
+used the correction commit and completed `success`:
+
+| Job | Result | Qualification |
+| --- | --- | --- |
+| Retired naming | Passed | Canonical crate naming check |
+| Linux x86-64 GNU | Passed | Rust 1.94; fmt, strict Clippy, optimized examples, 215 tests/3 ignored, 4 doctests, strict rustdoc, four-crate package verification |
+| Windows x86-64 GNU | Passed | Rust 1.94; fmt, strict Clippy, optimized examples, configured `astro-io`/`astro-metadata`/`astro-bench` subset with 187 tests/2 ignored, 3 doctests, strict rustdoc |
+| macOS ARM64 | Passed | Rust 1.94; fmt, strict Clippy, optimized examples, 215 tests/3 ignored, 4 doctests, strict rustdoc |
+
+The Linux-only package step was correctly skipped on Windows and macOS.
+Windows GNU does not build `astro-metrics`/the facade because the existing
+`sep-sys 1.3.0` POSIX `rand_r` dependency is unsupported there. The MSYS2
+setup action emitted a MINGW64 deprecation warning; GitHub also noted that
+macOS ARM64 runner capacity can delay queueing. Neither warning failed a
+check. The exact completed job logs were inspected; there were no test or
+Rustdoc failures. This is library CI, not native AstroMuninn Windows MSVC
+installation evidence.
+
+Clean Cargo 1.94.0 `cargo package --locked --workspace --exclude astro-bench`
+from correction commit `6267d11` passed all four packages. Archive inspection
+confirmed the same file counts, dual licenses, README/source, examples and
+`astro-io` third-party notices as the initial candidate. All normalized
+internal requirements remain 0.7.0; the official XISF document, local paths,
+credential markers and work artifacts remain excluded. Checksums at this
+code-and-workflow commit are:
+
+| Archive | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| `astro-io-0.7.0.crate` | 38 | 132,064 | `6e4aaaa66745342f4cf38b7328fb91d3eb6c13bef352a8d2291a1bbb2da49d84` |
+| `astro-metadata-0.7.0.crate` | 18 | 50,682 | `42385ee2eae9e65e9ba52af2531a75e8713ac2e03b954639764bbc66843e73ca` |
+| `astro-metrics-0.7.0.crate` | 13 | 20,655 | `678d2e3b62c988ec95b6fe2ed9e2389c6489fb1ecd402c314f7f704bb9d6082d` |
+| `ravensky-astro-0.7.0.crate` | 42 | 163,462 | `182275c21f35c70adea897555df13e9f681c29ba82d3f20118910ad2ddb93088` |
+
+These hashes identify the 6267d11 archive set. A later documentation-only
+evidence commit changes Cargo's `.cargo_vcs_info.json` and cascades sibling
+checksums in packaged lockfiles, so regenerate and report final archive
+hashes from the exact final commit before publication.
+
+A Cargo `credentials.toml` file is present and has a nonempty default-registry
+token entry; no token value was displayed or copied. No token is set in the
+checked Cargo environment variables. The official crates.io owner API lists
+`dostergaard` for each of `astro-io`, `astro-metadata`, `astro-metrics` and
+`ravensky-astro`. File presence and public ownership do not prove which
+account the token represents or that an upload will be authorized. No upload
+was attempted.
