@@ -25,7 +25,7 @@ checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
 name = "astro-bench"
-version = "0.6.2"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "astro-io",
@@ -42,7 +42,7 @@ dependencies = [
 
 [[package]]
 name = "astro-io"
-version = "0.6.2"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "base64",
@@ -62,7 +62,7 @@ dependencies = [
 
 [[package]]
 name = "astro-metadata"
-version = "0.6.2"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "astro-io",
@@ -75,7 +75,7 @@ dependencies = [
 
 [[package]]
 name = "astro-metrics"
-version = "0.6.2"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "astro-io",
@@ -595,7 +595,7 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
 name = "ravensky-astro"
-version = "0.6.2"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "astro-io",

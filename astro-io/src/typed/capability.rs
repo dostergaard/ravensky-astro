@@ -1,4 +1,4 @@
-//! Truthful initial format/sample/codec capability description for P2/P3.
+//! Format, sample, and codec capability description for caller planning.
 
 use super::write::{
     fits_output_bound_u16, xisf_output_bound_u16, EncodedSizeBound, FitsCodec, U16ImageSpec,
@@ -75,17 +75,17 @@ impl Capability {
     }
 }
 
-/// Describe the proven P1 subset for one monochrome image with no auxiliary
+/// Describe the supported exact UInt16 subset for one monochrome image with no auxiliary
 /// metadata. Multi-image output and additional property bounds must be
 /// calculated with the corresponding writer bound APIs.
 pub fn assess(query: &CapabilityQuery) -> Capability {
     use Capability::{Supported, Unsupported};
     if query.sample_type != SampleType::UInt16 {
-        return Unsupported { reason: "P1 exact writer/reader supports UInt16 only; floating FITS tiled compression is not proven bitwise lossless" };
+        return Unsupported { reason: "Exact writer/reader supports UInt16 only; floating FITS tiled compression is not proven bitwise lossless" };
     }
     if query.width == 0 || query.height == 0 || query.channels != 1 {
         return Unsupported {
-            reason: "P1 writer requires nonzero two-dimensional monochrome geometry",
+            reason: "Writer requires nonzero two-dimensional monochrome geometry",
         };
     }
     let image = U16ImageSpec {
@@ -106,7 +106,7 @@ pub fn assess(query: &CapabilityQuery) -> Capability {
         ContainerFormat::Fits => {
             if query.byte_shuffle {
                 return Unsupported {
-                    reason: "FITS byte shuffle is not a P1 codec setting",
+                    reason: "FITS byte shuffle is not a supported codec setting",
                 };
             }
             let codec = match &query.codec {
@@ -116,7 +116,7 @@ pub fn assess(query: &CapabilityQuery) -> Capability {
                 CompressionCodec::Gzip2 => FitsCodec::Gzip2,
                 _ => {
                     return Unsupported {
-                        reason: "FITS codec is outside the proven UInt16 P1 subset",
+                        reason: "FITS codec is outside the supported exact UInt16 subset",
                     }
                 }
             };
@@ -145,7 +145,7 @@ pub fn assess(query: &CapabilityQuery) -> Capability {
                 CompressionCodec::Lz4 => XisfCodec::Lz4,
                 _ => {
                     return Unsupported {
-                        reason: "XISF codec is outside the proven UInt16 P1 subset",
+                        reason: "XISF codec is outside the supported exact UInt16 subset",
                     }
                 }
             };

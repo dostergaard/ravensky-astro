@@ -8,6 +8,8 @@ repository.workspace = true
 homepage.workspace = true
 rust-version.workspace = true
 description = "I/O operations for astronomical image formats"
+keywords = ["astronomy", "fits", "xisf", "image"]
+categories = ["science"]
 documentation = "https://docs.rs/astro-io"
 readme = "README.md"
 

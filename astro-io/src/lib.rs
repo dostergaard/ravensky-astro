@@ -3,7 +3,7 @@
 pub mod fits;
 pub mod xisf;
 
-/// Bounded, all-image source inventory for later conversion policy and typed I/O.
+/// Bounded all-image inventory, exact UInt16 I/O, and capability assessment.
 pub mod typed;
 
 /// Read-only structural and payload validation for local image files.

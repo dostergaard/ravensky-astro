@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - Unreleased candidate
+
+### Added
+
+- Typed FITS/XISF container inventory and bounded exact UInt16 image reading,
+  writing, and readback comparison in `astro-io`.
+- FITS UInt16 writers for uncompressed, Rice, GZIP_1, and GZIP_2 output and
+  XISF UInt16 writers for uncompressed, zlib, LZ4, and Zstandard output, within
+  the documented geometry, metadata, and resource limits.
+- `astro-metadata::fidelity` impact ledgers, native metadata projection,
+  semantic readback comparison, and provenance primitives for applications
+  that explicitly review unsupported or changed metadata.
+- Read-only examples for exact UInt16 container comparison and metadata
+  impact inspection.
+
+### Changed
+
+- Align the four public crates and their internal version requirements at
+  `0.7.0`. `astro-bench` remains unpublished.
+- Interpret equal-length XISF compressed subblocks as raw data according to
+  XISF 1.0 Revision 2, and reject nonconformant encodings that previously
+  relied on ambiguous length handling.
+
+### Limitations
+
+- Exact writing and pixel comparison are limited to the qualified monochrome
+  UInt16 subset. Other sample types may be readable or inspectable but are
+  not claimed as exact writable formats.
+- Metadata preservation depends on the source record and destination format;
+  callers must inspect the impact ledger and verify staged output. These APIs
+  do not perform an approved end-to-end application transaction by themselves.
+
 ## [0.6.2] - 2026-11-02
 
 ### Fixed

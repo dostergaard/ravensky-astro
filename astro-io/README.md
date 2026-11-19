@@ -4,14 +4,32 @@ I/O operations for astronomical image formats.
 
 ## Overview
 
-`astro-io` provides functionality for loading and saving astronomical image formats, including FITS and XISF. It handles the low-level details of file I/O, image data extraction, and compression.
+`astro-io` provides bounded format access, validation and restricted image
+writing for FITS and XISF. FITS loading and writing use CFITSIO; managed
+validation and XISF handling use Rust implementations.
 
 ## Features
 
-- FITS file loading
-- XISF file loading
-- Efficient image data handling
-- Support for various data types (8-bit, 16-bit, 32-bit float)
+- Legacy selected-image FITS and XISF loaders returning `Vec<f32>`
+- Structural and full-file validation of a broader FITS/XISF subset
+- All-image inventories and bounded exact logical UInt16 pixel access
+- Restricted two-dimensional monochrome UInt16 FITS/XISF writers and exact
+  image comparison
+
+| Operation | Supported boundary |
+| --- | --- |
+| Read/inspect | FITS HDUs and XISF images, with unsupported structures visible in inventories; legacy loaders return a selected image only |
+| Validate | Broader FITS/XISF structures, codecs, checksums and sample descriptors; validation does not prove two files have equal pixels or metadata |
+| Exact pixel rewrite | Two-dimensional monochrome UInt16 images only; FITS uncompressed/RICE_1/GZIP_1/GZIP_2 and XISF uncompressed/zstd/zlib/LZ4 in the tested writer profile |
+| Exact image comparison | Independently validates both files and compares all supported UInt16 image identities, geometry, types and samples |
+| Metadata preservation | Explicit raw-card/property primitives; semantic preservation and approved-loss handling are separate `astro-metadata` and application decisions |
+
+Float32/Float64 and other sample formats can be inspected or validated in
+supported containers, but these typed writers do not claim exact floating
+point conversion or compression. Compression can be lossless when the chosen
+representation and codec preserve the samples; this crate has not qualified
+bit-exact floating point writer round trips, including NaN payloads and
+signed zero.
 
 FITS loading selects the first nonempty image with at least two axes. CFITSIO
 presents tiled-image binary-table extensions as logical images, so an empty
@@ -34,7 +52,7 @@ close/drop in `with_cfitsio` or `try_with_cfitsio`. Do not let live handles esca
 the closure. Borrowed-handle helpers protect their own operations, but cannot cover
 the caller's separate opens/closes. Uncoordinated direct calls and independently
 linked copies remain outside the gate. See the
-[control design and native allocation audit](../docs/CfitsioControlImplementation.md).
+[control design and native allocation audit](https://github.com/dostergaard/ravensky-astro/blob/master/docs/CfitsioControlImplementation.md).
 
 ## Windows FITS Path-Length Note
 
@@ -51,7 +69,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-astro-io = "0.6.0"
+astro-io = "0.7.0"
 ```
 
 ## API Reference
@@ -72,7 +90,7 @@ pub fn load_fits(path: &Path) -> Result<(Vec<f32>, usize, usize)>
     - `usize`: Height of the image in pixels
 - **Errors**:
   - If the file cannot be opened
-- If the container has no nonempty image with at least two axes
+  - If the container has no nonempty image with at least two axes
   - If the image data cannot be read
   - On Windows, FITS open may fail when the full pathname is 260 characters or longer due to CFITSIO `fopen` path handling.
 
@@ -137,7 +155,7 @@ Current scope:
 - Exactly one non-skippable Zstandard frame per compression subblock, with whole-block unshuffle after subblock concatenation
 - Unknown foreign-namespace extension subtrees only when they are direct children of the XISF root
 
-## P1 typed image I/O
+## Exact UInt16 image I/O
 
 `astro_io::typed` inventories all FITS HDUs and XISF `Image` elements before
 pixel access. FITS inventory retains ordered header cards and physical HDU
@@ -172,14 +190,27 @@ raw FITS non-image HDU or XISF attachment bytes.
 `typed::compare::compare_u16_containers` performs full independent validation
 and compares every image's count, identity, geometry, logical type and exact
 samples. `typed::capability::assess` describes the narrow proven subset.
-`xisf_output_bound_u16` and its property-aware variant give conservative
-whole-file bounds for this writer; FITS whole-file bounds are explicitly
-unknown because native CFITSIO header/tile/table/heap worst cases have not
-been proved. A future disk planner must also reserve writer scratch space.
+`xisf_output_bound_u16` and its metadata-aware variants give conservative
+whole-file bounds for this writer. `fits_output_bound_u16` and
+`fits_output_bound_with_cards` give conservative bounds for the supported
+UInt16 FITS writer and its checked row-tile layout. These bounds cover the
+specified output shape, codec and declared extra FITS cards; callers must
+also reserve scratch and journal space and reject inputs outside the writer's
+checked limits. They do not bound arbitrary CFITSIO operations or general
+FITS/XISF files.
 
-These are low-level primitives. Metadata equivalence and loss approval belong
-to the next conversion phase; these APIs do not establish general FITS↔XISF
-conversion eligibility or a user-facing conversion workflow.
+These are low-level primitives. `astro-metadata::fidelity` classifies
+metadata mappings and compares supported output metadata separately.
+Applications must combine that assessment with exact image comparison,
+source-freshness checks, full staged readback and safe publication. These
+APIs do not establish general FITS↔XISF conversion eligibility or a
+user-facing conversion workflow.
+
+The relevant external format reference is the
+[PixInsight XISF 1.0 specification, Revision 2 (document 1.02, October 2026)](https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html).
+The specification is linked for attribution and is not redistributed in this
+crate. See the buildable `examples/u16_container_compare.rs` for exact UInt16
+image comparison; it does not compare metadata or approve any conversion.
 
 ## Usage Examples
 
@@ -339,7 +370,7 @@ NaN/undefined image samples remain legal. Scaled/nullable compressed-image table
 columns and unknown codecs/extensions return explicit unsupported outcomes.
 Present FITS checksums are verified before payload decode; decoded-size preflight
 still precedes checksum I/O. See the
-[compressed-FITS resource implementation](../docs/CompressedFitsResourceImplementation.md).
+[compressed-FITS resource implementation](https://github.com/dostergaard/ravensky-astro/blob/master/docs/CompressedFitsResourceImplementation.md).
 The adapted HCOMPRESS algorithm's upstream notices are included in `licenses/`.
 
 `MemoryBudget::used_bytes()` and `peak_bytes()` report reservation accounting;
@@ -351,7 +382,7 @@ not native allocator interception. Allocator overhead, thread stacks, OS cache a
 returned reports are outside the working allowance, so arbitrary OOM recovery or
 a hard process-memory ceiling is not promised.
 
-The [resource implementation design](../docs/ValidationResourceImplementation.md)
+The [resource implementation design](https://github.com/dostergaard/ravensky-astro/blob/master/docs/ValidationResourceImplementation.md)
 records scope, backend evidence and performance targets. Consumers still need
 scheduler/readiness integration, real-capture/platform verification and measured
 foreground responsiveness before enabling this as a monitoring release gate.
@@ -386,16 +417,16 @@ checksums, and use published SHA test vectors. Broader capture compatibility and
 Windows/Linux execution remain required before enabling this validator as a
 release monitoring gate. Existing loading APIs are unchanged.
 
-The optional [`astro-bench` runner](../astro-bench/README.md) generates bounded
+The optional [`astro-bench` runner](https://github.com/dostergaard/ravensky-astro/blob/master/astro-bench/README.md) generates bounded
 synthetic validator/I/O workloads with serial/fixed-concurrency measurements.
-See the [initial baseline](../docs/benchmarks/2026-09-06-m4-max/README.md) before
+See the [initial baseline](https://github.com/dostergaard/ravensky-astro/blob/master/docs/benchmarks/2026-09-06-m4-max/README.md) before
 the managed-reservation and streaming changes. The subsequent
-[completion investigation](../docs/benchmarks/2026-09-07-m4-max-completion/README.md)
+[completion investigation](https://github.com/dostergaard/ravensky-astro/blob/master/docs/benchmarks/2026-09-07-m4-max-completion/README.md)
 records extended GZIP scaling, profiles, cancellation, a responsiveness proxy and
 real captures on three supplied volumes, including 714 MiB ordinary FITS files.
-The [managed compressed-FITS measurements](../docs/benchmarks/2026-09-08-managed-fits/README.md)
+The [managed compressed-FITS measurements](https://github.com/dostergaard/ravensky-astro/blob/master/docs/benchmarks/2026-09-08-managed-fits/README.md)
 add Rice/PLIO/HCOMPRESS scaling and tile-memory evidence plus cooperative shutdown
-probes. See [release verification](../RELEASING.md) for current platform CI scope.
+probes. See [release verification](https://github.com/dostergaard/ravensky-astro/blob/master/RELEASING.md) for current platform CI scope.
 These measurements do not establish release defaults or a hard process-memory ceiling.
 
 Format references: [FITS 4.0](https://fits.gsfc.nasa.gov/standard40/fits_standard40aa.pdf),

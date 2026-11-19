@@ -20,7 +20,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-astro-metrics = "0.6.0"
+astro-metrics = "0.7.0"
 ```
 
 ## API Reference
@@ -292,7 +292,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Additional Documentation
 
-For more detailed information about the quality metrics and how they're calculated, see the [Quality Metrics Documentation](../docs/QualityMetrics.md).
+For more detailed information about the quality metrics and how they're calculated, see the [Quality Metrics Documentation](https://github.com/dostergaard/ravensky-astro/blob/master/docs/QualityMetrics.md).
 
 ## License
 

@@ -1,138 +1,63 @@
 # Releasing RavenSky Astro
 
-The coordinated release line is **0.6.1**, a hosted-documentation repair for the
-0.6.0 crates approved for closeout on 2026-09-09.
-Actual publication and handoff status are recorded in
-[`docs/work/file-validation-0.6.0/HANDOFF.md`](docs/work/file-validation-0.6.0/HANDOFF.md).
-All four 0.6.0 crates were published from `84a0f9e` on 2026-09-09, but docs.rs
-failed in the bundled CFITSIO autotools build because its source directory is
-read-only. Do not republish or alter 0.6.0. The coordinated 0.6.1 release uses
-RavenSky-owned docs.rs metadata to select the existing CMake source-build path
-only for hosted documentation. All four crates, hosted documentation, `v0.6.1`,
-and the [GitHub release](https://github.com/dostergaard/ravensky-astro/releases/tag/v0.6.1)
-were verified on 2026-09-09.
-The version introduces the additive file-validation
-and resource-control APIs. Existing image-loader contracts remain unchanged.
-`astro-bench` is a repository library/CLI with `publish = false`; it is not one
-of the crates uploaded to crates.io. Its standalone usage is documented in the
-[benchmark guide](docs/BenchmarkGuide.md).
+The last published line is 0.6.2. The next proposed line is 0.7.0; its
+preparation evidence and separate publication approval gate are in
+[`docs/work/image-conversion-compression-v1-p7/`](docs/work/image-conversion-compression-v1-p7/).
+The [draft release notes](docs/releases/RavenSkyAstro-0.7.0-draft.md) describe
+the new APIs and support boundaries. Historical 0.6.0–0.6.2 release details
+remain in the corresponding `docs/work/` records and the changelog.
 
-## Review and verification
+## Before requesting publication approval
 
-Keep implementation, benchmark evidence and release preparation as separate
-commits. Review the complete PR against `master` before merging. Do not publish
-from an unreviewed feature branch. The user approved PR #2 and its release on
-2026-09-09, including final task documentation and release preparation.
+Review the complete source and package diff against `master`. Verify the
+version and API compatibility assessment, all four `Cargo.toml` manifests,
+the Rust 1.94 minimum, licenses, README examples, third-party notices and
+archive members. Keep `astro-bench` unpublished. The package should not
+redistribute the official XISF specification or include investigation
+artifacts and developer configuration.
 
-Verify the declared Rust 1.94 minimum with the committed lockfile:
+Run the relevant full workspace checks from a clean reviewed commit:
 
 ```sh
-cargo fmt --all --check
-cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
-cargo test --locked --workspace --all-targets --all-features
-cargo test --locked --workspace --all-features --doc
-cargo build --locked --release --workspace --all-features --examples
-RUSTDOCFLAGS='-D warnings' cargo doc --locked --workspace --all-features --no-deps
-cargo package --locked --workspace --exclude astro-bench --target-dir target/package-061-final
+cargo +1.94.0 fmt --all --check
+cargo +1.94.0 clippy --locked --workspace --all-targets --all-features -- -D warnings
+cargo +1.94.0 test --locked --workspace --all-targets --all-features
+cargo +1.94.0 test --locked --workspace --all-features --doc
+cargo +1.94.0 build --locked --release --workspace --all-features --examples
+RUSTDOCFLAGS='-D warnings' cargo +1.94.0 doc --locked --workspace --all-features --no-deps
+cargo +1.94.0 package --locked --workspace --exclude astro-bench --target-dir target/package-070
 ```
 
-The package command verifies all four archives with a temporary registry for the
-unpublished local dependencies; it does not upload them. Registry access is needed:
-Cargo 1.94's offline multi-package verification failed with `no hash listed` in
-the temporary registry here; online verification passed. Use `--allow-dirty` only
-for precommit inspection, then repeat from a clean reviewed checkout. Inspect
-archive contents, including the adapted decoder's third-party notices. Choose a
-fresh target directory for each changed candidate; do not reuse a larger archive.
-Raw
-benchmark reports stay in Git and are excluded from the root crate archive.
+Use a fresh target directory for each changed package candidate; an earlier
+Cargo version left trailing bytes when an archive was overwritten after its
+contents shrank. Inspect the generated `.crate` archives directly. The
+`--workspace` package check uses a temporary local registry to verify the
+four coordinated packages without uploading them. An ordinary crates.io
+dry-run for downstream crates may remain blocked until their new dependency
+versions are actually published. Record that distinction.
 
-The local-capture XISF loader test is explicitly ignored in normal runs because
-its input is intentionally outside Git. Where that capture is available, run
-`cargo test -p astro-io test_load_xisf_real_sample -- --ignored` separately.
-Generated XISF loader and validator tests remain part of normal CI.
+`astro-io`'s local-capture test is intentionally ignored in standard runs
+because its source file is outside Git. CI covers macOS ARM64 and Linux
+x86-64 GNU; Windows GNU coverage excludes `astro-metrics` and the facade
+because `sep-sys` uses POSIX `rand_r`. A local macOS check does not replace a
+green CI run on the candidate commit. AstroMuninn's vendored `fitsio-sys`
+backend needs separate product qualification after the registry transition.
 
-CI covers the whole workspace on Linux x86-64 GNU and macOS ARM64. Windows x86-64
-GNU covers `astro-io`, `astro-metadata` and `astro-bench`: existing `sep-sys 1.3.0`
-requires POSIX `rand_r` and fails compilation on Windows, so `astro-metrics` and
-the root facade are not Windows-supported by this CI. The failure is recorded in
-[the first candidate run](https://github.com/dostergaard/ravensky-astro/actions/runs/34209794638).
-This is build/test coverage, not benchmark evidence. Windows MSVC still requires
-the consuming application's patched backend build; GNU CI is not MSVC evidence.
-AstroMuninn's vendored `fitsio-sys 0.5.5` must be checked separately from this
-workspace's normal registry `0.5.7` dependency before application integration.
+## After explicit approval
 
-## Merge and publication after approval
+Publish the reviewed 0.7.0 crates in dependency order, waiting for each
+version to be available on crates.io before the next dry-run and upload:
 
-1. Confirm all PR checks pass and the user approves the final diff. Merge into
-   `master`, fetch and fast-forward the local branch. Keep rollback commits and
-   evidence; delete the feature branch only after the merged result is verified.
-2. Set the 0.6.1 changelog date to the actual release date, verify all workspace
-   and internal dependency versions, and commit that release metadata. Repeat
-   the clean package check above.
-3. Publish in dependency order, allowing each version to appear in the registry
-   before starting its dependents:
+```sh
+cargo publish --locked -p astro-io
+cargo publish --locked -p astro-metadata
+cargo publish --locked -p astro-metrics
+cargo publish --locked -p ravensky-astro
+```
 
-   ```sh
-   cargo publish --locked -p astro-io
-   cargo publish --locked -p astro-metadata
-   cargo publish --locked -p astro-metrics
-   cargo publish --locked -p ravensky-astro
-   ```
-
-4. Verify the four 0.6.1 registry versions and docs.rs documentation. Tag the reviewed
-   release commit `v0.6.1`, push the tag and publish release notes linking the
-   public API, support limitations and benchmark guide. Do not move an existing
-   release tag or attempt to republish an existing crate version.
-5. Update AstroMuninn's registry dependency requirements and lockfile to 0.6.1;
-   add its direct `astro-io` dependency when integrating validation. Test core,
-   CLI and Lite with the vendored FITS backend and the actual release targets.
-   Release jobs must resolve published versions without workspace path patches.
-6. Implement the shared AstroMuninn monitor/resource scheduler under its approved
-   design. Configuration remains manually editable until an editor is developed.
-
-## Evidence for this release
-
-The 0.6.1 release changes only versions, dependency configuration, docs.rs
-metadata, release documentation and package-audit tooling. Default and
-`--all-features` graphs retain the existing bundled autotools backend. The
-docs.rs selector adds `fitsio/src-cmake` only to hosted documentation commands;
-a fresh read-only dependency-source probe passed for all four public crates.
-The complete local release matrix passed (131 tests, two intentional ignores,
-four doctests), as did the isolated AstroMuninn `fitsio-sys 0.5.5` compatibility
-matrix (108 tests, one intentional ignore). Precommit 0.6.1 packages passed Cargo
-verification and contained the intended normalized metadata. See the durable
-[evidence record](docs/work/file-validation-0.6.0/EVIDENCE.md#061-hosted-documentation-repair).
-
-Final clean packages from `4bc4660` passed audit, CI run 34410913809 passed all
-configured jobs, all four registry archives matched their prepublication hashes,
-and docs.rs builds 4395656, 4395657, 4395664 and 4395675 succeeded. The tag and
-GitHub release point to that published commit. Do not publish the precommit
-archives or attempt to republish an existing version.
-
-Local 0.6.0 checks passed: 131 workspace tests, four doctests, formatting, Clippy
-with warnings denied, release builds and rustdoc. Two tests are explicitly ignored
-in the standard suite (the local XISF capture and the existing SEP test); the XISF
-capture test also passed when invoked explicitly. Nine Python investigation tests
-passed. An isolated copy using AstroMuninn's unchanged vendored `fitsio-sys 0.5.5`
-passed all 108 applicable `astro-io`, `astro-metadata` and `astro-bench` tests.
-The normal registry dependency remains `fitsio-sys 0.5.7`. All four 0.6.0 packages
-passed online Cargo verification from clean commit `6237264`, including a fresh
-`--target-dir target/package-check-060` run after archive-content cleanup. Archive
-inspection confirmed retained decoder notices and excluded raw benchmark reports.
-Use a new package target directory after changing exclusions: this Cargo version
-left trailing bytes when overwriting a previously larger `.crate` archive locally.
-The fresh archives passed checks for complete gzip consumption as well as builds.
-Final implementation CI passed on `2e9ba95`, run
-[34237121494](https://github.com/dostergaard/ravensky-astro/actions/runs/34237121494).
-The durable [evidence record](docs/work/file-validation-0.6.0/EVIDENCE.md) contains
-fresh closeout checks and actual publication verification.
-
-- [Managed compressed-FITS implementation](docs/CompressedFitsResourceImplementation.md)
-- [Managed codec memory/scaling/cancellation](docs/benchmarks/2026-09-08-managed-fits/README.md)
-- [Earlier synthetic, real-capture and storage investigation](docs/benchmarks/2026-09-07-m4-max-completion/README.md)
-
-Unknown format extensions remain explicit `Unsupported` outcomes. Validation is
-read-only and does not prevent a producer from changing a file afterward. Working
-reservations are not an OS-enforced process memory limit. Library completion does
-not establish adaptive application defaults or foreground responsiveness under
-all workloads.
+The real four-crate publication requires explicit user authorization;
+preparing or dry-running packages does not grant it. After publication, verify registry
+archives and docs.rs, then obtain approval before a public tag or GitHub
+release. AstroMuninn's pinned Git overrides may be replaced only after the
+published crates resolve and qualify from the registry. Do not remove its
+independent vendored `fitsio-sys` patch as part of that transition.

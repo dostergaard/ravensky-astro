@@ -33,7 +33,7 @@ pub fn append_fits_raw_cards(path: &Path, hdu_index: usize, cards: &[String]) ->
 }
 
 /// Append one short ASCII FITS HISTORY record and refresh the HDU checksum.
-/// This primitive is suitable for later provenance values supplied by P2/P4.
+/// This primitive accepts provenance values supplied by the caller after verification.
 pub fn append_fits_history(path: &Path, hdu_index: usize, text: &str) -> Result<()> {
     if text.is_empty() || text.len() > 72 || !text.bytes().all(|byte| (32..=126).contains(&byte)) {
         bail!("FITS HISTORY value must be 1..=72 printable ASCII bytes");

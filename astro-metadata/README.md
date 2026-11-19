@@ -29,12 +29,12 @@ order; `raw_headers` remains a last-value-wins lookup across those raw cards
 and may therefore differ from the selected image's canonical fields when later
 HDUs repeat a keyword. Extraction reads headers, not pixel data or checksums.
 
-FITS metadata extraction shares astro-io's CFITSIO admission gate with image loading
-and validation. Reentrant builds retain concurrent access using independent handles;
+FITS metadata extraction shares astro-io's CFITSIO admission gate with FITS image
+loading and header access. Reentrant builds retain concurrent access using independent handles;
 other builds serialize native work. Path-based extraction includes open and close.
 When passing a caller-owned `FitsFile`, enclose its complete lifetime in
 `astro_io::fits::backend::with_cfitsio`, including direct fitsio calls and drop.
-See [astro-io's concurrency contract](../astro-io/README.md#cfitsio-concurrency).
+See [astro-io's concurrency contract](https://github.com/dostergaard/ravensky-astro/blob/master/astro-io/README.md#cfitsio-concurrency).
 
 ## Windows FITS Path-Length Note
 
@@ -50,7 +50,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-astro-metadata = "0.6.0"
+astro-metadata = "0.7.0"
 ```
 
 ## API Reference
@@ -233,6 +233,23 @@ pub fn extract_metadata<R: Read + Seek>(reader: &mut R) -> Result<AstroMetadata>
   - If the XML header cannot be parsed
 
 ## Usage Examples
+
+### Inspecting conversion metadata impact
+
+`astro_metadata::fidelity` projects the low-level `astro_io::typed`
+inventory into a per-image semantic record and impact ledger. `inspect`
+classifies mappings, unsupported structures and named non-image loss
+categories for a proposed FITS or XISF output. A `RequiresApproval` result is
+not approval: callers must obtain and bind consent to the specific current
+plan. Image loss is never approvable. The comparison functions check the
+supported semantic metadata and explicit provenance after output readback;
+they do not compare pixels or certify a transaction by themselves.
+
+The buildable `examples/impact_ledger.rs` accepts an input path and proposed
+destination format. It only inspects the source; it does not write a file or
+silently approve losses. Arbitrary FITS tables, unsupported XISF properties
+and unqualified sample mappings may block conversion even when metadata can
+be extracted for display or routing.
 
 ### Extracting metadata from a FITS file
 

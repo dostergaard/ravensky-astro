@@ -122,7 +122,7 @@ pub struct ContainerInventory {
 }
 
 /// A cheap binding between this inventory and one local file observation.
-/// Application transactions still require P4's stronger source checks.
+/// Application transactions still require stronger source checks.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct SourceObservation {
     len: u64,

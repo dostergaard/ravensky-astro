@@ -1,5 +1,5 @@
 //! Low-level image writers. They consume a complete list of image descriptors;
-//! deciding which source metadata may be mapped or discarded belongs to P2.
+//! deciding which source metadata may be mapped or discarded belongs to the caller.
 
 mod xisf;
 pub use xisf::{

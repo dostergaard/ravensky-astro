@@ -24,7 +24,7 @@ pub enum XisfCodec {
 }
 
 /// Narrow, lossless XISF property-writing primitives. Arbitrary property
-/// types remain visible in inventory and must be rejected or handled by P2.
+/// types remain visible in inventory and must be rejected or handled by the caller.
 #[derive(Debug, Clone, Copy)]
 pub enum XisfPropertyValue<'a> {
     String(&'a str),

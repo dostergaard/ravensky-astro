@@ -8,6 +8,8 @@ repository.workspace = true
 homepage.workspace = true
 rust-version.workspace = true
 description = "Statistical metrics for astronomical images"
+keywords = ["astronomy", "image-analysis", "photometry"]
+categories = ["science"]
 documentation = "https://docs.rs/astro-metrics"
 readme = "README.md"
 

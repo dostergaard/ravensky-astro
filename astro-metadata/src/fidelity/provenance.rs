@@ -1,4 +1,4 @@
-//! Format-specific truthful provenance fields. P4 owns staging and final
+//! Format-specific truthful provenance fields. The application owns staging and final
 //! verification; this module only serializes facts after caller-supplied
 //! preliminary readback evidence and checks the independently inventoried bytes.
 
@@ -12,9 +12,9 @@ pub struct PreliminaryVerified {
     _private: (),
 }
 impl PreliminaryVerified {
-    /// The caller must supply the real P1 pixel comparison and P2 metadata
+    /// The caller must supply the real pixel comparison and metadata
     /// readback results for the same staged output. This token has no filesystem
-    /// authority; P4 must still verify final bytes after provenance is written.
+    /// authority; the application must still verify final bytes after provenance is written.
     pub fn from_readback(
         pixel_mismatch: Option<ImageMismatch>,
         metadata: &ComparisonReport,
@@ -33,7 +33,7 @@ pub struct ProvenanceInput<'a> {
     pub output_format: ContainerFormat,
     pub actual_method: &'a str,
     pub operation_id: Option<&'a str>,
-    /// P3 supplies explicitly approved categories; P2 does not grant them.
+    /// The application supplies explicitly approved loss categories.
     pub approved_losses: &'a [LossCategory],
 }
 
@@ -78,7 +78,7 @@ impl ProvenanceRecord {
         })
     }
 
-    /// Append these cards to every output image HDU with P1's checked raw-card
+    /// Append these cards to every output image HDU with the checked raw-card
     /// writer. Existing source CREATOR/HISTORY cards must be retained first.
     pub fn fits_cards(&self) -> Result<Vec<String>> {
         if self.output_format != ContainerFormat::Fits {
@@ -92,7 +92,7 @@ impl ProvenanceRecord {
         Ok(cards)
     }
 
-    /// Root-level application namespace properties for the P1 XISF writer.
+    /// Root-level application namespace properties for the XISF writer.
     /// `XISF:` is reserved and is deliberately not used.
     pub fn xisf_properties(&self) -> Vec<(String, String)> {
         let mut properties = vec![
@@ -181,7 +181,7 @@ pub struct ProvenanceCheck {
 }
 
 /// Check the actual output inventory, including every image HDU for FITS.
-/// P4 must additionally perform a final full container/pixel verification.
+/// The application must additionally perform a final full container/pixel verification.
 pub fn verify_provenance(
     output: &ContainerInventory,
     expected: &ProvenanceRecord,

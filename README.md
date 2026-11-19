@@ -4,7 +4,7 @@
 
 **RavenSky Astro** is a modular collection of Rust crates for astronomical image I/O, metadata extraction, and quantitative image analysis.
 
-Designed for astrophotography tools and observatory workflows, RavenSky Astro provides reusable building blocks for working with FITS and XISF data in pure Rust.
+Designed for astrophotography tools and observatory workflows, RavenSky Astro provides reusable Rust APIs for FITS and XISF data. FITS loading and writing use CFITSIO through `fitsio`; managed validation and XISF handling use Rust implementations.
 
 ---
 
@@ -13,8 +13,6 @@ Designed for astrophotography tools and observatory workflows, RavenSky Astro pr
 RavenSky Astro is actively developed and used in production within my own astrophotography tools and workflows. The APIs are designed for reuse and stability, but the ecosystem continues to evolve as new utilities and applications are built on top of it.
 
 The goal is not just experimentation — it is to build a durable, composable foundation for astronomical image tooling in Rust.
-
-The next deliberate cleanup pass should target boundary cleanup, XISF hardening, API surface review, and docs consolidation, because those are the clearest repo-wide needs right now.
 
 ---
 
@@ -35,7 +33,7 @@ Start with the [standalone benchmark guide](docs/BenchmarkGuide.md) for setup,
 commands, report interpretation, real captures and use from a separate Rust project.
 No RavenSky application is required.
 
-The [benchmark runner](astro-bench/README.md) provides generated FITS/XISF validator
+The [benchmark runner](https://github.com/dostergaard/ravensky-astro/tree/master/astro-bench) provides generated FITS/XISF validator
 and raw-I/O workloads, explicit concurrency, and JSON reports. It is separate from
 production dependencies and does not change application defaults. See the
 [benchmark and calibration design](docs/BenchmarkAndCalibrationDesign.md) for scope
@@ -48,7 +46,7 @@ and the path toward application-driven calibration.
 Windows GNU CI covers `astro-io`, `astro-metadata` and the unpublished benchmark
 tools. `astro-metrics` and the root facade depend on `sep-sys 1.3.0`, whose POSIX
 `rand_r` call currently prevents Windows compilation. See
-[release verification and platform scope](RELEASING.md) before choosing a target.
+[release verification and platform scope](https://github.com/dostergaard/ravensky-astro/blob/master/RELEASING.md) before choosing a target.
 
 On Windows, FITS file access in AstroMuninn and the ravensky-astro FITS APIs depends on CFITSIO (via `fitsio` / `fitsio-sys`). CFITSIO currently opens disk files using its `fopen`-based path handling (`file_openfile`), which in this environment follows the classic Windows path-length boundary.
 
@@ -65,9 +63,15 @@ Managed FITS validation and XISF handling do not use that path implementation.
 
 Handles I/O operations for astronomical image formats:
 
-* FITS file loading and saving
-* XISF file loading and saving
-* Efficient image data handling
+* FITS and XISF loading, structural/full-file validation, and metadata access
+* Bounded exact UInt16 readers and restricted two-dimensional monochrome UInt16 writers
+* Explicit codec capability and exact pixel readback for supported files
+
+Reading or validating a broader FITS/XISF structure does not imply it can be
+rewritten exactly. The typed writers accept uncompressed and selected
+lossless UInt16 codecs; other sample types and unsupported metadata require
+separate qualification. The [astro-io API documentation](https://docs.rs/astro-io)
+describes the supported writer subset and its resource limits.
 
 ```rust
 use astro_io::fits;
@@ -140,11 +144,11 @@ Add only the crates you need:
 
 ```toml
 [dependencies]
-astro-io = "0.6.2"
-astro-metadata = "0.6.2"
-astro-metrics = "0.6.2"
+astro-io = "0.7.0"
+astro-metadata = "0.7.0"
+astro-metrics = "0.7.0"
 # Optional meta crate that re-exports all three:
-ravensky-astro = "0.6.2"
+ravensky-astro = "0.7.0"
 ```
 
 Each crate can be used independently.
