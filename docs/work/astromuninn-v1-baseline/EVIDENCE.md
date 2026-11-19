@@ -44,5 +44,23 @@ The initial sandboxed test build stopped inside `fitsio-sys` autotools with
 `Operation not permitted`; the same unchanged build and tests passed with
 native build access. Tests use repository fixtures and disposable directories;
 no astronomical archive, application configuration or job journal was
-modified. Remote reachability is recorded after the integration commit is
-pushed.
+modified.
+
+## Remote and master integration
+
+The tested integration commit
+`aa4abf1ef1d11939674c53ff263491fd1630afe0` was pushed by ordinary
+non-force `git push -u origin integration/astromuninn-v1.0.0-baseline`.
+`git ls-remote` confirmed that exact ref and showed remote master still at
+`11fb02c59938cc3d736dc03bedefe58ee44b4db7` before its update.
+
+The original checked-out `master` was safely fast-forwarded with
+`git merge --ff-only integration/astromuninn-v1.0.0-baseline` because the
+incoming branch did not modify `.gitignore`. The dirty `.gitignore` file's
+Git object hash was `0cc244ab1e469c296ba87249aca18e3bae31aced`
+before and after the merge; it remains the sole unstaged change there.
+`git push origin master` advanced remote master normally, and a subsequent
+`git ls-remote` confirmed both remote refs at the tested commit. This final
+documentation update records that completed synchronization; it changes no
+crate or benchmark source. Its commit is the final RavenSky baseline revision
+used by AstroMuninn's pinned Git dependency.
