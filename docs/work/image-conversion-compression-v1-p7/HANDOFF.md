@@ -1,5 +1,25 @@
 # P7-A candidate CI handoff
 
+## Current publication checkpoint, 2026-11-20
+
+The user separately authorized **only `astro-io 0.7.0`**. It was published
+from qualified commit `5e25bd7a20781aafdc5f94dc22f4f1a343913a0c`
+after a clean branch/remote check, exact archive SHA-256 comparison and
+successful Rust 1.94 locked publish dry-run. The crates.io registry and the
+downloaded archive both report SHA-256
+`347071fb00b76c080a647053ce3397908c54cf87a6afa6752510015a924eb9c7`.
+The archive is byte-identical to the approved local package. The official
+[docs.rs build 5405037](https://docs.rs/crate/astro-io/0.7.0/builds/5405037)
+succeeded, and the versioned rustdoc page is available.
+
+The other three 0.7.0 crates remain unpublished and require separate explicit
+authorization in dependency order. Before proposing each, requalify its
+exact archive and commit; this evidence-only documentation change alters
+Cargo's VCS metadata and therefore downstream archive hashes. Do not merge,
+tag, publish binaries, or change AstroMuninn. The historical notes below
+describe earlier checkpoints and are superseded by this section where their
+publication status differs.
+
 ## Goal and current state
 
 P7-A has four proposed 0.7.0 crates: `astro-io`, `astro-metadata`,

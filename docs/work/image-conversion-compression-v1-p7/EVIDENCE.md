@@ -1,5 +1,60 @@
 # P7-A RavenSky Astro publication preparation evidence
 
+## `astro-io 0.7.0` publication, 2026-11-20
+
+The final qualified release candidate was commit
+`5e25bd7a20781aafdc5f94dc22f4f1a343913a0c` on
+`release/ravensky-astro-p7-preparation`, with
+[full candidate CI run 44721965333](https://github.com/dostergaard/ravensky-astro/actions/runs/44721965333)
+passing Linux x86-64 GNU, macOS ARM64, Windows x86-64 GNU, and retired
+naming jobs. The branch worktree was clean and `git ls-remote` confirmed
+`origin/release/ravensky-astro-p7-preparation` at the same commit. The original
+RavenSky `master` checkout retained its unrelated `.gitignore` edit;
+AstroMuninn was untouched. Before upload, the official
+[crates.io version API](https://crates.io/api/v1/crates/astro-io/0.7.0)
+returned HTTP 404 while the crate's latest version was 0.6.2.
+
+`cargo +1.94.0 package --locked --workspace --exclude astro-bench --features
+fitsio/src-cmake` regenerated and verified the candidate packages. Its
+`astro-io-0.7.0.crate` SHA-256 was
+`347071fb00b76c080a647053ce3397908c54cf87a6afa6752510015a924eb9c7`,
+matching the user-approved archive. `RUSTUP_TOOLCHAIN=1.94.0 cargo publish
+--dry-run --locked -p astro-io` passed, including package verification, and
+its upload archive had the same SHA-256. The worktree and HEAD remained clean
+and unchanged. With the user's specific authorization, `RUSTUP_TOOLCHAIN=1.94.0
+cargo publish --locked -p astro-io` completed successfully; Cargo reported
+both upload and publication at registry `crates-io`.
+
+The [published version](https://crates.io/crates/astro-io/0.7.0) and
+[version API](https://crates.io/api/v1/crates/astro-io/0.7.0) report 0.7.0,
+checksum `347071fb00b76c080a647053ce3397908c54cf87a6afa6752510015a924eb9c7`,
+license `MIT OR Apache-2.0`, Rust version 1.94, and repository
+`https://github.com/dostergaard/ravensky-astro`; the version is not yanked.
+The [published archive](https://static.crates.io/crates/astro-io/astro-io-0.7.0.crate)
+is 132,834 bytes and was downloaded and byte-compared with the approved local
+package. It contains 38 files, including source, README, both primary
+license files and the three third-party notices. Its
+`.cargo_vcs_info.json` identifies exactly commit `5e25bd7...` and path
+`astro-io`. The [registry dependency metadata](https://crates.io/api/v1/crates/astro-io/0.7.0/dependencies)
+matches the packaged manifest: external normal dependencies and dev-only
+`fs4`; no unpublished RavenSky sibling dependency.
+
+At 2026-11-20 11:08 UTC, the official
+[docs.rs build page](https://docs.rs/crate/astro-io/0.7.0/builds) showed
+`in progress`; [version documentation](https://docs.rs/astro-io/0.7.0/astro_io/)
+redirected to the crate landing page, which said the build would be available
+soon. Shortly afterward,
+[build 5405037](https://docs.rs/crate/astro-io/0.7.0/builds/5405037)
+showed `All builds succeeded`, and the versioned rustdoc URL returned the
+rendered `astro_io` documentation. docs.rs used its own Rust nightly for
+rustdoc; the separate candidate CI and publication checks used Rust 1.94.
+
+`astro-metadata`, `astro-metrics`, and `ravensky-astro` were not published.
+No merge, tag, binary release, or AstroMuninn change was made. This evidence
+update changes the release branch commit and thus Cargo's embedded VCS
+identity for future package archives; requalify and hash each remaining crate
+before seeking its separate publication authorization.
+
 ## Starting audit and publication inventory, 2026-11-19
 
 The release worktree starts at RavenSky Astro
