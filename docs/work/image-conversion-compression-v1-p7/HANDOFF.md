@@ -1,5 +1,34 @@
 # P7-A candidate CI handoff
 
+## Release closure, 2026-11-20
+
+All four 0.7.0 public crates are published, their downloaded archives match
+the approved hashes and individual source commits, and all four docs.rs
+builds succeeded. The independent Rust 1.94 registry-only consumer compiled
+the complete 0.7.0 graph. See the table and commands in EVIDENCE.md; the
+archives do not all originate from one commit.
+
+Current release guidance, changelog and final 0.7.0 notes now describe the
+published crates and their exact capability boundary. The historical draft
+and earlier P7-A planning statements remain in place. The final
+documentation validation passed Rust 1.94 formatting, strict Clippy,
+217 all-target tests with three established ignores, four doctests,
+Cargo metadata, local Markdown links and `git diff --check`. Already
+published archives remain unchanged by these later documentation edits. The
+release-documentation commit containing this record is the coordinated
+`v0.7.0` tag recommendation; after the authorized fast-forward and push,
+`master`, `origin/master` and the preparation branch must all name this same
+commit. The full SHA is in the release-closure run result. No tag or GitHub
+Release was created; both require separate approval.
+
+The original `master` checkout retains its unrelated `.gitignore` edit.
+EVIDENCE.md inventories all RavenSky Astro worktrees. Clean ancestor
+worktrees are only candidates for eventual removal after AstroMuninn v1.0.0
+is released; P0 has two unique commits and needs review. No worktree or
+branch was removed. AstroMuninn was not modified or started for P7-B.
+P7-B is the next phase on a dedicated AstroMuninn branch after this RavenSky
+integration; worktree cleanup across both repositories remains deferred.
+
 ## Current publication checkpoint, 2026-11-20
 
 All four RavenSky Astro 0.7.0 public crates are published and verified on

@@ -1,5 +1,92 @@
 # P7-A RavenSky Astro publication preparation evidence
 
+## Release documentation and master integration closure, 2026-11-20
+
+The official crates.io version and dependency APIs, downloaded archives,
+embedded `.cargo_vcs_info.json`, and docs.rs build pages were checked again
+at closure. All four versions are non-yanked, declare `MIT OR Apache-2.0`
+and Rust 1.94, and have the expected `^0.7.0` shared-crate dependency edges.
+Each downloaded archive matched both the registry checksum and the approved
+package hash. The packages originated from successive commits:
+
+| Published crate | Source commit embedded in archive | Archive bytes | SHA-256 | docs.rs build |
+| --- | --- | ---: | --- | --- |
+| `astro-io 0.7.0` | `5e25bd7a20781aafdc5f94dc22f4f1a343913a0c` | 132,834 | `347071fb00b76c080a647053ce3397908c54cf87a6afa6752510015a924eb9c7` | [5405037](https://docs.rs/crate/astro-io/0.7.0/builds/5405037), succeeded |
+| `astro-metadata 0.7.0` | `d905555217fdfe2f4cba3261f7d9a8d6dcf68a5d` | 51,828 | `bf9419762cd7c5a518095491c0e116bdbf0f820e6b11a8903e2933411f694560` | [5405373](https://docs.rs/crate/astro-metadata/0.7.0/builds/5405373), succeeded |
+| `astro-metrics 0.7.0` | `2c3345af901acd15709dbdf15d321b19bdc94124` | 20,653 | `d01669e7229477bb6fdf997b58a7e366945c05d61215062541c6fb93cf886fa0` | [5405744](https://docs.rs/crate/astro-metrics/0.7.0/builds/5405744), succeeded |
+| `ravensky-astro 0.7.0` | `6b1eeede00089a7cdc5488d75406d500d94efd6d` | 164,265 | `f07ca6796366ba5966429d2e3098f6fc1e9d3a557690fce270d883ca8ed8f5ea` | [5405807](https://docs.rs/crate/ravensky-astro/0.7.0/builds/5405807), succeeded |
+
+An independent temporary Rust 1.94 consumer declared only
+`ravensky-astro = "=0.7.0"` and passed `cargo check --locked`. Its lockfile
+and Cargo metadata resolved one registry-sourced 0.7.0 copy of each crate,
+with the four checksums above and no path or Git patch. This is a public
+registry graph check, separate from the successful candidate CI
+[run 44721965333](https://github.com/dostergaard/ravensky-astro/actions/runs/44721965333)
+at implementation commit `5e25bd7a20781aafdc5f94dc22f4f1a343913a0c`.
+Later branch commits before this closure changed publication evidence only.
+
+`CHANGELOG.md` now dates 0.7.0 to 2026-11-20. `RELEASING.md` states that all
+four crates are published and links the completed
+`docs/releases/RavenSkyAstro-0.7.0.md`. The original `-draft.md` remains as
+a historical publication candidate. The final notes preserve the exact
+monochrome UInt16 writer limit, metadata impact review, and the boundary
+between library operations and application-level conversion transactions.
+The README links the final notes and describes native CFITSIO/SEP backends
+accurately. P7-A's earlier plans and publication checkpoints remain in their
+historical context below.
+
+Post-documentation local validation on macOS ARM64 with Rust 1.94 and
+`fitsio/src-cmake` passed: `cargo fmt --all --check`, strict workspace
+all-target/all-feature Clippy (`-D warnings`), 217 workspace all-target
+tests with three established ignores, and four workspace doctests.
+`cargo metadata --locked` confirmed the four public 0.7.0 packages, Rust
+1.94 and `astro-bench`'s unpublishable status. All changed local Markdown
+links resolved and `git diff --check` passed. No Rust source or manifest
+changed in this closure. The already published crate archives are immutable;
+their embedded README files reflect their individual publication commits,
+while the current Git README and final release notes are post-publication
+documentation.
+
+The established Git tag form is `v0.x.y` (`v0.2.0`, `v0.3.0`, `v0.5.0`,
+`v0.6.1`, `v0.6.2`). The proposed `v0.7.0` tag target is the final
+release-documentation closure commit containing this section, after it is
+fast-forwarded to `master` and verified on `origin/master`. It is not any
+single crate's source commit: those four immutable archives retain the
+distinct revisions in the table. No tag or GitHub Release is authorized yet.
+The exact full closure-commit SHA is reported after the ordinary master push
+in the release-closure run result; a tracked file cannot embed its own Git
+commit hash. At closure, `master`, `origin/master` and the preparation branch
+are verified at this same commit. The original checkout's unrelated
+`.gitignore` edit remains uncommitted and byte-identical to its preintegration
+state.
+
+### RavenSky Astro worktree inventory
+
+This inventory was taken before the authorized fast-forward. The only HEAD
+that changes during integration is the original `master` worktree, from
+`4689ec495ff7a8d70af84b24d17f4eb36d5cb3e2` to the closure commit.
+The release-preparation worktree advances to the same closure commit when
+this record is committed. Clean ancestor worktrees may be considered for
+removal only after AstroMuninn v1.0.0 is released and both repositories are
+reviewed together. No worktree or branch was removed or pruned.
+
+| Worktree under RavenSky workspace | Branch | Preintegration HEAD | State and release relationship |
+| --- | --- | --- | --- |
+| `ravensky-astro/` | `master` | `4689ec495ff7a8d70af84b24d17f4eb36d5cb3e2` | Unrelated modified `.gitignore`; preserve checkout and edit |
+| `.worktrees/ravensky-astro-p0` | `research/image-conversion-compression-p0` | `03f28b7dcb51cb16dc3f9c16fd75bea5ba334fa9` | Clean but divergent: two commits not reachable from the release branch; review before any cleanup |
+| `.worktrees/ravensky-astro-p1` | `feature/image-conversion-compression-p1` | `406ff61853489eec2c86e82fcc84cc9e34be5729` | Clean ancestor; possible later removal |
+| `.worktrees/ravensky-astro-p2` | `feature/image-conversion-compression-p2` | `ef4688baf2b927bc1004cf5b8f8994d0c04a431a` | Clean ancestor; possible later removal |
+| `.worktrees/ravensky-astro-p3` | `feature/image-conversion-compression-p3` | `ef4688baf2b927bc1004cf5b8f8994d0c04a431a` | Clean ancestor; possible later removal |
+| `.worktrees/ravensky-astro-p4` | `feature/image-conversion-compression-p4` | `5205f133ed9d22ea47f3879d3904d8f778a6d64c` | Clean ancestor; possible later removal |
+| `.worktrees/ravensky-astro-p5` | `feature/image-conversion-compression-p5` | `59c6de1d5f53b182b1c1033acd423d53d7fc5796` | Clean ancestor; possible later removal |
+| `.worktrees/ravensky-astro-p7-preparation` | `release/ravensky-astro-p7-preparation` | `07e0d5a0fa7474ff5b090f1185af795ed681d0ae` | Clean release worktree; possible later removal after integration |
+| `.worktrees/ravensky-astro-v1-baseline` | `integration/astromuninn-v1.0.0-baseline` | `4689ec495ff7a8d70af84b24d17f4eb36d5cb3e2` | Clean ancestor; retain through AstroMuninn release, then consider removal |
+
+Actual worktree cleanup is deferred until after AstroMuninn v1.0.0 release.
+At that point, inventory both repositories again, preserve necessary release
+history and outstanding user changes, review P0's unique commits, and only
+then decide which worktrees and branches to remove.
+
 ## `ravensky-astro 0.7.0` publication and registry-only graph, 2026-11-20
 
 The user separately approved the exact `ravensky-astro 0.7.0` candidate

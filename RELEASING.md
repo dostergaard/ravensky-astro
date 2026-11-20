@@ -1,22 +1,27 @@
 # Releasing RavenSky Astro
 
-The last published line is 0.6.2. The next proposed line is 0.7.0; its
-preparation evidence and separate publication approval gate are in
-[`docs/work/image-conversion-compression-v1-p7/`](docs/work/image-conversion-compression-v1-p7/).
-The [draft release notes](docs/releases/RavenSkyAstro-0.7.0-draft.md) describe
-the new APIs and support boundaries. Historical 0.6.0–0.6.2 release details
-remain in the corresponding `docs/work/` records and the changelog.
+The four public 0.7.0 crates were published to crates.io on 2026-11-20 in
+dependency order. Their distinct source commits, archive hashes, registry
+verification and docs.rs results are in
+[`docs/work/image-conversion-compression-v1-p7/EVIDENCE.md`](docs/work/image-conversion-compression-v1-p7/EVIDENCE.md).
+The [0.7.0 release notes](docs/releases/RavenSkyAstro-0.7.0.md) describe the
+published APIs and support boundaries. `astro-bench` remains unpublished.
+The `v0.7.0` tag and any GitHub Release require separate approval and have
+not been created. Historical 0.6.0–0.6.2 release details remain in the
+corresponding `docs/work/` records and the changelog.
 
-## Before requesting publication approval
+## 0.7.0 qualification checklist
 
 Review the complete source and package diff against `master`. Verify the
-version and API compatibility assessment, all four `Cargo.toml` manifests,
+version and API compatibility assessment, all public `Cargo.toml` manifests,
 the Rust 1.94 minimum, licenses, README examples, third-party notices and
 archive members. Keep `astro-bench` unpublished. The package should not
 redistribute the official XISF specification or include investigation
 artifacts and developer configuration.
 
-Run the relevant full workspace checks from a clean reviewed commit:
+For reproduction, start from a clean reviewed commit and run the relevant
+workspace checks below. The exact backend features, commands and observed
+results for 0.7.0 are recorded in the P7-A evidence:
 
 ```sh
 cargo +1.94.0 fmt --all --check
@@ -43,21 +48,20 @@ because `sep-sys` uses POSIX `rand_r`. A local macOS check does not replace a
 green CI run on the candidate commit. AstroMuninn's vendored `fitsio-sys`
 backend needs separate product qualification after the registry transition.
 
-## After explicit approval
+## Completed 0.7.0 publication and remaining gates
 
-Publish the reviewed 0.7.0 crates in dependency order, waiting for each
-version to be available on crates.io before the next dry-run and upload:
+The four packages were approved and uploaded separately in this order:
 
-```sh
-cargo publish --locked -p astro-io
-cargo publish --locked -p astro-metadata
-cargo publish --locked -p astro-metrics
-cargo publish --locked -p ravensky-astro
-```
+1. `astro-io 0.7.0`
+2. `astro-metadata 0.7.0`
+3. `astro-metrics 0.7.0`
+4. `ravensky-astro 0.7.0`
 
-The real four-crate publication requires explicit user authorization;
-preparing or dry-running packages does not grant it. After publication, verify registry
-archives and docs.rs, then obtain approval before a public tag or GitHub
-release. AstroMuninn's pinned Git overrides may be replaced only after the
-published crates resolve and qualify from the registry. Do not remove its
-independent vendored `fitsio-sys` patch as part of that transition.
+Each crates.io archive matched its approved package. All four docs.rs builds
+succeeded, and an independent Rust 1.94 consumer compiled the complete
+registry-only 0.7.0 graph. The coordinated tag should identify the final
+reviewed release-closure commit on `master`; it cannot be the source commit
+of every crate, because the archives were published from successive commits.
+Obtain separate approval before creating or pushing `v0.7.0` or a GitHub
+Release. AstroMuninn's pinned Git overrides may be replaced only in its
+dedicated P7-B task. Retain its independent vendored `fitsio-sys` patch.

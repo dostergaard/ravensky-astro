@@ -14,6 +14,10 @@ RavenSky Astro is actively developed and used in production within my own astrop
 
 The goal is not just experimentation — it is to build a durable, composable foundation for astronomical image tooling in Rust.
 
+Version 0.7.0 of the four public crates is available on crates.io. See the
+[0.7.0 release notes](docs/releases/RavenSkyAstro-0.7.0.md) for the supported
+capabilities and limits. `astro-bench` remains an unpublished workspace tool.
+
 ---
 
 ## Architecture Overview
@@ -129,7 +133,7 @@ println!("Overall quality score: {}", scores.overall);
 
 ## Design Goals
 
-* Pure Rust implementation
+* Rust APIs with explicit CFITSIO and SEP native-backend boundaries
 * Minimal external dependencies
 * Clear crate boundaries
 * Composable APIs
