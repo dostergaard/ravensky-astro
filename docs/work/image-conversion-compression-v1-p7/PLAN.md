@@ -183,6 +183,37 @@ Do not promise universal override or change system policy.
 Checksums detect accidental or malicious alteration only when the checksum
 source is trusted; they are not code signing.
 
+## P7-A final HCOMPRESS concurrency safety review
+
+Objective: establish whether the bundled native HCOMPRESS codec is safe for
+concurrent independent FITS handles before seeking publication approval.
+Keep production APIs, pixel fidelity, resource admission and unrelated FITS
+throughput intact. This review does not authorize publication or AstroMuninn
+changes.
+
+Trace both `astro-io` image readers through `fitsio` and bundled CFITSIO to
+the codec, and distinguish header-only inventory/metadata and pure-Rust full
+validation. Audit the actual `fitsio-sys 0.5.7` source for mutable state,
+`FFLOCK` coverage, native initialization, and both bundled build modes. The
+source shows that reentrant builds lock only HCOMPRESS bitstream work; the
+existing RavenSky gate serializes all native calls on non-reentrant builds.
+No extra production lock is planned unless tests contradict that source
+analysis. Direct native tests must initialize CFITSIO before using its lock.
+
+Add bounded deterministic parallel tests for direct native encode/decode and
+high-level reads from two disposable HCOMPRESS files, including separate
+handles to the same file, exact UInt16/f32 values, fixed pixel checksums,
+metadata and full validation. Run affected tests repeatedly under the actual
+reentrant local build, then the full Rust 1.94 format, strict Clippy, tests,
+doctests, strict rustdoc, optimized builds, local package verification and
+complete Linux/macOS ARM64/Windows GNU CI. Record source spans, observed
+results and archive hashes in EVIDENCE/HANDOFF. The resource model is
+unchanged: only native bitstream sections serialize, pure-Rust validation and
+unrelated FITS operations retain their existing concurrency, and no new
+buffers, worker queues or cancellation boundaries are introduced. The prior
+Windows failure does not by itself prove a production race; test the specific
+initialization hypothesis and report any residual uncertainty.
+
 Before product publication, update installation and user manuals, format and
 loss boundaries, Organize/Convert distinction, fallback and compressed-FITS
 filename behavior, schema/config compatibility, recovery, third-party notices,

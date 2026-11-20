@@ -288,20 +288,22 @@ The failures were corrupted native oracle results from direct
 `fits_hcompress`/`fits_hdecompress` calls in tests run concurrently by Rust's
 ordinary test harness. The previous [run 44608168246](https://github.com/dostergaard/ravensky-astro/actions/runs/44608168246)
 passed those tests without a source change, establishing intermittence.
-Inspection of bundled CFITSIO 3.49 source in `fitsio-sys 0.5.7` found
-process-global mutable bitstream state in `fits_hcompress.c` (`noutchar`,
-`bitcount`, `bitbuffer`) and `fits_hdecompress.c` (`nextchar`). The two direct
-native oracle fixtures were therefore serialized with a test-only mutex;
-all test cases and assertions remain enabled. No production API or writer
-behavior changed, and the CI test matrix was not narrowed or serialized.
+Initial inspection of bundled CFITSIO 3.49 source in `fitsio-sys 0.5.7`
+found process-global mutable bitstream state in `fits_hcompress.c`
+(`noutchar`, `bitcount`, `bitbuffer`) and `fits_hdecompress.c` (`nextchar`).
+The two direct native oracle fixtures were temporarily serialized with a
+test-only mutex. A later complete source review found CFITSIO's own `FFLOCK`
+protection around those state accesses; see the review below. The temporary
+test mutex is removed in that review. No production API or writer behavior
+changed, and the CI test matrix was not narrowed or serialized.
 
 Local Rust 1.94 `cargo fmt --all --check`, focused parallel harness execution
 of both HCOMPRESS tests (2 passed), and strict all-target/all-feature
 `astro-io` Clippy with `fitsio/src-cmake` passed after the fix. The next
-candidate commit includes the test-only correction and this evidence; it
-must receive a complete new CI run before the approval checkpoint. Final
-archive hashes must be regenerated from that exact commit because Cargo
-embeds Git commit identity in `.cargo_vcs_info.json`.
+candidate commit included the test-only correction and this evidence. It
+subsequently received complete [CI run 44610247661](https://github.com/dostergaard/ravensky-astro/actions/runs/44610247661)
+below. Cargo embeds Git commit identity in `.cargo_vcs_info.json`, so each
+new committed candidate needs its own archive hashes.
 
 ## Qualified HCOMPRESS correction candidate
 
@@ -331,11 +333,101 @@ paths and credential markers are absent. Archive identity is:
 | `astro-metrics-0.7.0.crate` | 13 | 20,664 | `4485817bfdbd65fd2a29e0cf1c797c494aae6caf47a51548d2a3890c3a6084c9` |
 | `ravensky-astro-0.7.0.crate` | 42 | 163,475 | `ffd8ebca2698f04b8a26a324f5baffdd6a36f2d784552590846376fd7494b3d5` |
 
-The bundled CFITSIO source also shows that high-level compressed image
-operations call the same native HCOMPRESS functions with process-global
-mutable state. This CI result proves the direct test fixtures no longer race;
-it does not establish safety of concurrent production HCOMPRESS reads through
-independent CFITSIO handles. The existing `with_cfitsio` gate admits such
-calls when `fits_is_reentrant()` reports true. Assess that native concurrency
-contract before relying on concurrent HCOMPRESS reads in a release. No
-production concurrency behavior was changed in this candidate.
+At this checkpoint, the native HCOMPRESS state was known to be shared, but
+the surrounding CFITSIO lock and initialization path had not yet been traced.
+The follow-up review below resolves that question. No production concurrency
+behavior changed in this candidate.
+
+Documentation commit `b16bbc268c954516d18ecb544482305f408be65e`
+received [CI run 44611228993](https://github.com/dostergaard/ravensky-astro/actions/runs/44611228993):
+Linux x86-64 GNU, macOS ARM64, Windows x86-64 GNU and retired naming all
+passed. Its locally generated archives were inspected and hashed from the
+clean commit; Linux CI verified package build. The local archive generation
+used `cargo package --offline --locked --no-verify` because the host's
+temporary directory denied a bundled CFITSIO Autotools operation during
+local tarball verification. The b16bbc2 archive SHA-256 values, in
+publication order, are `fb91d22f76bbc3d162e7c334a71f712776054435d6caec522ad3fae52b562b69`,
+`02f775b82c8d8adcba4caec9e05c3a2ff451402e41f1f940c8366cea5d5387cc`,
+`b57719830613351095dddbfc1b7f1cc2cf1eb342c380a02115751110c6c53e30`,
+and `d19cb8bb140c2e28e1902e9e5cfa09890e800380a7ca545011c154dae38cbe86`.
+
+## P7-A final HCOMPRESS concurrency source review
+
+This review corrects the earlier inference that process-global HCOMPRESS
+state implied an unprotected production race. In bundled `fitsio-sys 0.5.7`
+(CFITSIO 3.49), `ext/cfitsio/fitsio2.h:20-36` defines `FFLOCK`/`FFUNLOCK`
+as calls on `Fitsio_Lock` when `_REENTRANT` is set, and as no-ops otherwise.
+`fits_hcompress.c:115-120,162-167` locks the 32-bit and 64-bit encoder
+sections that use `noutchar`, `noutmax`, `bitcount` and bit buffers.
+`fits_hdecompress.c:106-108,149-151` locks both decode sections that use
+`nextchar` and input bit buffers. The transforms outside those sections use
+caller-owned arrays. No separate high-level mutex exists in `imcompress.c`;
+it reaches these locked native functions at lines 2107 and 6314-6318.
+
+`cfileio.c:67-109` initializes the recursive `Fitsio_Lock` through
+`fitsio_init_lock`; `fits_init_cfitsio` at line 4329 calls it. The FITS open
+and create entry points call `fits_init_cfitsio` before normal image work
+(for example lines 628 and 3989). Direct `fits_hcompress` and
+`fits_hdecompress` calls do not invoke that initialization themselves.
+`fitscore.c:7322-7334` shows that `fits_is_reentrant()` merely reports the
+`_REENTRANT` build macro and explicitly warns that it may not suffice for
+every function. The bundled Autotools path requests `--enable-reentrant`;
+the CMake path sets `USE_PTHREADS=ON`, which defines `_REENTRANT` in
+`CMakeLists.txt:64-67`. The local CMake-linked Rust 1.94 test reported
+`is_reentrant() == true`. If a supported build reports false, RavenSky's
+`with_cfitsio` gate admits only one thread at a time.
+
+The production decode path is:
+
+1. `astro-io::fits::load_fits` or `astro-io::typed::read_u16_chunk` opens an
+   independent `FitsFile` and calls `FitsHdu::read_image` or `read_section`.
+2. `fitsio 0.21.9` delegates through `ReadImage::read_section`,
+   `fits_read_img` and CFITSIO `ffgpv`. Its `getcol*.c` dispatch reaches
+   `fits_read_compressed_img` or `fits_read_compressed_pixels` for compressed
+   image HDUs.
+3. `imcompress.c` calls `imcomp_decompress_tile`, which calls the internally
+   locked `fits_hdecompress` or `fits_hdecompress64` for `HCOMPRESS_1`.
+
+`astro-io::typed::inventory` reads HDU information and raw cards only;
+`astro-metadata::fits_parser` selects image HDUs and reads headers only.
+They do not decompress HCOMPRESS pixels. Full FITS validation dispatches to
+RavenSky's Rust HCOMPRESS decoder, with no native calls. Exact typed
+comparison reaches the native path through `read_u16_chunk` after Rust
+validation. This distinction preserves concurrent unrelated FITS work and
+pure-Rust validation without a new library-wide lock.
+
+The original direct oracle tests bypassed file open and therefore had no
+guarantee that CFITSIO's lock had been initialized. They now explicitly call
+`fits_init_cfitsio` before native codec work, then allow Rust's harness to
+run them concurrently without the temporary test mutex. A new direct test
+runs four workers × 32 lossless encode/decode cycles with distinct signed
+samples and exact pixel assertions. A cross-crate integration test uses two
+disposable 64×64 UInt16 HCOMPRESS files and four workers × 24 iterations,
+alternating same-file and different-file reads through independent handles.
+It exercises `load_fits`, `read_u16_chunk`, direct `fitsio` readback, metadata
+extraction, and full validation. Every logical pixel is checked; fixed FNV-1a
+UInt16 checksums are `e36fa1e56e700325` and `3b9125d5e279c325`, and the
+source files must remain byte-identical. Twenty local repeats of each test
+group passed on the reentrant bundled CMake build. Repetition is supporting
+evidence, not proof of thread safety; the lock coverage in source is the
+decisive evidence.
+
+The precise trigger of the earlier intermittent Windows failure remains an
+inference: direct native calls may have encountered an uninitialized mutex,
+but that single failed run cannot isolate every possibility. The tests now
+initialize CFITSIO explicitly, and full cross-platform candidate CI must
+confirm the change. No production synchronization or public API changed.
+Calls by unrelated users of CFITSIO are outside RavenSky's handle-lifetime
+gate; they must initialize the backend, use independent handles, and on
+non-reentrant builds coordinate native access. Re-audit a different CFITSIO
+version or separately linked copy rather than assuming these source details
+apply to it.
+
+Local Rust 1.94.0 qualification on macOS ARM64 with the bundled
+`fitsio/src-cmake` build passed: `cargo fmt --all --check`, `git diff --check`,
+strict all-target/all-feature workspace Clippy, full all-target workspace
+tests, workspace doctests, strict `RUSTDOCFLAGS=-D warnings` documentation,
+and optimized workspace example builds. The complete suite included the new
+native and cross-crate regression tests. The candidate still requires clean
+commit package verification and the existing full GitHub Actions workflow;
+this local result is not a claim of Windows or Linux execution.

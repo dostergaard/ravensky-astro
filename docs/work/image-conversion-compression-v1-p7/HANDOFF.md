@@ -47,17 +47,17 @@ The evidence-only commit `1590d7ea577be5f097ef66a5b14ac1c82551e2c8`
 received [CI run 44609029486](https://github.com/dostergaard/ravensky-astro/actions/runs/44609029486).
 Linux, macOS and naming passed. Windows GNU failed two intermittently
 corrupted direct native HCOMPRESS oracle tests after its Clippy and optimized
-build steps passed. Bundled CFITSIO has process-global HCOMPRESS bitstream
-counters; a test-only mutex now serializes those two direct native fixtures
-without narrowing the CI matrix. Focused local parallel execution and strict
-Clippy passed. EVIDENCE.md contains the failure and source analysis.
+build steps passed. The initial correction added a test-only mutex because
+bundled CFITSIO has process-global HCOMPRESS bitstream counters. The complete
+source review below found those counters are already locked within CFITSIO
+on reentrant builds, and replaced the temporary test mutex with explicit
+CFITSIO initialization before direct codec tests. EVIDENCE.md records both
+the failure and corrected source analysis.
 
-Qualify the next correction commit with the complete existing CI workflow.
-Regenerate all four archives from that final clean commit in a fresh target
-directory and report their hashes. Reconfirm branch/master refs, worktree
-cleanliness and public registry versions. Exact final-commit CI and archive
-results belong in the user approval checkpoint; the earlier 6267d11 green
-run and the 1590d7e failure remain durable diagnostic evidence.
+That test-only correction passed the complete existing CI workflow in
+[run 44610247661](https://github.com/dostergaard/ravensky-astro/actions/runs/44610247661).
+The earlier 6267d11 green run and the 1590d7e failure remain durable
+diagnostic evidence; see EVIDENCE.md for the full sequence.
 
 Stop before real `cargo publish`, merge, tag, GitHub Release, AstroMuninn
 changes, or product distribution. After separate publication authorization,
@@ -84,14 +84,32 @@ dependency/publication order:
 - `astro-metrics`: `4485817bfdbd65fd2a29e0cf1c797c494aae6caf47a51548d2a3890c3a6084c9`
 - `ravensky-astro`: `ffd8ebca2698f04b8a26a324f5baffdd6a36f2d784552590846376fd7494b3d5`
 
-Bundled CFITSIO's HCOMPRESS implementation has process-global mutable
-bitstream state, including when called by high-level compressed image reads.
-The test-only fixture lock resolves the observed CI race, but production
-concurrent HCOMPRESS reads are not established safe by this run. The public
-backend gate permits independent calls when CFITSIO reports a reentrant
-build. Treat this as a focused technical review item before depending on
-concurrent HCOMPRESS behavior; the candidate did not change that contract.
+The later source review found bundled CFITSIO's `FFLOCK`/`FFUNLOCK` already
+protects HCOMPRESS's process-global bitstream state in reentrant builds.
+FITS open initializes that lock before high-level pixel reads; the direct
+oracle tests had bypassed that path. No production lock or public API change
+is needed. The direct tests now initialize CFITSIO explicitly and include a
+four-worker native stress test; a cross-crate test covers exact same-file
+and different-file high-level reads, metadata and full validation. The
+earlier Windows failure's exact trigger remains an inference pending the
+new cross-platform candidate run. Calls outside RavenSky's gate and other
+CFITSIO versions remain separate integration boundaries.
 
-This handoff update itself changes the Git commit identity embedded by Cargo
-in `.cargo_vcs_info.json`. For the exact final documentation commit, rerun
-CI and regenerate archive hashes before requesting publication approval.
+The subsequent documentation commit
+`b16bbc268c954516d18ecb544482305f408be65e` passed all four jobs in
+[CI run 44611228993](https://github.com/dostergaard/ravensky-astro/actions/runs/44611228993).
+Its archive SHA-256 values, in publication order, are
+`fb91d22f76bbc3d162e7c334a71f712776054435d6caec522ad3fae52b562b69`,
+`02f775b82c8d8adcba4caec9e05c3a2ff451402e41f1f940c8366cea5d5387cc`,
+`b57719830613351095dddbfc1b7f1cc2cf1eb342c380a02115751110c6c53e30`,
+and `d19cb8bb140c2e28e1902e9e5cfa09890e800380a7ca545011c154dae38cbe86`.
+These are historical once the current source review is committed; regenerate
+all four archives and rerun CI at the exact new candidate commit.
+
+Local Rust 1.94.0 formatting, strict Clippy, complete all-target workspace
+tests, doctests, strict rustdoc and optimized example builds passed on
+macOS ARM64 with bundled `fitsio/src-cmake`. Twenty repeated runs of each
+focused concurrency test group also passed. No production API or native
+codec code changed. The exact final review commit still needs clean package
+verification, normal branch push, complete candidate CI and archive hashes
+before requesting publication authorization.

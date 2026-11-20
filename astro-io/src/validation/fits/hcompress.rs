@@ -872,15 +872,16 @@ impl_hdecompress!(
 mod tests {
     use super::*;
 
-    // CFITSIO's direct HCOMPRESS encoder and decoder use process-global bitstream
-    // counters even in reentrant builds. Keep the native oracle fixtures apart.
-    static NATIVE_HCOMPRESS_TEST: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    fn initialize_native_oracle() {
+        // Direct codec calls bypass FITS file open, which normally initializes
+        // CFITSIO's internal recursive mutex before FFLOCK uses it.
+        let status = unsafe { fitsio::sys::fits_init_cfitsio() };
+        assert_eq!(status, 0, "initialize native HCOMPRESS oracle");
+    }
 
     #[test]
     fn native_hcompress_roundtrips_signed_samples_and_odd_geometry() {
-        let _native_guard = NATIVE_HCOMPRESS_TEST
-            .lock()
-            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        initialize_native_oracle();
         crate::fits::backend::with_cfitsio(|| {
             for (width, height) in [(4, 4), (5, 7), (33, 17), (1, 10), (10, 1)] {
                 let original: Vec<i32> = (0..width * height)
@@ -945,9 +946,7 @@ mod tests {
 
     #[test]
     fn lossy_transform_matches_native_and_observes_cancellation() {
-        let _native_guard = NATIVE_HCOMPRESS_TEST
-            .lock()
-            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        initialize_native_oracle();
         crate::fits::backend::with_cfitsio(|| {
             let mut source: Vec<i32> = (0..64).map(|i| (i * 1237) % 16384 - 8192).collect();
             let mut compressed = vec![0u8; 4096];
@@ -993,6 +992,62 @@ mod tests {
                 hinv32(&mut expected, 8, 8, &input).unwrap_err().kind(),
                 ValidationErrorKind::Cancelled
             );
+        });
+    }
+
+    #[test]
+    fn concurrent_native_hcompress_calls_preserve_exact_samples() {
+        initialize_native_oracle();
+        eprintln!(
+            "linked CFITSIO reentrant: {}",
+            crate::fits::backend::is_reentrant()
+        );
+        let barrier = std::sync::Barrier::new(4);
+        std::thread::scope(|scope| {
+            for worker in 0..4 {
+                let barrier = &barrier;
+                scope.spawn(move || {
+                    barrier.wait();
+                    for repeat in 0..32 {
+                        let original: Vec<i32> = (0..256)
+                            .map(|index| {
+                                ((index * 7919 + worker * 503 + repeat * 241) % 65536) - 32768
+                            })
+                            .collect();
+                        let mut native = original.clone();
+                        let mut compressed = vec![0u8; 8192];
+                        let mut length = compressed.len() as std::os::raw::c_long;
+                        let mut decoded = vec![0i32; original.len()];
+                        let (mut width, mut height, mut scale, mut status) = (0, 0, 0, 0);
+                        // SAFETY: CFITSIO is initialized before the workers;
+                        // each call has private buffers sized for its 16x16 image.
+                        crate::fits::backend::with_cfitsio(|| unsafe {
+                            fitsio::sys::fits_hcompress(
+                                native.as_mut_ptr(),
+                                16,
+                                16,
+                                0,
+                                compressed.as_mut_ptr().cast(),
+                                &mut length,
+                                &mut status,
+                            );
+                            assert_eq!(status, 0, "worker {worker} repeat {repeat} encode");
+                            fitsio::sys::fits_hdecompress(
+                                compressed.as_mut_ptr(),
+                                0,
+                                decoded.as_mut_ptr(),
+                                &mut width,
+                                &mut height,
+                                &mut scale,
+                                &mut status,
+                            );
+                        });
+                        assert_eq!(status, 0, "worker {worker} repeat {repeat} decode");
+                        assert_eq!((width, height, scale), (16, 16, 0));
+                        assert_eq!(decoded, original, "worker {worker} repeat {repeat}");
+                    }
+                });
+            }
         });
     }
 }

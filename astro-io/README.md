@@ -43,6 +43,13 @@ FITS loading, header access and metadata extraction share
 `astro_io::fits::backend`. The linked backend's
 `is_reentrant()` capability controls admission: independent handles run concurrently
 on reentrant builds; other builds admit one thread with nested calls supported.
+In the bundled CFITSIO 3.49 source, HCOMPRESS keeps process-global bitstream
+state but protects its encode and decode sections with CFITSIO's own mutex on
+reentrant builds. FITS file open initializes that mutex. The native lock covers
+only those codec sections, so unrelated FITS work need not be serialized by
+RavenSky. A direct low-level HCOMPRESS call before any FITS file open must first
+initialize CFITSIO. `fits_is_reentrant()` reports a build flag, not a blanket
+guarantee for every native function or a replacement for independent handles.
 Loaders wait for admission. FITS and XISF validation do not acquire this native
 gate. Validation uses separate caller-owned memory admission and reports
 `ResourceBusy` when concurrent reservations temporarily occupy its allowance.

@@ -106,6 +106,41 @@ current upstream version. Re-audit these internals when changing the dependency.
   `BUFFINCR` through the supplied realloc function until stream completion; its
   `buffsize` argument describes current capacity, not a maximum.
 
+### HCOMPRESS concurrency review for the 0.7.0 candidate
+
+The same bundled CFITSIO 3.49 source uses process-global bitstream counters in
+`fits_hcompress.c` and `fits_hdecompress.c`, but the initial observation of
+those counters alone was incomplete. `fitsio2.h:20-36` defines `FFLOCK` and
+`FFUNLOCK` as operations on the recursive `Fitsio_Lock` for `_REENTRANT`
+builds. `fits_hcompress.c:115-120,162-167` encloses both 32-bit and 64-bit
+encoding in that lock; `fits_hdecompress.c:106-108,149-151` encloses both
+decoding variants. The transforms outside those sections use caller-owned
+buffers. `cfileio.c:67-109,4329` initializes the lock through
+`fits_init_cfitsio`, which FITS file opening calls. The Autotools bundled build
+requests reentrancy and the CMake build requests pthreads; the latter defines
+`_REENTRANT`. `fits_is_reentrant()` only returns that compile-time flag and
+explicitly says it may not suffice for every CFITSIO function. On a
+non-reentrant build, RavenSky's existing gate serializes participating calls.
+
+High-level image reads use `fitsio::FitsHdu::read_image` or `read_section`,
+then `fitsio::images::ReadImage`, `fits_read_img`, `ffgpv`, the compressed
+pixel path, `imcomp_decompress_tile`, and finally the locked native
+`fits_hdecompress`. `astro-io::fits::load_fits` and
+`astro-io::typed::read_u16_chunk` reach this path. Inventory, FITS metadata
+extraction and header access do not read tiles; full FITS validation uses
+RavenSky's independent Rust HCOMPRESS decoder. Existing library image reads
+open independent handles and require no additional Rust codec mutex.
+
+Direct codec tests bypassed the FITS open/init path. They now call
+`fits_init_cfitsio` explicitly before parallel native oracles and no longer
+use a test-only mutex. This corrects a real test setup gap; the precise cause
+of the earlier intermittent Windows result cannot be established from the
+single failure alone. Concurrent exact-pixel tests cover independent handles
+to the same and different compressed files. Native callers outside RavenSky
+must initialize CFITSIO, avoid sharing a handle across threads, and coordinate
+with the library gate on non-reentrant builds. Re-audit the native source when
+upgrading or substituting CFITSIO.
+
 All production CFITSIO entry points found in the workspace's shared crates are
 `astro-io/src/fits.rs`, `astro-io/src/validation/fits.rs`, and
 `astro-metadata/src/fits_parser.rs`. Private raw-card helpers run inside their
