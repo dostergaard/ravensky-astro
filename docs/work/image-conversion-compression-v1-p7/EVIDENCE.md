@@ -1,5 +1,57 @@
 # P7-A RavenSky Astro publication preparation evidence
 
+## `astro-metrics 0.7.0` publication, 2026-11-20
+
+The user separately approved the exact `astro-metrics 0.7.0` candidate
+from clean `release/ravensky-astro-p7-preparation` commit
+`2c3345af901acd15709dbdf15d321b19bdc94124`. Local and remote refs
+matched before upload. The official crates.io version API returned HTTP 404
+for `astro-metrics 0.7.0`; the published `astro-io` and `astro-metadata`
+0.7.0 versions were available with their approved checksums. The
+`astro-metrics` source tree was identical to the tested
+`5e25bd7a20781aafdc5f94dc22f4f1a343913a0c` implementation; only
+publication evidence changed since that CI run. Its normalized manifest
+required both shared crates at 0.7.0, with no path or Git override. The
+extracted package's Cargo metadata resolved exactly one registry-sourced
+copy of each; its packaged lockfile recorded their official checksums.
+
+`cargo +1.94.0 package --locked -p astro-metrics` verified the fresh package
+against registry dependencies. The extracted package's Rust 1.94 tests with
+`fitsio/src-cmake` passed: 5 passed, 1 established ignore. The final
+`cargo +1.94.0 publish --dry-run --locked -p astro-metrics` passed and
+produced a byte-identical archive. Its only warning was the expected dry-run
+upload abort. The approved `astro-metrics-0.7.0.crate` was 20,653 bytes,
+SHA-256 `d01669e7229477bb6fdf997b58a7e366945c05d61215062541c6fb93cf886fa0`.
+HEAD and the worktree remained unchanged before upload. With the user's
+specific authorization, `cargo +1.94.0 publish --locked -p astro-metrics`
+completed; Cargo reported upload and publication at `crates-io`.
+
+The [published version](https://crates.io/crates/astro-metrics/0.7.0) and
+[version API](https://crates.io/api/v1/crates/astro-metrics/0.7.0) report
+the approved SHA-256, 20,653 bytes, license `MIT OR Apache-2.0`, Rust 1.94,
+the project repository and a non-yanked 0.7.0 version. The
+[registry dependencies](https://crates.io/api/v1/crates/astro-metrics/0.7.0/dependencies)
+include `astro-io ^0.7.0` and `astro-metadata ^0.7.0` and match the
+normalized manifest. The [published archive](https://static.crates.io/crates/astro-metrics/astro-metrics-0.7.0.crate)
+was downloaded and byte-compared with the approved local candidate. Its 13
+regular, safe-path files include source, README, dual licenses, normalized
+manifest and `.cargo_vcs_info.json` pointing to exactly `2c3345a...` and
+`astro-metrics`. No unexpected local or credential-marked files were found.
+
+At 2026-11-20 12:14 UTC, docs.rs returned HTTP 404 for the new version's
+[build page](https://docs.rs/crate/astro-metrics/0.7.0/builds) and
+[rustdoc URL](https://docs.rs/astro-metrics/0.7.0/astro_metrics/). This was
+immediately after publication and indicated pending docs.rs ingestion, not
+an observed build failure. Shortly afterward,
+[build 5405744](https://docs.rs/crate/astro-metrics/0.7.0/builds/5405744)
+reported `All builds succeeded`, and the versioned rustdoc page rendered.
+
+Only `astro-metrics` was uploaded in this step. `ravensky-astro` remains
+unpublished. No merge, tag, binary release, or AstroMuninn change was made.
+This evidence-only commit changes the branch's VCS identity and future
+archive hashes; prepare the facade from its exact new commit and obtain its
+separate publication approval.
+
 ## `astro-metadata 0.7.0` publication, 2026-11-20
 
 The user separately approved the exact `astro-metadata 0.7.0` candidate

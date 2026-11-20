@@ -2,6 +2,25 @@
 
 ## Current publication checkpoint, 2026-11-20
 
+`astro-io`, `astro-metadata` and `astro-metrics` 0.7.0 are published and
+verified on crates.io. The user separately authorized `astro-metrics` from
+commit `2c3345af901acd15709dbdf15d321b19bdc94124`; its published
+archive is byte-identical to the approved 20,653-byte candidate, SHA-256
+`d01669e7229477bb6fdf997b58a7e366945c05d61215062541c6fb93cf886fa0`.
+The registry reports the expected license, source, Rust version and
+`astro-io ^0.7.0` / `astro-metadata ^0.7.0` dependencies. The official
+[docs.rs build 5405744](https://docs.rs/crate/astro-metrics/0.7.0/builds/5405744)
+succeeded, and the versioned rustdoc page is available.
+
+`ravensky-astro` remains unpublished. Prepare a fresh exact-commit package,
+confirm registry resolution of all three shared dependencies, run a locked
+publish dry-run and request separate explicit authorization. This
+evidence-only documentation commit changes future archive VCS identities.
+Do not merge, tag, publish binaries, or change AstroMuninn. Historical
+checkpoints below are superseded where they differ.
+
+## Previous `astro-metadata` publication checkpoint, 2026-11-20
+
 `astro-io 0.7.0` and `astro-metadata 0.7.0` are published and verified on
 crates.io. The user separately authorized the latter from commit
 `d905555217fdfe2f4cba3261f7d9a8d6dcf68a5d`; its downloaded archive
