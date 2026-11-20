@@ -1,5 +1,54 @@
 # P7-A RavenSky Astro publication preparation evidence
 
+## `astro-metadata 0.7.0` publication, 2026-11-20
+
+The user separately approved the exact `astro-metadata 0.7.0` candidate
+from clean `release/ravensky-astro-p7-preparation` commit
+`d905555217fdfe2f4cba3261f7d9a8d6dcf68a5d`. The local and remote
+branch refs matched. Before upload, the official
+[crates.io version API](https://crates.io/api/v1/crates/astro-metadata/0.7.0)
+returned HTTP 404; `astro-io 0.7.0` was available with its approved checksum.
+The prior `cargo +1.94.0 package --locked -p astro-metadata` verification
+downloaded `astro-io 0.7.0` from crates.io, and Cargo metadata for the
+extracted package identified that dependency as registry sourced. The
+normalized manifest has `astro-io = "0.7.0"` with no path or Git override.
+
+The final `RUSTUP_TOOLCHAIN=1.94.0 cargo publish --dry-run --locked -p
+astro-metadata` passed, including package verification. Its upload archive
+was byte-identical to the separately generated 51,828-byte candidate, SHA-256
+`bf9419762cd7c5a518095491c0e116bdbf0f820e6b11a8903e2933411f694560`.
+HEAD and the worktree remained unchanged before upload. With the user's
+specific authorization, `RUSTUP_TOOLCHAIN=1.94.0 cargo publish --locked -p
+astro-metadata` completed; Cargo reported upload and publication at registry
+`crates-io`.
+
+The [published version](https://crates.io/crates/astro-metadata/0.7.0) and
+[version API](https://crates.io/api/v1/crates/astro-metadata/0.7.0) report
+the approved SHA-256, 51,828 bytes, license `MIT OR Apache-2.0`, Rust 1.94,
+the project repository, and a non-yanked 0.7.0 version. The
+[registry dependencies](https://crates.io/api/v1/crates/astro-metadata/0.7.0/dependencies)
+include `astro-io ^0.7.0` and match the normalized manifest. The
+[downloaded published archive](https://static.crates.io/crates/astro-metadata/astro-metadata-0.7.0.crate)
+was byte-compared with the approved local candidate. Its 18 files include
+the source, example, tests, README, both license files, normalized manifest,
+and `.cargo_vcs_info.json` pointing to exactly `d905555...` and
+`astro-metadata`. Its packaged lockfile records the registry `astro-io 0.7.0`
+checksum `347071fb00b76c080a647053ce3397908c54cf87a6afa6752510015a924eb9c7`.
+
+At 2026-11-20 11:48 UTC, docs.rs returned HTTP 404 for the new version's
+[build page](https://docs.rs/crate/astro-metadata/0.7.0/builds) and
+[rustdoc URL](https://docs.rs/astro-metadata/0.7.0/astro_metadata/). This was
+immediately after publication and indicated pending docs.rs ingestion, not
+an observed build failure. Shortly afterward,
+[build 5405373](https://docs.rs/crate/astro-metadata/0.7.0/builds/5405373)
+reported `All builds succeeded`, and the versioned rustdoc page rendered.
+
+Only `astro-metadata` was uploaded in this step. `astro-metrics` and
+`ravensky-astro` remain unpublished. No merge, tag, binary release, or
+AstroMuninn change was made. This evidence-only commit changes the branch's
+VCS identity and therefore future package hashes; prepare and obtain
+separate approval for each remaining crate from its exact new commit.
+
 ## `astro-io 0.7.0` publication, 2026-11-20
 
 The final qualified release candidate was commit
