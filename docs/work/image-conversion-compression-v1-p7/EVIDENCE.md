@@ -1,5 +1,69 @@
 # P7-A RavenSky Astro publication preparation evidence
 
+## `ravensky-astro 0.7.0` publication and registry-only graph, 2026-11-20
+
+The user separately approved the exact `ravensky-astro 0.7.0` candidate
+from clean `release/ravensky-astro-p7-preparation` commit
+`6b1eeede00089a7cdc5488d75406d500d94efd6d`. Local and remote refs
+matched before upload; `origin/master` remained
+`4689ec495ff7a8d70af84b24d17f4eb36d5cb3e2`. The original `master`
+checkout retained its unrelated `.gitignore` edit. The official
+[version API](https://crates.io/api/v1/crates/ravensky-astro/0.7.0)
+returned HTTP 404 before upload, while all three published 0.7.0
+prerequisites were available with their approved checksums.
+
+`cargo +1.94.0 package --locked -p ravensky-astro` verified a fresh package
+against registry dependencies. Its normalized manifest required `astro-io`,
+`astro-metadata` and `astro-metrics` at 0.7.0 with no active path or Git
+override. The extracted package's Cargo metadata resolved exactly one
+registry-sourced 0.7.0 copy of each shared crate; its lockfile recorded
+their published checksums and no 0.6.2 shared crate. The package contained
+all three public re-exports, README, rustdoc, examples, dual licenses,
+source and expected documentation. Its 42 regular archive members had safe
+paths, and inspection found no machine paths, credentials, work records or
+official XISF specification. The extracted package's Rust 1.94 all-target
+tests passed (19 tests) and its doctest passed using the registry graph.
+
+The final `cargo +1.94.0 publish --dry-run --locked -p ravensky-astro`
+passed, including package verification, and produced a byte-identical
+archive. Its only warning was the expected dry-run upload abort. The
+approved `ravensky-astro-0.7.0.crate` was 164,265 bytes, SHA-256
+`f07ca6796366ba5966429d2e3098f6fc1e9d3a557690fce270d883ca8ed8f5ea`.
+HEAD and the worktree remained unchanged before upload. With the user's
+specific authorization, `cargo +1.94.0 publish --locked -p ravensky-astro`
+completed; Cargo reported upload and publication at `crates-io`.
+
+The [published version](https://crates.io/crates/ravensky-astro/0.7.0),
+[version API](https://crates.io/api/v1/crates/ravensky-astro/0.7.0) and
+[dependency API](https://crates.io/api/v1/crates/ravensky-astro/0.7.0/dependencies)
+report the approved SHA-256, 164,265 bytes, license `MIT OR Apache-2.0`,
+Rust 1.94, the project repository, non-yanked 0.7.0 and all three
+`^0.7.0` shared dependencies. The
+[published archive](https://static.crates.io/crates/ravensky-astro/ravensky-astro-0.7.0.crate)
+was downloaded and byte-compared with the approved candidate. Its
+`.cargo_vcs_info.json` points to exactly `6b1eeed...` at the repository
+root. [docs.rs build 5405807](https://docs.rs/crate/ravensky-astro/0.7.0/builds/5405807)
+reported `All builds succeeded`, and the versioned rustdoc page rendered.
+The initial docs.rs HTTP 404 immediately after upload was pending ingestion,
+not a build failure.
+
+An independent temporary consumer outside the RavenSky workspace declared
+only `ravensky-astro = "=0.7.0"`, with no path, Git or patch override.
+`cargo +1.94.0 generate-lockfile` and `cargo +1.94.0 check --locked`
+passed. Its Cargo metadata resolved exactly one registry-sourced 0.7.0 copy
+of each of the four public crates; its lockfile checksums matched the four
+approved published archives. This confirms the complete released graph
+builds from the public registry on Rust 1.94. It does not replace the prior
+platform CI or native AstroMuninn product qualification.
+
+All four public crates are now published and verified. No merge, release
+tag, GitHub Release, binary publication or AstroMuninn change was made.
+Before a public tag or merge, review and update release guidance that still
+describes 0.7.0 as proposed, safely integrate the branch while preserving
+the original checkout's `.gitignore` edit, and obtain the separate approval
+required by `RELEASING.md` for a public tag.
+AstroMuninn P7-B remains a later dedicated-branch task.
+
 ## `astro-metrics 0.7.0` publication, 2026-11-20
 
 The user separately approved the exact `astro-metrics 0.7.0` candidate

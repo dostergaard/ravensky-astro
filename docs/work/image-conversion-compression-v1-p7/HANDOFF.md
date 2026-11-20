@@ -2,6 +2,33 @@
 
 ## Current publication checkpoint, 2026-11-20
 
+All four RavenSky Astro 0.7.0 public crates are published and verified on
+crates.io. The final facade package came from user-approved source commit
+`6b1eeede00089a7cdc5488d75406d500d94efd6d`; the published 164,265-byte
+archive is byte-identical to that candidate, SHA-256
+`f07ca6796366ba5966429d2e3098f6fc1e9d3a557690fce270d883ca8ed8f5ea`.
+Its registry metadata has the expected license, source, Rust version and
+all three `^0.7.0` shared dependencies. The official
+[docs.rs build 5405807](https://docs.rs/crate/ravensky-astro/0.7.0/builds/5405807)
+succeeded. An independent temporary Rust 1.94 consumer using only
+`ravensky-astro = "=0.7.0"` compiled from crates.io and resolved one
+registry-sourced 0.7.0 copy of each public crate with the approved checksums.
+EVIDENCE.md has the commands, links and archive details.
+
+No merge, release tag, GitHub Release, binary publication or AstroMuninn
+change was made. Next, review the final branch diff and update release
+guidance that still describes 0.7.0 as proposed; then integrate the branch
+through the established safe Git process while preserving the original
+`master` checkout's unrelated `.gitignore` edit. `RELEASING.md` requires
+separate approval before a public tag or GitHub Release; existing tag naming
+uses `v0.x.y`, so `v0.7.0` is the proposed next tag. AstroMuninn P7-B should
+begin later on its own branch after the registry release and RavenSky
+integration checkpoints. This evidence-only commit changes the branch's
+HEAD but not any already published archive. Historical checkpoints below
+are superseded where their publication status differs.
+
+## Previous `astro-metrics` publication checkpoint, 2026-11-20
+
 `astro-io`, `astro-metadata` and `astro-metrics` 0.7.0 are published and
 verified on crates.io. The user separately authorized `astro-metrics` from
 commit `2c3345af901acd15709dbdf15d321b19bdc94124`; its published
